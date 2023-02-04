@@ -1,5 +1,5 @@
 # riscv-total-embedded
-custom riscv embedded profile
+custom riscv volume II replacement for embedded 
 
 Generated PDFs are provided in [Releases](https://github.com/jnk0le/riscv-total-embedded/releases)
 
