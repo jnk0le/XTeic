@@ -3,4 +3,5 @@ custom riscv embedded profile
 
 
 here goes the mandatory xkcd:
-![xkcd](https://imgs.xkcd.com/comics/standards.png)
+
+![xkcd927](https://imgs.xkcd.com/comics/standards.png)
