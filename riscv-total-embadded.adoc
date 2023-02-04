@@ -1,0 +1,58 @@
+
+= riscv-total-embedded
+Jan Oleksiewicz <jnk0le@hotmail.com>
+:appversion: 0.0.1
+:toc:
+:toclevels: 4
+:sectnums:
+
+
+{author} {email} +
+document version {appversion} +
+extension status: unstable/PoC +
+This document is released under a Creative Commons Attribution 4.0 International License
+
+[colophon]
+== revision history
+
+
+[colophon]
+== preface
+
+This document uses semantic versioning with respect to potential hardware designs. 
+Assembly syntax change is a minor increment. Version 1.0.0 is the first publicly released. 
+Changes in prior versions are not versioned properly and not tracked in revision history.
+
+Document is written in a way that reduces the duplications as those are hard to maintain.
+
+== Introduction
+
+
+=== prior art
+
+
+//????features
+
+
+=== ABI
+
+
+=== tooling issues to solve
+
+
+== e
+//non profile ext
+
+//common
+
+//profiles
+//tiny
+
+//medium
+
+
+[bibliography]
+== Bibliography
+
+* [[[embriscv, 1]]] https://github.com/emb-riscv/specs-markdown
+* [[[clic, 2]]] https://github.com/riscv/riscv-fast-interrupt/blob/master/clic.adoc
