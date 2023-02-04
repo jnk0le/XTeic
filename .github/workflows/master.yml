@@ -26,7 +26,7 @@ jobs:
       BUNDLE_GEMFILE: ${{ github.workspace }}/dependencies/Gemfile
       BUNDLE_BIN: ${{ github.workspace }}/bin
       NPM_PACKAGE_FOLDER: ${{ github.workspace }}/dependencies
-      PDF_RESULT: riscv-total-embadded.pdf
+      PDF_RESULT: riscv-total-embedded.pdf
     steps:
     - uses: actions/checkout@v2
     - name: Install Ubuntu packages
@@ -60,7 +60,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
 #should this actually be result.pdf????
-        name: riscv-total-embadded.pdf
+        name: riscv-total-embedded.pdf
         path: ${{ env.PDF_RESULT }}
         retention-days: 7
     - name: Create Release
@@ -82,6 +82,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./riscv-total-embadded.pdf
-        asset_name: riscv-total-embadded.pdf
+        asset_path: ./riscv-total-embedded.pdf
+        asset_name: riscv-total-embedded.pdf
         asset_content_type: application/pdf

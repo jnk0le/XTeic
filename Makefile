@@ -1,5 +1,5 @@
-HEADER_SOURCE := riscv-total-embadded.adoc
-PDF_RESULT := riscv-total-embadded.pdf
+HEADER_SOURCE := riscv-total-embedded.adoc
+PDF_RESULT := riscv-total-embedded.pdf
 
 SOURCES := $(HEADER_SOURCE)
 
