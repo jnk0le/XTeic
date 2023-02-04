@@ -1,7 +1,7 @@
 # riscv-total-embedded
 custom riscv embedded profile
 
-Generated PDFs are provided in [Releases](releases/riscv-total-embedded/releases)
+Generated PDFs are provided in [Releases](https://github.com/jnk0le/riscv-total-embedded/releases)
 
 If you are contributing to the spec, please add yourself to the authors list.
 
