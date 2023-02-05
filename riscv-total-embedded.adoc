@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.0
+:appversion: 0.1.1
 :toc:
 :toclevels: 4
 :sectnums:
@@ -38,26 +38,43 @@ achieve 0 jitter, single digit cycles of interrupt latency (to actual code)
 
 === prior art
 
+A quick recap of what we already have.
+
 ==== cortex-m NVIC
+
+An "industry standard"
 
 ==== CLIC
 
+<<clic>>
+
 ==== emb-riscv
+
+<<embriscv>>
 
 clean sheet designs
 attempts to be
 
+=== CLINT
+
+Attaches to generic interrupt scheme.
+
+According to <<clint>>, it provides memory mapped interface for timers and IPI.
+
+==== generic riscv interrupts as described in "privileged" volume II 
+
+Very often refered to as CLINT. e.g. <<sififeintcookbook>> indirectly claims that volume II 
+stuff is CLINT exclusive.
+
+Doesn't provide any nesting other than privilege levels
+Registers and CSR state (`fcsr` etc.) have to be pushed by software before use
 
 ==== PLIC/AIA
 
+a heavyweight frontend for delivering interrupts to multiple cores 
+running typical unix OS. Not suitable for microcontrolers.
 
-out of scope for microcontrolers
-
-==== CLINT
-
-already a legacy
-
-
+handlers stay very similar to generic case.
 
 === overwiew of some concepts/features
 
@@ -80,6 +97,9 @@ So pure C/C++ startup code turns out to be "better" due to confirmation effect.
 But let's have a look at my "combotablecrt" implementation <<combotablecrt>> for stm32f030x4/6. 
 Is your compiler able to do that?
 
+There is also a case of interrupt handlers that are using 
+and don't need to take latency of 
+
 ==== ABIs with less caller saved registers
 
 ==== trying to be too universal
@@ -89,6 +109,10 @@ great flexibility comes with great inefficiencies.
 ==== handler return pattern
 
 NVIC and emb-riscv
+
+==== vector tables containing jump instructions
+
+==== memory mapped vs CSR mapped configuration
 
 
 === required ABI
@@ -124,7 +148,7 @@ in llvm
 //medium
 
 [appendix]
-== sth
+== appendix
 
 
 [bibliography]
@@ -132,5 +156,8 @@ in llvm
 
 * [[[embriscv, 1]]] https://github.com/emb-riscv/specs-markdown
 * [[[clic, 2]]] https://github.com/riscv/riscv-fast-interrupt/blob/master/clic.adoc
-
-* [[[combotablecrt, 3]]] https://github.com/jnk0le/simple-crt/blob/master/cm0/combotablecrt_stm32f030x6.S
+* [[[clint, 3]]] https://github.com/riscv/riscv-aclint/blob/main/riscv-aclint.adoc
+* [[[sififeintcookbook, 4]]] https://starfivetech.com/uploads/sifive-interrupt-cookbook-v1p2.pdf
+* [[[plic, 5]]] https://github.com/riscv/riscv-plic-spec
+* [[[aia, 6]]] https://github.com/riscv/riscv-aia
+* [[[combotablecrt, 7]]] https://github.com/jnk0le/simple-crt/blob/master/cm0/combotablecrt_stm32f030x6.S
