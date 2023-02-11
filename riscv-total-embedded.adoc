@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.2
+:appversion: 0.1.3
 :toc:
 :toclevels: 4
 :sectnums:
@@ -35,9 +35,10 @@ it fails to meet
 
 embedded/hard real time requirements
 
-instead of adding more and more on top of legacy interrupt scheme,
-let's
+instead of adding more and more on top of legacy interrupt scheme, trying to be 
+compatible with everything
 
+let's
 replace volume II (aka riscv privileged)
 
 with minimal yet efficient
@@ -51,13 +52,30 @@ A quick recap of what we already have.
 
 ==== cortex-m NVIC
 
-An "industry standard"
+defacto established "industry standard" of efficient interrupt handling.
+Anyone complaining about risc-v likes the NVIC.
 
 ==== CLIC
 
-<<clic>> is a designated goto for 
+<<clic>> is a designated goto for everyone needs, according to <<xkcd927>> norm.
+Development took long enough to achieve pre-freeze implementations by some chinese vendors.
 
-already pre-freeze implementations
+attempts
+unix
+
+
+preemption 
+(even in inline handlers)
+
+
+introduces concept of
+C function dispatcher/trampoline
+very long latency to actual instruction
+late arrival `mnxti`
+high jitter
+
+
+
 
 ==== emb-riscv
 
@@ -106,6 +124,13 @@ handlers stay very similar to generic case.
 ==== CH32 FPIC/PFIC
 
 
+==== PicoRV32 interrupt scheme
+
+[quote,<<picorvint>>]
+----
+Note: The IRQ handling features in PicoRV32 do not follow the RISC-V Privileged ISA specification.
+Instead a small set of very simple custom instructions is used to implement IRQ handling with minimal hardware overhead.
+----
 
 
 === overwiew/discussion of some concepts/features
@@ -216,3 +241,5 @@ in llvm
 * [[[aia, 6]]] https://github.com/riscv/riscv-aia
 * [[[combotablecrt, 7]]] https://github.com/jnk0le/simple-crt/blob/master/cm0/combotablecrt_stm32f030x6.S
 * [[[llvmipra, 8]]] https://reviews.llvm.org/D23980
+* [[[xkcd927, 9]]] https://xkcd.com/927/
+* [[[picorvint, 10]]] https://github.com/YosysHQ/picorv32#custom-instructions-for-irq-handling
