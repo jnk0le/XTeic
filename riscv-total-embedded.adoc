@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.1
+:appversion: 0.1.2
 :toc:
 :toclevels: 4
 :sectnums:
@@ -27,13 +27,22 @@ Document is written in a way that reduces the duplications as those are hard to 
 
 == Introduction
 
-even though is great for unix interrupts 
+even though 
 
-instead of adding more and more on top of legacy interrupt architecture
+is great for unix interrupts
+
+it fails to meet 
+
+embedded/hard real time requirements
+
+instead of adding more and more on top of legacy interrupt scheme,
+let's
 
 replace volume II (aka riscv privileged)
 
+with minimal yet efficient
 
+the goal is to
 achieve 0 jitter, single digit cycles of interrupt latency (to actual code)
 
 === prior art
@@ -46,7 +55,9 @@ An "industry standard"
 
 ==== CLIC
 
-<<clic>>
+<<clic>> is a designated goto for 
+
+already pre-freeze implementations
 
 ==== emb-riscv
 
@@ -54,6 +65,20 @@ An "industry standard"
 
 clean sheet designs
 attempts to be
+
+lot of redundancy
+U+M
+separate tables for exceptions and interrupts
+
+mandatory 64bit cycle counter
+mandatory 64bit instret counter
+mandatory 64bit system timer
+mandatory 64bit rtc timer
+
+NOTE: Y2038 can be solved by less than 32 extra bits, even simple uint32_t trick gives us extra ~68 years.
+Many RTC implementations are also BCD or BCD like with e.g. separate uint8_t fields for seconds, minutes, day, year etc.
+
+currently development stalled
 
 === CLINT
 
@@ -74,22 +99,32 @@ Registers and CSR state (`fcsr` etc.) have to be pushed by software before use
 a heavyweight frontend for delivering interrupts to multiple cores 
 running typical unix OS. Not suitable for microcontrolers.
 
+claim/complete architecture
+
 handlers stay very similar to generic case.
 
-=== overwiew of some concepts/features
+==== CH32 FPIC/PFIC
 
-==== whole app doable in C/C++
 
-Interrupts must always push all caller saved registers to be able to use functions without 
-`__attribute__((interrupt))` annotation.
+
+
+=== overwiew/discussion of some concepts/features
+
+==== whole app must be doable in C/C++
+
+In this case interrupts must always push all caller saved registers to be able to use functions without 
+`__attribute__((interrupt*))` annotation.
 
 NOTE: those are usually wrapped with `extern "C" anyway
 
 It also requires preinitialized table with pointer to startup code, `sp`, and `gp`, and of course
-any other addition like Zcmt `JVT` csr. A bit of added complexity.
+any other addition like Zcmt `JVT` csr.
 
-It is also not necessarily smaller than software setup, e.g. `sp` can be usually
-done with single `lui` instruction.
+This table is also not necessarily smaller than software setup, e.g. `sp` can be usually
+done with single `lui` instruction. At the cost of a bit added HW complexity.
+
+There is still a risk of corruption if the compiler decides to reorder something before
+initialization of `.data`/`.bss` sections.
 
 Of course I often find that there is a competition on who will make
 the worst startup code in assembly. 
@@ -97,10 +132,12 @@ So pure C/C++ startup code turns out to be "better" due to confirmation effect.
 But let's have a look at my "combotablecrt" implementation <<combotablecrt>> for stm32f030x4/6. 
 Is your compiler able to do that?
 
-There is also a case of interrupt handlers that are using 
-and don't need to take latency of 
+There is also a case of interrupt handlers that are using only a few registers
+and don't need to take latency of the whole ABI.
 
 ==== ABIs with less caller saved registers
+
+
 
 ==== trying to be too universal
 
@@ -112,25 +149,42 @@ NVIC and emb-riscv
 
 ==== vector tables containing jump instructions
 
+supposedly
+
+works in classic ARM FIQ, and 8051 assembly
+
 ==== memory mapped vs CSR mapped configuration
 
+in case of mass initialization
 
 === required ABI
 
-get rid of `tp` register
+ideally not change
+avoid disruption
+
+definitely get rid of `tp` register
 
 ==== RV32E
 
 ==== RV32I
 
+=== stack alignment
+
+
 
 === tooling issues to solve
 
-==== prestacked annotation 
+==== prestacked annotation
+
+//e.g. `tp` cannot be changed to caller saved due to existing hardware pre-stackers (ch32)
 
 ==== IPRA
 
 in llvm
+
+<<llvmipra>>
+
+//???===== regression due to
 
 
 == programmers model
@@ -161,3 +215,4 @@ in llvm
 * [[[plic, 5]]] https://github.com/riscv/riscv-plic-spec
 * [[[aia, 6]]] https://github.com/riscv/riscv-aia
 * [[[combotablecrt, 7]]] https://github.com/jnk0le/simple-crt/blob/master/cm0/combotablecrt_stm32f030x6.S
+* [[[llvmipra, 8]]] https://reviews.llvm.org/D23980
