@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.3
+:appversion: 0.1.4
 :toc:
 :toclevels: 4
 :sectnums:
@@ -126,12 +126,10 @@ handlers stay very similar to generic case.
 
 ==== PicoRV32 interrupt scheme
 
-[quote,<<picorvint>>]
-----
-Note: The IRQ handling features in PicoRV32 do not follow the RISC-V Privileged ISA specification.
-Instead a small set of very simple custom instructions is used to implement IRQ handling with minimal hardware overhead.
-----
+> Note: The IRQ handling features in PicoRV32 do not follow the RISC-V Privileged ISA specification.
+> Instead a small set of very simple custom instructions is used to implement IRQ handling with minimal hardware overhead.
 
+<<picorvint>>
 
 === overwiew/discussion of some concepts/features
 
