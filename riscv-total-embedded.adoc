@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.5
+:appversion: 0.1.6
 :toc:
 :toclevels: 4
 :sectnums:
@@ -173,12 +173,19 @@ and don't need to take latency of the whole ABI.
 
 ==== ABIs with less caller saved registers
 
-The rationale of introducing ABIs with reduced number is to 
+The rationale of introducing ABIs with reduced number of caller saved registers is to 
+reduce interrupt latence. The major downside of such approach is lowered overall performance 
+and code denisty.
 
-with reduced 
+<<tooling issues to solve,aaa>>
+<<IPRA,bbb>>
 
-but
-reduce performance
+==== RVE EABI being subset of RVI
+
+to be able to call RVE only code from RVI ABI
+
+common in eabi proposals
+static compiled
 
 ==== trying to be too universal
 
