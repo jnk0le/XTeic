@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.6
+:appversion: 0.1.7
 :toc:
 :toclevels: 4
 :sectnums:
@@ -149,7 +149,7 @@ and provided own <<picorvint>> interrupt scheme.
 ==== whole app must be doable in C/C++
 
 In this case interrupts must always push all caller saved registers to be able to use functions without 
-`__attribute__((interrupt*))` annotation.
+`\\__attribute__\((interrupt*))` annotation.
 
 NOTE: those are usually wrapped with `extern "C" anyway
 
