@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.7
+:appversion: 0.1.8
 :toc:
 :toclevels: 4
 :sectnums:
@@ -120,6 +120,8 @@ Registers and CSR state (`fcsr` etc.) have to be pushed by software before use
 
 ==== PLIC/AIA
 
+<<plic>>, <<aia>>
+
 A heavyweight frontend for delivering interrupts to multiple cores 
 running typical unix OS. Not suitable for microcontrolers.
 
@@ -131,7 +133,7 @@ handlers stay very similar to generic case.
 
 
 
-
+undocumented "EABI" mode (except just the presence of it)
 
 
 inherits behaviour/patterns of 
@@ -151,7 +153,7 @@ and provided own <<picorvint>> interrupt scheme.
 In this case interrupts must always push all caller saved registers to be able to use functions without 
 `\\__attribute__\((interrupt*))` annotation.
 
-NOTE: those are usually wrapped with `extern "C" anyway
+NOTE: those are usually wrapped with `extern "C"` anyway
 
 It also requires preinitialized table with pointer to startup code, `sp`, and `gp`, and of course
 any other addition like Zcmt `JVT` csr.
@@ -174,23 +176,68 @@ and don't need to take latency of the whole ABI.
 ==== ABIs with less caller saved registers
 
 The rationale of introducing ABIs with reduced number of caller saved registers is to 
-reduce interrupt latence. The major downside of such approach is lowered overall performance 
-and code denisty.
+reduce interrupt latency. 
 
-<<tooling issues to solve,aaa>>
-<<IPRA,bbb>>
+The major downside of such approach is lowered overall performance 
+and code denisty. Which is highly unliked across riscv community <<bhvseabi>> and stalls 
+development of such (E)ABI.
 
-==== RVE EABI being subset of RVI
+> I think for marketing reasons we should have the RISC-V EABI mimic the competitor ABI as 
+> closely as possible, and be available and supported by the tools, even if almost no-one 
+> should end up actually using it.
+
+An alternative is to provide interrupts with defacto customized ABIs by e.g. <<prestacked annotation>>
+and handle the function call pressure by <<IPRA>>.
+
+==== "you are better of with soft stacking in inline handlers"
+
+aka generic riscv `\\__attribute__\((interrupt))`
+
+First issue is decreased code density due to all of the stacking code.
+
+Compilers also barely care about optimizing for register pressure in interrupts.
+The prologues/epilogues seem to be completely transparent for code generation.
+It is especially visible in cases where majority of the prologue/epilogue code could be easily conditionally skipped.
+(just the loads/stores, stack can be fully preserved on entry)
+
+NOTE: avr8-gcc for a very long time was emitting useless prologues/epilogues for pushing `SREG`, `r0`, `r1` and clearing `r1`
+even though those were not affected or used by ISR code. Of course the version that finally fixed it, was never 
+shipped in Atmel Studio.
+
+NOTE: Zcmp[e] doesn't cover caller saved registers except `ra`.
+
+
+
+the other
+
+principle of
+how entering interrupts works
+
+an entry is fetched from vector table
+Then the core starts fetching
+
+waitstates
+
+
+
+even by the special push instructions for CSRs, `a` and `t` registers
+
+
+==== EABI for RVE must being subset of RVI EABI
 
 to be able to call RVE only code from RVI ABI
 
 common in eabi proposals
 static compiled
 
-==== trying to be too universal
+
+the idea is to provide precompiled libraries
+code arbitrarily compiled for RVE might turn out to be less efficient than
+
+==== one universal for everyones use cases
 
 high flexibility
-redundancy
+causes redundancy
 waste of
 
 ==== handler return pattern
@@ -206,6 +253,11 @@ works in classic ARM FIQ, and 8051 assembly
 ==== memory mapped vs CSR mapped configuration
 
 in case of mass initialization
+
+==== trampoline 
+
+introduced by CLIC
+
 
 === required ABI
 
@@ -230,12 +282,23 @@ definitely get rid of `tp` register
 
 ==== IPRA
 
-in llvm
+in llvm <<llvmipra>>
 
-<<llvmipra>>
+in simple explanation
+
+
+
+very little information foundable can be googled
+mostly llvm 
+
+even if there is something benchmarked
+of course -O3 (forget about -Os and -Oz)
+
+
 
 //???===== regression due to
 
+==== automatic selection of regpush on isr entry config
 
 == programmers model
 //?????
@@ -267,3 +330,4 @@ in llvm
 * [[[combotablecrt, 7]]] https://github.com/jnk0le/simple-crt/blob/master/cm0/combotablecrt_stm32f030x6.S
 * [[[llvmipra, 8]]] https://reviews.llvm.org/D23980
 * [[[picorvint, 9]]] https://github.com/YosysHQ/picorv32#custom-instructions-for-irq-handling
+* [[[bhvseabi, 10]]] https://groups.google.com/a/groups.riscv.org/g/sw-dev/c/znKeVnmxsy8/m/NtdDII3kAAAJ

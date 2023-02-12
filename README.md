@@ -1,5 +1,5 @@
 # riscv-total-embedded
-custom riscv volume II replacement for embedded
+custom set of riscv embedded profiles, replacing volume II (aka riscv privileged)
 
 Generated PDFs are provided in [Releases](https://github.com/jnk0le/riscv-total-embedded/releases)
 
