@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.4
+:appversion: 0.1.5
 :toc:
 :toclevels: 4
 :sectnums:
@@ -35,6 +35,7 @@ it fails to meet
 
 embedded/hard real time requirements
 
+
 instead of adding more and more on top of legacy interrupt scheme, trying to be 
 compatible with everything
 
@@ -57,16 +58,19 @@ Anyone complaining about risc-v likes the NVIC.
 
 ==== CLIC
 
-<<clic>> is a designated goto for everyone needs, according to <<xkcd927>> norm.
+<<clic>> is a designated goto for interrupt handling to fulfill everyone needs.
 Development took long enough to achieve pre-freeze implementations by some chinese vendors.
 
-attempts
-unix
+Attempts to be an unix compatible interrupt controller with horizontal nesting of U, S and M mode. (including U mode interrupts)
 
+preemption is handled in software 
 
 preemption 
 (even in inline handlers)
 
+
+
+handlers divided into inline and trampoline dispathced ones
 
 introduces concept of
 C function dispatcher/trampoline
@@ -79,10 +83,8 @@ high jitter
 
 ==== emb-riscv
 
-<<embriscv>>
-
-clean sheet designs
-attempts to be
+<<embriscv>> is clean sheet designs
+that attempts to be too universal
 
 lot of redundancy
 U+M
@@ -98,23 +100,27 @@ Many RTC implementations are also BCD or BCD like with e.g. separate uint8_t fie
 
 currently development stalled
 
-=== CLINT
+==== CLINT
 
 Attaches to generic interrupt scheme.
 
 According to <<clint>>, it provides memory mapped interface for timers and IPI.
+
+NOTE: ofiicial CLINT is callet ACLINT but doesn't differ much from CLINT in sifive documentations.
 
 ==== generic riscv interrupts as described in "privileged" volume II 
 
 Very often refered to as CLINT. e.g. <<sififeintcookbook>> indirectly claims that volume II 
 stuff is CLINT exclusive.
 
+has vectored mode which simply jumps to the position in vector table.
+
 Doesn't provide any nesting other than privilege levels
 Registers and CSR state (`fcsr` etc.) have to be pushed by software before use
 
 ==== PLIC/AIA
 
-a heavyweight frontend for delivering interrupts to multiple cores 
+A heavyweight frontend for delivering interrupts to multiple cores 
 running typical unix OS. Not suitable for microcontrolers.
 
 claim/complete architecture
@@ -124,12 +130,19 @@ handlers stay very similar to generic case.
 ==== CH32 FPIC/PFIC
 
 
-==== PicoRV32 interrupt scheme
+
+
+
+
+inherits behaviour/patterns of 
+
+==== PicoRV32 interrupts
 
 > Note: The IRQ handling features in PicoRV32 do not follow the RISC-V Privileged ISA specification.
 > Instead a small set of very simple custom instructions is used to implement IRQ handling with minimal hardware overhead.
 
-<<picorvint>>
+Original author of the PicoRV found the riscv-privileged to be too heavy for minimal core,
+and provided own <<picorvint>> interrupt scheme.
 
 === overwiew/discussion of some concepts/features
 
@@ -160,11 +173,18 @@ and don't need to take latency of the whole ABI.
 
 ==== ABIs with less caller saved registers
 
+The rationale of introducing ABIs with reduced number is to 
 
+with reduced 
+
+but
+reduce performance
 
 ==== trying to be too universal
 
-great flexibility comes with great inefficiencies.
+high flexibility
+redundancy
+waste of
 
 ==== handler return pattern
 
@@ -239,5 +259,4 @@ in llvm
 * [[[aia, 6]]] https://github.com/riscv/riscv-aia
 * [[[combotablecrt, 7]]] https://github.com/jnk0le/simple-crt/blob/master/cm0/combotablecrt_stm32f030x6.S
 * [[[llvmipra, 8]]] https://reviews.llvm.org/D23980
-* [[[xkcd927, 9]]] https://xkcd.com/927/
-* [[[picorvint, 10]]] https://github.com/YosysHQ/picorv32#custom-instructions-for-irq-handling
+* [[[picorvint, 9]]] https://github.com/YosysHQ/picorv32#custom-instructions-for-irq-handling
