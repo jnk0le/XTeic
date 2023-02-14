@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.8
+:appversion: 0.1.9
 :toc:
 :toclevels: 4
 :sectnums:
@@ -186,25 +186,37 @@ development of such (E)ABI.
 > closely as possible, and be available and supported by the tools, even if almost no-one 
 > should end up actually using it.
 
-An alternative is to provide interrupts with defacto customized ABIs by e.g. <<prestacked annotation>>
-and handle the function call pressure by <<IPRA>>.
+Zcmp[e] was also prepared for such fragmentation by reserving first 4 points in rlist for EABI,
+so the cores can implement UABI and EABI push/pop instructions at the same time.
+Those 4 points are of course supposed to handle 20 caller saved regs of EABI (probably with some 
+reuse of few higher points).
+
+It will also make the processors capable of stacking 2 registers per cycle, underutiized
+during HW stacking due to shorter stacking time than pipeline refill.
+
+An alternative is to provide interrupts with defacto customizable ABIs by e.g. <<prestacked annotation>>
+(to match the HW stackers) and handle the function call pressure by <<IPRA>>.
 
 ==== "you are better of with soft stacking in inline handlers"
 
 aka generic riscv `\\__attribute__\((interrupt))`
 
-First issue is decreased code density due to all of the stacking code.
+First major issue is decreased code density due to all of the stacking code.
 
 Compilers also barely care about optimizing for register pressure in interrupts.
 The prologues/epilogues seem to be completely transparent for code generation.
-It is especially visible in cases where majority of the prologue/epilogue code could be easily conditionally skipped.
-(just the loads/stores, stack can be fully preserved on entry)
+Which is especially visible in cases where majority of the prologue/epilogue code could 
+be easily conditionally skipped, but compilers simply don't do it.
+(just the loads/stores, stack can be fully preallocated on entry)
 
 NOTE: avr8-gcc for a very long time was emitting useless prologues/epilogues for pushing `SREG`, `r0`, `r1` and clearing `r1`
 even though those were not affected or used by ISR code. Of course the version that finally fixed it, was never 
 shipped in Atmel Studio.
 
 NOTE: Zcmp[e] doesn't cover caller saved registers except `ra`.
+
+The Second thing is to 
+acknowledge what hardware stackers are supposed to achieve
 
 
 
@@ -223,7 +235,7 @@ waitstates
 even by the special push instructions for CSRs, `a` and `t` registers
 
 
-==== EABI for RVE must being subset of RVI EABI
+==== EABI for RVE must be subset of RVI EABI
 
 to be able to call RVE only code from RVI ABI
 
@@ -264,13 +276,13 @@ introduced by CLIC
 ideally not change
 avoid disruption
 
-definitely get rid of `tp` register
+definitely get rid of `tp` register, it's useless here.
 
 ==== RV32E
 
 ==== RV32I
 
-=== stack alignment
+==== stack alignment
 
 
 
