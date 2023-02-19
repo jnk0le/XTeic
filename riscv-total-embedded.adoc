@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.10
+:appversion: 0.1.11
 :toc:
 :toclevels: 4
 :sectnums:
@@ -217,19 +217,17 @@ Even stacking by the special push instructions (e.g. XTheadInt <<thead>> or
 PUSHINT <<pushint>> and maybe a subsets of those), won't help much. Those start pushing
 after the latency of double (waitstated) miss was taken.
 
-==== EABI for RVE must be subset of RVI EABI
+==== EABI for RVE must be subset of RVI EABI.
 
-to be able to call RVE only code from RVI ABI
+To be able to call RVE only code from RVI ABI
+Recurrig thing in RVE ABI proposals.
 
-common in eabi proposals
-static compiled
+The idea is to allow compilers and software vendors to provide a single
+set of precompiled libraries for RVI and RVE ABIs.
 
-
-the idea is to provide precompiled libraries
-code arbitrarily compiled for RVE might turn out to be less efficient than
-
-limits the rvi capbilities (extra/trading a regs instead of T)
-
+The issue with this approach is that the code arbitrarily compiled for RVE 
+might turn out to be less efficient than RVI one. It also limits the capabilities
+of RVI ABI like trading off argument registers for temporary/saved ones.
 
 ==== one universal for everyones use cases
 
