@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.11
+:appversion: 0.1.12
 :toc:
 :toclevels: 4
 :sectnums:
@@ -229,27 +229,57 @@ The issue with this approach is that the code arbitrarily compiled for RVE
 might turn out to be less efficient than RVI one. It also limits the capabilities
 of RVI ABI like trading off argument registers for temporary/saved ones.
 
-==== one universal for everyones use cases
+==== one universal standard for everyones use cases
 
-high flexibility
-causes redundancy
-waste of
+Having one universal solution for all possible configs
+brings a lot of inefficiency to all of them. Due to mandatory 
+support for a lot of useless functionality, or just the need 
+to keep optional compatibility with useless legacy "just in case".
 
-==== handler return pattern
+==== special handler return pattern
 
-NVIC and emb-riscv
+aka "HANDLER_RETURN" on emb-riscv and "EXC_RETURN" on ARM
+
+The idea is to put special pattern in `ra` during handler entry and
+exit by reusing regular return mechanism provided by the ABI. Requires 
+certain memory area to be non executable (e.g. 0xF0000000 - 0xFFFFFFFF)
+
+This mechanism follows the typical ABI function call and together with HW 
+stacking, allows the interrupt handlers to be a regular C functions.
+
+The downside is that the `ra` and `pc` both have to be pushed onto stack
+and in some specifc cases, it could add extra stall cycles after the tail due
+to the waitstates/cache miss caused by delayed prefetch.
+
+Alternatively we can just stack the `ra` and put there current `pc` with lowest bit set 
+to trigger handler return operation. One less register counted towards interrupt latency.
+
+NOTE: normally the `jalr` instruction just ignores the LSB bit of resulting address.
+LSB in register and immediate will lead to "bogus" jump over 2 extra bytes.
+Even though this behaviour simplifies hardware, it was oversighted in ABI design 
+by allowing "auxiliary information" in pointers as well as `jalr` 
+immediate, effectively making both useless.
 
 ==== vector tables containing jump instructions
 
-supposedly
+It's simply inefficient in truly vectored scenario.
+The vector entries will have to be populated with jump instructions anyway.
+Those have to take the second round of waitstates/cache miss without amortization by register stacking.
 
-works in classic ARM FIQ, and 8051 assembly
+And if the code is far away from vector table (e.g. in SRAM for more deterministic execution),
+compiler will have to emit a jump island, aka "veener", that will perform yet another unamortized jump.
+allocating 8 bytes per entry and enforcing `lui` + `jalr` sequence will severly trump the 
+code density and performance in typical use scenarios.
+
+NOTE: 8051 allocated 8 bytes per entry, but it was able to sometimes fit entire handler or
+one of the conditional path. Especially when following entries were unused. This kind of 
+optimizations is exlusive to assmebly programming and not practised today.
 
 ==== memory mapped vs CSR mapped configuration
 
 in case of mass initialization
 
-==== trampoline 
+==== trampoline
 
 introduced by CLIC
 
@@ -259,6 +289,9 @@ introduced by CLIC
 
 can be claimed
 "late arrival" and "pop pre-emption" is responsible
+
+==== "everything will run Linux in future"
+
 
 === required ABI
 
@@ -318,7 +351,7 @@ of course -O3 (forget about -Os and -Oz)
 //medium
 
 [appendix]
-== appendix
+== context switch on tiny profile
 
 
 [bibliography]
