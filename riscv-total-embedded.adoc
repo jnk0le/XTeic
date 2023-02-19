@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.9
+:appversion: 0.1.10
 :toc:
 :toclevels: 4
 :sectnums:
@@ -27,34 +27,22 @@ Document is written in a way that reduces the duplications as those are hard to 
 
 == Introduction
 
-even though 
+Even though the current risc-v interrupt architecture is great for unix sustems.
+It fails to meet many embedded and hard real time requirements.
 
-is great for unix interrupts
+Instead of adding more and more on top of layered legacy, let's replace
+entire volume II (aka riscv privileged) with minimal yet efficient interrupt architecture.
 
-it fails to meet 
-
-embedded/hard real time requirements
-
-
-instead of adding more and more on top of legacy interrupt scheme, trying to be 
-compatible with everything
-
-let's
-replace volume II (aka riscv privileged)
-
-with minimal yet efficient
-
-the goal is to
-achieve 0 jitter, single digit cycles of interrupt latency (to actual code)
+The goal is to achieve single digit cycles of interrupt latency (to actual code) with minimal jitter.
 
 === prior art
 
-A quick recap of what we already have.
+A quick recap of what we already have available.
 
 ==== cortex-m NVIC
 
-defacto established "industry standard" of efficient interrupt handling.
-Anyone complaining about risc-v likes the NVIC.
+<<armnvic>> defacto established "industry standard" of efficient interrupt handling.
+Anyone complaining about risc-v likes and wants the NVIC.
 
 ==== CLIC
 
@@ -79,7 +67,8 @@ late arrival `mnxti`
 high jitter
 
 
-
+NOTE: BTW, my prediction is that the "competitor A" will be able to do a 
+"comparison against riscv" without resorting to FUD tactics, right after CLIC is ratified
 
 ==== emb-riscv
 
@@ -215,25 +204,18 @@ shipped in Atmel Studio.
 
 NOTE: Zcmp[e] doesn't cover caller saved registers except `ra`.
 
-The Second thing is to 
-acknowledge what hardware stackers are supposed to achieve
+The other one is one of the principles of hardware stackers.
 
+When entering interrupt handler, the core first fetches the entry from vector table and then
+jumps to that address. Both of those fetches can hit a flash waitstate or a cache miss.
+During that operation the data bus remains idle waiting for a first store instruction to be executed.
 
+Those cycles can be accomodated for a "free" stacking of registers. If a higher amount of
+registers is stacked then it can hide a bit of jitter coming from cache misses or flash waitstates.
 
-the other
-
-principle of
-how entering interrupts works
-
-an entry is fetched from vector table
-Then the core starts fetching
-
-waitstates
-
-
-
-even by the special push instructions for CSRs, `a` and `t` registers
-
+Even stacking by the special push instructions (e.g. XTheadInt <<thead>> or
+PUSHINT <<pushint>> and maybe a subsets of those), won't help much. Those start pushing
+after the latency of double (waitstated) miss was taken.
 
 ==== EABI for RVE must be subset of RVI EABI
 
@@ -245,6 +227,9 @@ static compiled
 
 the idea is to provide precompiled libraries
 code arbitrarily compiled for RVE might turn out to be less efficient than
+
+limits the rvi capbilities (extra/trading a regs instead of T)
+
 
 ==== one universal for everyones use cases
 
@@ -271,10 +256,18 @@ in case of mass initialization
 introduced by CLIC
 
 
+
+==== "zero jitter"
+
+can be claimed
+"late arrival" and "pop pre-emption" is responsible
+
 === required ABI
 
 ideally not change
 avoid disruption
+
+but may need
 
 definitely get rid of `tp` register, it's useless here.
 
@@ -343,3 +336,6 @@ of course -O3 (forget about -Os and -Oz)
 * [[[llvmipra, 8]]] https://reviews.llvm.org/D23980
 * [[[picorvint, 9]]] https://github.com/YosysHQ/picorv32#custom-instructions-for-irq-handling
 * [[[bhvseabi, 10]]] https://groups.google.com/a/groups.riscv.org/g/sw-dev/c/znKeVnmxsy8/m/NtdDII3kAAAJ
+* [[[pushint, 11]]] https://github.com/riscv/riscv-fast-interrupt/issues/108
+* [[[thead, 12]]] https://github.com/T-head-Semi/thead-extension-spec
+* [[[armnvic, 13]]] https://community.arm.com/arm-community-blogs/b/architectures-and-processors-blog/posts/beginner-guide-on-interrupt-latency-and-interrupt-latency-of-the-arm-cortex-m-processors
