@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.12
+:appversion: 0.1.13
 :toc:
 :toclevels: 4
 :sectnums:
@@ -219,7 +219,7 @@ after the latency of double (waitstated) miss was taken.
 
 ==== EABI for RVE must be subset of RVI EABI.
 
-To be able to call RVE only code from RVI ABI
+To be able to call RVE only code from RVI ABI +
 Recurrig thing in RVE ABI proposals.
 
 The idea is to allow compilers and software vendors to provide a single
@@ -279,16 +279,25 @@ optimizations is exlusive to assmebly programming and not practised today.
 
 in case of mass initialization
 
-==== trampoline
 
-introduced by CLIC
+==== "reduced/zero jitter"
 
+Cortex-m0 offers a "zero jitter" by optional IP configuration that adjusts the best case 
+of interrupt latency by extra cycle to acommodate random stall from bus contention.
 
+Cortex-m3/4 offer up to 6 cycles of jitter due to "late arrival" and "pop pre-emption".
 
-==== "zero jitter"
+Cortex-cm7 of course suffers from Proprietary&Confidential syndrome. 
+Most probably it's similar to cm3/4.
 
-can be claimed
-"late arrival" and "pop pre-emption" is responsible
+In case of C2000 CLA, TI claims <<spracs0a>>,<<ticladocs>> that their task driven machine 
+(non preemptible) "reduces interrupt latency and jitter" even though it does exactly the opposite
+when there is more than 1 async interrupt to handle.
+
+NOTE: Of course whenever TI compares CLA to "classic cpu", it's always a cpu with preemption 
+priority only and background task not present on CLA. As if the similar "task machine" couldn't
+be achieved by regular cpu (e.g. risc-v) without nesting and WFI loop (or "sleep on exit" feature) 
+giving access to all GPRs in interrupts without stacking.
 
 ==== "everything will run Linux in future"
 
@@ -370,3 +379,5 @@ of course -O3 (forget about -Os and -Oz)
 * [[[pushint, 11]]] https://github.com/riscv/riscv-fast-interrupt/issues/108
 * [[[thead, 12]]] https://github.com/T-head-Semi/thead-extension-spec
 * [[[armnvic, 13]]] https://community.arm.com/arm-community-blogs/b/architectures-and-processors-blog/posts/beginner-guide-on-interrupt-latency-and-interrupt-latency-of-the-arm-cortex-m-processors
+* [[[spracs0a, 14]]] https://www.ti.com/lit/an/spracs0a/spracs0a.pdf?ts=1677348911359&ref_url=https%253A%252F%252Fduckduckgo.com%252F
+* [[[ticladocs, 15]]] https://software-dl.ti.com/C2000/docs/cla_software_dev_guide/intro.html
