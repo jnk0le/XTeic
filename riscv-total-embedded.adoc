@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.13
+:appversion: 0.1.15
 :toc:
 :toclevels: 4
 :sectnums:
@@ -275,10 +275,15 @@ NOTE: 8051 allocated 8 bytes per entry, but it was able to sometimes fit entire 
 one of the conditional path. Especially when following entries were unused. This kind of 
 optimizations is exlusive to assmebly programming and not practised today.
 
-==== memory mapped vs CSR mapped configuration
+==== MMIO vs CSR mapped config registers
 
-in case of mass initialization
+In case of mass initialization MMIO could result in better code density
+CSR space is also limited.
 
+My take is that anything architecturally coupled to the core should reside 
+in CSR space and keep the rest in MMIO.
+
+Nothing should exist as both.
 
 ==== "reduced/zero jitter"
 
@@ -291,8 +296,8 @@ Cortex-cm7 of course suffers from Proprietary&Confidential syndrome.
 Most probably it's similar to cm3/4.
 
 In case of C2000 CLA, TI claims <<spracs0a>>,<<ticladocs>> that their task driven machine 
-(non preemptible) "reduces interrupt latency and jitter" even though it does exactly the opposite
-when there is more than 1 async interrupt to handle.
+(non preemptible) "reduces interrupt latency and jitter" compared to classic CPU, even
+though it does exactly the opposite when there is more than 1 async interrupt to handle.
 
 NOTE: Of course whenever TI compares CLA to "classic cpu", it's always a cpu with preemption 
 priority only and background task not present on CLA. As if the similar "task machine" couldn't
@@ -348,6 +353,7 @@ of course -O3 (forget about -Os and -Oz)
 == programmers model
 //?????
 //non profile ext
+//little endian only
 
 //common
 	//optional tiny vect table
