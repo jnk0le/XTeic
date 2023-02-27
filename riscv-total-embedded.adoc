@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.15
+:appversion: 0.1.16
 :toc:
 :toclevels: 4
 :sectnums:
@@ -27,13 +27,14 @@ Document is written in a way that reduces the duplications as those are hard to 
 
 == Introduction
 
-Even though the current risc-v interrupt architecture is great for unix sustems.
+Even though the current risc-v interrupt architecture is great for unix systems.
 It fails to meet many embedded and hard real time requirements.
 
 Instead of adding more and more on top of layered legacy, let's replace
 entire volume II (aka riscv privileged) with minimal yet efficient interrupt architecture.
 
-The goal is to achieve single digit cycles of interrupt latency (to actual code) with minimal jitter.
+The goal is to achieve single digit cycles of interrupt latency (to actual code) with minimal jitter
+without wasting transistors on useless functionality.
 
 === prior art
 
@@ -306,6 +307,25 @@ giving access to all GPRs in interrupts without stacking.
 
 ==== "everything will run Linux in future"
 
+The Linux cargo cult. +
+Because a simplest tasks suitable for bunch of 555&74s or a simple microcontroler with a 
+few KiB of flash and RAM must be done under linux so it will work somehow "better".
+
+To be able to properly run linux you need quite beefy cpu with a proper MMU, 2-4MiB of flash, 
+4-8MiB of RAM (usually external DRAM), long boot time and a bad power consumption in idle. +
+Just to run the OS itself.
+
+One of the the most blatant example is NOMMU linux on stm32f429 with SDRAM that is not cached by cpu.
+
+Of course there are there are actual reasons <<emblinux>> to use linux in embedded.
+
+===== RTLinux and hard-realtime
+
+Whenever those rt patches are measured, both the interrupt latency and 
+jitter is always given in microseconds (10-100), not cycles 
+<<linuxrt1>>,<<linuxrt2>>,<<linuxrt3>>,<<linuxrt4>>.
+
+In some scenarios those numbers are unacceptable.
 
 === required ABI
 
@@ -387,3 +407,8 @@ of course -O3 (forget about -Os and -Oz)
 * [[[armnvic, 13]]] https://community.arm.com/arm-community-blogs/b/architectures-and-processors-blog/posts/beginner-guide-on-interrupt-latency-and-interrupt-latency-of-the-arm-cortex-m-processors
 * [[[spracs0a, 14]]] https://www.ti.com/lit/an/spracs0a/spracs0a.pdf?ts=1677348911359&ref_url=https%253A%252F%252Fduckduckgo.com%252F
 * [[[ticladocs, 15]]] https://software-dl.ti.com/C2000/docs/cla_software_dev_guide/intro.html
+* [[[emblinux, 16]]] https://jaycarlson.net/embedded-linux/
+* [[[linuxrt1, 17]]] https://elinux.org/images/d/de/Real_Time_Linux_Scheduling_Performance_Comparison.pdf
+* [[[linuxrt2, 18]]] https://static.lwn.net/lwn/images/conf/rtlws11/papers/proc/p19.pdf
+* [[[linuxrt3, 19]]] https://people.mpi-sws.org/~bbb/papers/pdf/ospert13.pdf
+* [[[linuxrt4, 20]]] https://www.osadl.org/fileadmin/events/rtlws-2007/Siro.pdf
