@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.16
+:appversion: 0.1.17
 :toc:
 :toclevels: 4
 :sectnums:
@@ -50,23 +50,29 @@ Anyone complaining about risc-v likes and wants the NVIC.
 <<clic>> is a designated goto for interrupt handling to fulfill everyone needs.
 Development took long enough to achieve pre-freeze implementations by some chinese vendors.
 
-Attempts to be an unix compatible interrupt controller with horizontal nesting of U, S and M mode. (including U mode interrupts)
+Attempts to be an unix capable interrupt controller with horizontal nesting of U, S, H (so far only proposed) and M mode.
 
-preemption is handled in software 
+All used registers must be saved in software, trampoline handlers need to save all ABI registers.
 
-preemption 
-(even in inline handlers)
+Preemption is handled in software by special CSR mechanism, that requires extra boilerplate
+code in every interrupt handler. Even in "inline" handlers.
 
+Introduces unavoidable jitter due to:
+- blocks of code executed with disabled interrupts (additive jitter)
+- late arrival handled through mnxti read (possible subtractive jitter of isr entry time)
+- tail chaining handled by another mnxti read (and extra branch) in epilogue
+- indirect jump instruction to actual code (branch prediction)
 
+assuming 1 cycle per instruction, 10.2 and 11.1 listings from clic spec <<clic>> offer:
+- `entry + 6` cycles of jitter in "inline" handlers.
+- `entry + 7 + 16` cycles of jitter in "C-ABI" trampoline entry
+- `4` or `abs(entry - 7)` cycles of jitter in  "C-ABI" trampoline epilogue
 
-handlers divided into inline and trampoline dispathced ones
+NOTE: the trampoline doesn't need to stack all of the 16 caller saved registers before enabling
+interrupts, but this exact code is about to be pushed down your throat anyway.
 
-introduces concept of
-C function dispatcher/trampoline
-very long latency to actual instruction
-late arrival `mnxti`
-high jitter
-
+NOTE: according to <<clicentrycycles>>, handler entry time is 6 cycles on sifive E2 and
+10 cycles in E3/5
 
 NOTE: BTW, my prediction is that the "competitor A" will be able to do a 
 "comparison against riscv" without resorting to FUD tactics, right after CLIC is ratified
@@ -100,7 +106,7 @@ NOTE: ofiicial CLINT is callet ACLINT but doesn't differ much from CLINT in sifi
 
 ==== generic riscv interrupts as described in "privileged" volume II 
 
-Very often refered to as CLINT. e.g. <<sififeintcookbook>> indirectly claims that volume II 
+Very often refered to as CLINT. e.g. <<sififeintcookbook>> claims that volume II 
 stuff is CLINT exclusive.
 
 has vectored mode which simply jumps to the position in vector table.
@@ -412,3 +418,4 @@ of course -O3 (forget about -Os and -Oz)
 * [[[linuxrt2, 18]]] https://static.lwn.net/lwn/images/conf/rtlws11/papers/proc/p19.pdf
 * [[[linuxrt3, 19]]] https://people.mpi-sws.org/~bbb/papers/pdf/ospert13.pdf
 * [[[linuxrt4, 20]]] https://www.osadl.org/fileadmin/events/rtlws-2007/Siro.pdf
+* [[[clicentrycycles, 21]]] https://riscv.org/wp-content/uploads/2018/07/DAC-SiFive-Drew-Barbier.pdf
