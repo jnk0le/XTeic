@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.17
+:appversion: 0.1.18
 :toc:
 :toclevels: 4
 :sectnums:
@@ -47,7 +47,7 @@ Anyone complaining about risc-v likes and wants the NVIC.
 
 ==== CLIC
 
-<<clic>> is a designated goto for interrupt handling to fulfill everyone needs.
+CLIC <<clic>> is a designated goto for interrupt handling to fulfill everyone needs.
 Development took long enough to achieve pre-freeze implementations by some chinese vendors.
 
 Attempts to be an unix capable interrupt controller with horizontal nesting of U, S, H (so far only proposed) and M mode.
@@ -58,12 +58,14 @@ Preemption is handled in software by special CSR mechanism, that requires extra 
 code in every interrupt handler. Even in "inline" handlers.
 
 Introduces unavoidable jitter due to:
+
 - blocks of code executed with disabled interrupts (additive jitter)
 - late arrival handled through mnxti read (possible subtractive jitter of isr entry time)
 - tail chaining handled by another mnxti read (and extra branch) in epilogue
 - indirect jump instruction to actual code (branch prediction)
 
 assuming 1 cycle per instruction, 10.2 and 11.1 listings from clic spec <<clic>> offer:
+
 - `entry + 6` cycles of jitter in "inline" handlers.
 - `entry + 7 + 16` cycles of jitter in "C-ABI" trampoline entry
 - `4` or `abs(entry - 7)` cycles of jitter in  "C-ABI" trampoline epilogue
@@ -79,8 +81,14 @@ NOTE: BTW, my prediction is that the "competitor A" will be able to do a
 
 ==== emb-riscv
 
-<<embriscv>> is clean sheet designs
-that attempts to be too universal
+emb-riscv <<embriscv>> is clean sheet design
+that attempts to be universal solution for every microcontroller
+
+Achieves lower interrupt latency by introducing EABI with reduced
+amount of caller-saved registers. FP registers are handled by lazy stacking.
+
+
+
 
 lot of redundancy
 U+M
@@ -141,6 +149,29 @@ inherits behaviour/patterns of
 
 Original author of the PicoRV found the riscv-privileged to be too heavy for minimal core,
 and provided own <<picorvint>> interrupt scheme.
+
+==== ti c2000 (main core)
+
+Proprietary TI architecture <<spru430>> sporting an ancient accumulator-memory architecture (with 8 pointer registers),
+similar to the classic CISCs. An x86 of motor control and signal processing.
+FPU <<spruhs1c>> is more RISC-ish with a bit of VLIW principle in some instructions.
+
+NOTE: TI is very hesitant to release any general purpose benchmark scores (speed/size etc.) 
+<<c2000coremark>>, <<c2000dhrystone>>. Claiming that their architecture "is optimized for
+real world control applications". Those kind of scores are also almost non existent in independent sources.
+
+According to <<spraan9a>>, the core automatically saves some of the registers, rest must be pushed
+in software. +
+"High priority" interrupts can also save floating point registers into shadow registers using 
+special instructions. +
+There are also 5 (4 in prologue) defacto useless instructions for aligning stack and setting "C28 modes" +
+
+To allow nesting of "low priority" interrupts handlers must include extra boilerplate code to
+handle prioritiy masking in software. (8 instructions in prologue, 3 in epilogue)
+
+As a consequence there is 21 cycles of jitter and 43 (HPI) or 63 (LPI) cycles of interrupt latency in worst case.
+
+NOTE: ISR entry latency is 10 cycles due to 8 stage pipeline.
 
 === overwiew/discussion of some concepts/features
 
@@ -323,15 +354,27 @@ Just to run the OS itself.
 
 One of the the most blatant example is NOMMU linux on stm32f429 with SDRAM that is not cached by cpu.
 
-Of course there are there are actual reasons <<emblinux>> to use linux in embedded.
+Of course there are actual reasons <<emblinux>> to use linux in embedded.
 
 ===== RTLinux and hard-realtime
 
 Whenever those rt patches are measured, both the interrupt latency and 
-jitter is always given in microseconds (10-100), not cycles 
+jitter is always given in microseconds (10-100), not cycles
 <<linuxrt1>>,<<linuxrt2>>,<<linuxrt3>>,<<linuxrt4>>.
 
 In some scenarios those numbers are unacceptable.
+
+==== lazy stacking
+
+allow
+
+
+even though only a few are used
+
+==== 64bit microcontrollers
+
+
+
 
 === required ABI
 
@@ -419,3 +462,8 @@ of course -O3 (forget about -Os and -Oz)
 * [[[linuxrt3, 19]]] https://people.mpi-sws.org/~bbb/papers/pdf/ospert13.pdf
 * [[[linuxrt4, 20]]] https://www.osadl.org/fileadmin/events/rtlws-2007/Siro.pdf
 * [[[clicentrycycles, 21]]] https://riscv.org/wp-content/uploads/2018/07/DAC-SiFive-Drew-Barbier.pdf
+* [[[spraan9a, 22]]] https://www.ti.com/lit/an/spraan9a/spraan9a.pdf?ts=1677877354340
+* [[[spru430, 23]]] https://www.ti.com/lit/ug/spru430f/spru430f.pdf?ts=1677869437551&ref_url=https%253A%252F%252Fwww.google.com%252F
+* [[[spruhs1c, 24]]] https://www.ti.com/lit/ug/spruhs1c/spruhs1c.pdf?ts=1677888169020&ref_url=https%253A%252F%252Fwww.google.com%252F
+* [[[c2000coremark, 25]]] https://e2e.ti.com/support/processors-group/processors/f/processors-forum/905744/tms320f28335
+* [[[c2000dhrystone, 26]]] https://e2e.ti.com/support/microcontrollers/c2000-microcontrollers-group/c2000/f/c2000-microcontrollers-forum/567535/tms320f28377d-dmips-calculation
