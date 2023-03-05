@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.18
+:appversion: 0.1.19
 :toc:
 :toclevels: 4
 :sectnums:
@@ -57,18 +57,20 @@ All used registers must be saved in software, trampoline handlers need to save a
 Preemption is handled in software by special CSR mechanism, that requires extra boilerplate
 code in every interrupt handler. Even in "inline" handlers.
 
+Highest priority inline handlers are similar to legacy ones.
+
 Introduces unavoidable jitter due to:
 
 - blocks of code executed with disabled interrupts (additive jitter)
-- late arrival handled through mnxti read (possible subtractive jitter of isr entry time)
+- late arrival handled through mnxti read (subtractive jitter of entry time)
 - tail chaining handled by another mnxti read (and extra branch) in epilogue
 - indirect jump instruction to actual code (branch prediction)
 
 assuming 1 cycle per instruction, 10.2 and 11.1 listings from clic spec <<clic>> offer:
 
-- `entry + 6` cycles of jitter in "inline" handlers.
-- `entry + 7 + 16` cycles of jitter in "C-ABI" trampoline entry
-- `4` or `abs(entry - 7)` cycles of jitter in  "C-ABI" trampoline epilogue
+- `entry + 6` cycles of jitter from "inline" handlers.
+- `entry + 7 + 16` cycles of jitter from "C-ABI" trampoline entry
+- `4` or `abs(entry - 7)` cycles of jitter from  "C-ABI" trampoline epilogue
 
 NOTE: the trampoline doesn't need to stack all of the 16 caller saved registers before enabling
 interrupts, but this exact code is about to be pushed down your throat anyway.
@@ -178,7 +180,7 @@ NOTE: ISR entry latency is 10 cycles due to 8 stage pipeline.
 ==== whole app must be doable in C/C++
 
 In this case interrupts must always push all caller saved registers to be able to use functions without 
-`\\__attribute__\((interrupt*))` annotation.
+`\\__attribute__\((interrupt*))` annotation. Leading to <<ABIs with less caller saved registers>>
 
 NOTE: those are usually wrapped with `extern "C"` anyway
 
@@ -325,10 +327,17 @@ Nothing should exist as both.
 
 ==== "reduced/zero jitter"
 
+Very often claimed, yet those claims rarely meet with reality.
+
+NOTE: There are also meany non-architectural sources of jitter like caches, waitstated
+flash or accessing peripherals in different clock domains (usually divided from sysclk).
+
 Cortex-m0 offers a "zero jitter" by optional IP configuration that adjusts the best case 
 of interrupt latency by extra cycle to acommodate random stall from bus contention.
 
 Cortex-m3/4 offer up to 6 cycles of jitter due to "late arrival" and "pop pre-emption".
+Regular handler entry is dominated by stacking registers, giving some headroom for extra
+vector/instruction fetch latency.
 
 Cortex-cm7 of course suffers from Proprietary&Confidential syndrome. 
 Most probably it's similar to cm3/4.
