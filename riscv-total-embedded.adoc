@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.19
+:appversion: 0.1.20
 :toc:
 :toclevels: 4
 :sectnums:
@@ -156,7 +156,7 @@ and provided own <<picorvint>> interrupt scheme.
 
 Proprietary TI architecture <<spru430>> sporting an ancient accumulator-memory architecture (with 8 pointer registers),
 similar to the classic CISCs. An x86 of motor control and signal processing.
-FPU <<spruhs1c>> is more RISC-ish with a bit of VLIW principle in some instructions.
+FPU <<spruhs1c>> is more RISC-ish with a bit of VLIW in some instructions.
 
 NOTE: TI is very hesitant to release any general purpose benchmark scores (speed/size etc.) 
 <<c2000coremark>>, <<c2000dhrystone>>. Claiming that their architecture "is optimized for
@@ -166,7 +166,7 @@ According to <<spraan9a>>, the core automatically saves some of the registers, r
 in software. +
 "High priority" interrupts can also save floating point registers into shadow registers using 
 special instructions. +
-There are also 5 (4 in prologue) defacto useless instructions for aligning stack and setting "C28 modes" +
+There are also 5 (4 in prologue) defacto useless instructions for aligning stack and setting "C28 modes"
 
 To allow nesting of "low priority" interrupts handlers must include extra boilerplate code to
 handle prioritiy masking in software. (8 instructions in prologue, 3 in epilogue)
@@ -220,7 +220,7 @@ so the cores can implement UABI and EABI push/pop instructions at the same time.
 Those 4 points are of course supposed to handle 20 caller saved regs of EABI (probably with some 
 reuse of few higher points).
 
-It will also make the processors capable of stacking 2 registers per cycle, underutiized
+It will also make the processors capable of stacking 2 registers per cycle, underutilized
 during HW stacking due to shorter stacking time than pipeline refill.
 
 An alternative is to provide interrupts with defacto customizable ABIs by e.g. <<prestacked annotation>>
@@ -269,7 +269,7 @@ The issue with this approach is that the code arbitrarily compiled for RVE
 might turn out to be less efficient than RVI one. It also limits the capabilities
 of RVI ABI like trading off argument registers for temporary/saved ones.
 
-==== one universal standard for everyones use cases
+==== one universal standard for everyone use cases
 
 Having one universal solution for all possible configs
 brings a lot of inefficiency to all of them. Due to mandatory 
