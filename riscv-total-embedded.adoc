@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.22
+:appversion: 0.1.23
 :toc:
 :toclevels: 4
 :sectnums:
@@ -179,7 +179,10 @@ handle prioritiy masking in software. (8 instructions in prologue, 3 in epilogue
 
 As a consequence there is 21 cycles of jitter and 43 (HPI) or 63 (LPI) cycles of interrupt latency in worst case.
 
-NOTE: ISR entry latency is 10 cycles due to 8 stage pipeline.
+Use of RPT istruction will introduceeven even more jitter and latecy as the sequence is uninterruptible
+and takes arbitrary numbers of cycles to execute.
+
+NOTE: ISR entry latency is 10 cycles due to 8 stage pipeline and automatically stacking 13 registers.
 
 === overwiew/discussion of some concepts/features
 
