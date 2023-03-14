@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.21
+:appversion: 0.1.22
 :toc:
 :toclevels: 4
 :sectnums:
@@ -27,14 +27,18 @@ Document is written in a way that reduces the duplications as those are hard to 
 
 == Introduction
 
-Even though the current risc-v interrupt architecture is great for unix systems.
+Even though the current risc-v "privileged" architecture is great for general unix systems.
 It fails to meet many embedded and hard real time requirements.
 
-Instead of adding more and more on top of layered legacy, let's replace
-entire volume II (aka riscv privileged) with minimal yet efficient interrupt architecture.
+Instead of adding more and more on top of layered legacy, that leads to silicon waste, let's replace
+entire volume II (aka riscv privileged) with minimal yet efficient embedded architecture.
 
-The goal is to achieve single digit cycles of interrupt latency (to actual code) with minimal jitter
-without wasting transistors on useless functionality.
+The goal is to achieve interrupt architecture capapble of predictable and low latency
+control loops by providing minimal jitter and interrupt latency. +
+Optionally offer single digit cycles of interrupt latency to actual code and true zero jitter,
+as to not disturb minimal implementations. +
+By leveraging general purpose computing capability of risc-v architecture, we can
+avoid the need for separate cores (with asymetric architecture) to offload communication tasks etc.
 
 === prior art
 
@@ -83,8 +87,10 @@ NOTE: BTW, my prediction is that the "competitor A" will be able to do a
 
 ==== emb-riscv
 
-emb-riscv <<embriscv>> is clean sheet design
-that attempts to be universal solution for every microcontroller
+emb-riscv <<embriscv>> is clean sheet design that attempts to be universal solution 
+for every microcontroller. Designed with a strong focus on RTOS support.
+
+NOTE: Currently development is stalled due to "not encouraging general interest"
 
 Achieves lower interrupt latency by introducing EABI with reduced
 amount of caller-saved registers. FP registers are handled by lazy stacking.
@@ -93,7 +99,7 @@ amount of caller-saved registers. FP registers are handled by lazy stacking.
 
 
 lot of redundancy
-U+M
+
 separate tables for exceptions and interrupts
 
 mandatory 64bit cycle counter
@@ -104,7 +110,7 @@ mandatory 64bit rtc timer
 NOTE: Y2038 can be solved by less than 32 extra bits, even simple uint32_t trick gives us extra ~68 years.
 Many RTC implementations are also BCD or BCD like with e.g. separate uint8_t fields for seconds, minutes, day, year etc.
 
-currently development stalled
+
 
 ==== CLINT
 
@@ -446,6 +452,8 @@ of course -O3 (forget about -Os and -Oz)
 [appendix]
 == context switch on tiny profile
 
+mask the lowest irq levels
+"irq return" to final switching code 
 
 [bibliography]
 == Bibliography
