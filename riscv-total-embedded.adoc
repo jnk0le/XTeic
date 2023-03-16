@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.23
+:appversion: 0.1.24
 :toc:
 :toclevels: 4
 :sectnums:
@@ -95,22 +95,13 @@ NOTE: Currently development is stalled due to "not encouraging general interest"
 Achieves lower interrupt latency by introducing EABI with reduced
 amount of caller-saved registers. FP registers are handled by lazy stacking.
 
+Introduces interrupt priority threshold masking.
 
-
-
-lot of redundancy
-
-separate tables for exceptions and interrupts
-
-mandatory 64bit cycle counter
-mandatory 64bit instret counter
-mandatory 64bit system timer
-mandatory 64bit rtc timer
-
-NOTE: Y2038 can be solved by less than 32 extra bits, even simple uint32_t trick gives us extra ~68 years.
-Many RTC implementations are also BCD or BCD like with e.g. separate uint8_t fields for seconds, minutes, day, year etc.
-
-
+mandates 4 64bit timers (even on RV32):
+- cycle counter
+- instret counter
+- system timer
+- rtc timer
 
 ==== CLINT
 
@@ -179,7 +170,7 @@ handle prioritiy masking in software. (8 instructions in prologue, 3 in epilogue
 
 As a consequence there is 21 cycles of jitter and 43 (HPI) or 63 (LPI) cycles of interrupt latency in worst case.
 
-Use of RPT istruction will introduceeven even more jitter and latecy as the sequence is uninterruptible
+Use of RPT istruction will introduce even more jitter and latecy as the sequence is uninterruptible
 and takes arbitrary numbers of cycles to execute.
 
 NOTE: ISR entry latency is 10 cycles due to 8 stage pipeline and automatically stacking 13 registers.
@@ -197,7 +188,7 @@ It also requires preinitialized table with pointer to startup code, `sp`, and `g
 any other addition like Zcmt `JVT` csr.
 
 This table is also not necessarily smaller than software setup, e.g. `sp` can be usually
-done with single `lui` instruction. At the cost of a bit added HW complexity.
+done with single `lui` instruction.
 
 There is still a risk of corruption if the compiler decides to reorder something before
 initialization of `.data`/`.bss` sections.
