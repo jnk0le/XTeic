@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.25
+:appversion: 0.1.26
 :toc:
 :toclevels: 4
 :sectnums:
@@ -375,10 +375,11 @@ In some scenarios those numbers are unacceptable.
 
 ==== lazy stacking
 
-allow
+Lazy stacking allows to skip stacking of FP registers if handler doesn't 
+touch floating point registers.
 
-
-even though only a few are used
+The main issue is that all of the caller saved FP registers are saved (execution stalls during push)
+onto stack whenever FP instruction is executed even though only a few of the registers are used.
 
 ==== 64bit microcontrollers
 
@@ -431,6 +432,7 @@ of course -O3 (forget about -Os and -Oz)
 ==== automatic selection of regpush on isr entry config
 
 == programmers model
+
 //?????
 //non profile ext
 //little endian only
@@ -444,6 +446,7 @@ of course -O3 (forget about -Os and -Oz)
 	//??
 
 //medium
+//sec
 
 [appendix]
 == context switch on tiny profile
