@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.24
+:appversion: 0.1.25
 :toc:
 :toclevels: 4
 :sectnums:
@@ -136,7 +136,7 @@ handlers stay very similar to generic case.
 
 
 
-undocumented "EABI" mode (except just the presence of it)
+NOTE: there is undocumented "EABI" mode in ???
 
 
 inherits behaviour/patterns of 
@@ -382,8 +382,10 @@ even though only a few are used
 
 ==== 64bit microcontrollers
 
+So far, mostly the application processors used in bare metal.
 
-
+Use cases for such also have different requirements than
+from typical 32bit microcontrollers.
 
 === required ABI
 
