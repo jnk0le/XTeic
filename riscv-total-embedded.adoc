@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.28
+:appversion: 0.1.29
 :toc:
 :toclevels: 4
 :sectnums:
@@ -213,7 +213,7 @@ But let's have a look at my "combotablecrt" implementation <<combotablecrt>> for
 Is your compiler able to do that?
 
 There is also a case of interrupt handlers that are using only a few registers
-and don't need to take latency of the whole ABI.
+and don't need to take latency of the whole ABI/EABI.
 
 ==== ABIs with less caller saved registers
 
@@ -284,10 +284,10 @@ of RVI ABI like trading off argument registers for temporary/saved ones.
 
 ==== one universal standard for everyone use cases
 
-Having one universal solution for all possible configs
+Having one universal solution for all possible scenarios
 brings a lot of inefficiency to all of them. Due to mandatory 
 support for a lot of useless functionality, or just the need 
-to keep optional compatibility with useless legacy "just in case".
+to keep compatibility with useless legacy.
 
 ==== special handler return pattern
 
@@ -360,8 +360,8 @@ In case of C2000 CLA, TI claims <<spracs0a>>,<<ticladocs>>,<<ticladevguide>> tha
 though it does exactly the opposite when there is more than 1 async interrupt to handle.
 
 NOTE: Of course whenever TI compares CLA to "classic cpu", it's always a cpu with preemption 
-priority only and background task not present on CLA. As if the similar "task machine" couldn't
-be achieved by regular cpu (e.g. risc-v) without nesting and WFI loop (or "sleep on exit" feature) 
+priorities only and background task not present on CLA. As if the similar "task machine" couldn't
+be achieved by regular cpu (e.g. risc-v) without nesting and WFI loop (or "sleep on exit" feature)
 giving access to all GPRs in interrupts without stacking.
 
 ==== "everything will run Linux in future"
@@ -403,18 +403,26 @@ from typical 32bit microcontrollers.
 
 === required ABI
 
-ideally not change
-avoid disruption
+Ideally we should not change the established ABI to avoid disruption
 
-but may need
-
-definitely get rid of `tp` register, it's useless here.
-
-==== RV32E
-
-==== RV32I
+We should definitely get rid of the `tp` register which is overall useless.
 
 ==== stack alignment
+
+should be 2x`XLEN`, mandated thorought entire program execution so as to not require
+special realignment in interrupts.
+
+Major ilp32e issue is that the `addi16sp` instruction works on 16 byte stack increment.
+Once the `c.addi` range (-32..+31) is exausted compilers have to chose beetwen
+denser code and more efficient use of stack.
+
+Zcmp extension was also designed for 16 byte aligned stack. There is Zcmpe extension 
+postponed to the future which should handle the EABI. Lowering the stack alignment
+requires using more codepoints by `push`/`pop` instructions.
+
+==== RVE
+
+==== RVI
 
 
 
