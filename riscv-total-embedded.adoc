@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.26
+:appversion: 0.1.27
 :toc:
 :toclevels: 4
 :sectnums:
@@ -134,12 +134,21 @@ handlers stay very similar to generic case.
 
 ==== CH32 FPIC/PFIC
 
+Proprietary design by WCH build on top of generic riscv privileged <<qingkev2>>, <<qingkev3>>, <<qingkev4>>.
 
+The descriptions of a lot of functional behaviour feel like a copy-paste of risc-v privileged.
+Highly under/undocumented. +
+e.g. there is nothing about what happens to `mepc`, `mcause` or `mstatus` during nesting (especially on "V2" core).
 
-NOTE: there is undocumented "EABI" mode in ???
+Introduces HW stacking or single cycle register shadowing (aka HPE).
+It is of course necessary to use custom tuoolchain that implement a "proprietary" attribute:: 
+`\\__attribute__\(((interrupt("WCH-Interrupt-fast"))`
 
+NOTE: without <<prestacked annotation>> there will be no portable way of doing this, naked 
+handler + mret trick doesn't work in llvm, it  shoud break in gcc anyway due to use of callee saved registers.
 
-inherits behaviour/patterns of 
+There is also under/undocumented "EABI enable" bit in `INTSYSCR` on "V2" core.
+Most probably it reduces number of HW stacked registers to match the official EABI proposal <<riscveabi>>.
 
 ==== PicoRV32 interrupts
 
@@ -148,6 +157,8 @@ inherits behaviour/patterns of
 
 Original author of the PicoRV found the riscv-privileged to be too heavy for minimal core,
 and provided own <<picorvint>> interrupt scheme.
+
+NOTE: FPGA minimum cores, is a non goal for this spec
 
 ==== ti c2000 (main core)
 
@@ -451,8 +462,6 @@ of course -O3 (forget about -Os and -Oz)
 [appendix]
 == context switch on tiny profile
 
-mask the lowest irq levels
-"irq return" to final switching code 
 
 [bibliography]
 == Bibliography
@@ -484,3 +493,7 @@ mask the lowest irq levels
 * [[[c2000coremark, 25]]] https://e2e.ti.com/support/processors-group/processors/f/processors-forum/905744/tms320f28335
 * [[[c2000dhrystone, 26]]] https://e2e.ti.com/support/microcontrollers/c2000-microcontrollers-group/c2000/f/c2000-microcontrollers-forum/567535/tms320f28377d-dmips-calculation
 * [[[ticladevguide, 27]]] https://software-dl.ti.com/C2000/docs/cla_software_dev_guide/_static/pdf/C2000_CLA_Software_Development_Guide.pdf
+* [[[qingkev2, 28]]] http://www.wch-ic.com/downloads/QingKeV2_Processor_Manual_PDF.html
+* [[[qingkev3, 29]]] http://www.wch-ic.com/downloads/QingKeV3_Processor_Manual_PDF.html
+* [[[qingkev4, 30]]] http://www.wch-ic.com/downloads/QingKeV4_Processor_Manual_PDF.html
+* [[[riscveabi, 31]]] https://github.com/riscv-non-isa/riscv-eabi-spec
