@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.27
+:appversion: 0.1.28
 :toc:
 :toclevels: 4
 :sectnums:
@@ -132,13 +132,15 @@ claim/complete architecture
 
 handlers stay very similar to generic case.
 
-==== CH32 FPIC/PFIC
+==== CH32 PFIC
 
 Proprietary design by WCH build on top of generic riscv privileged <<qingkev2>>, <<qingkev3>>, <<qingkev4>>.
 
 The descriptions of a lot of functional behaviour feel like a copy-paste of risc-v privileged.
 Highly under/undocumented. +
 e.g. there is nothing about what happens to `mepc`, `mcause` or `mstatus` during nesting (especially on "V2" core).
+
+The vendor provided headers, of course, contain 46 instances of "NVIC" string and just 5 for "PFIC"
 
 Introduces HW stacking or single cycle register shadowing (aka HPE).
 It is of course necessary to use custom tuoolchain that implement a "proprietary" attribute:: 
@@ -195,7 +197,7 @@ In this case interrupts must always push all caller saved registers to be able t
 
 NOTE: those are usually wrapped with `extern "C"` anyway
 
-It also requires preinitialized table with pointer to startup code, `sp`, and `gp`, and of course
+It also requires preinitialized table with pointer to startup code, `sp`, `gp`, and of course
 any other addition like Zcmt `JVT` csr.
 
 This table is also not necessarily smaller than software setup, e.g. `sp` can be usually
