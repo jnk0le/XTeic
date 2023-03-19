@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.29
+:appversion: 0.1.30
 :toc:
 :toclevels: 4
 :sectnums:
@@ -422,9 +422,57 @@ requires using more codepoints by `push`/`pop` instructions.
 
 ==== RVE
 
+[width="100%",options=header]
+|====================================================================================
+| register | ABI name | Saver | description
+| x0 | zero | - | Hardwired zero
+| x1 | ra | caller | return address
+| x2 | sp | callee | stack pointer
+| x3 | gp | - | global pointer
+| x4 | t0 | caller | temporary
+| x5 | t1 | caller | temporary
+| x6 | t2 | caller | temporary
+| x7 | t3 | caller | temporary
+| x8 | s0/fp | callee | saved/frame pointer
+| x9 | s1 | callee | saved
+| x10 | a0 | caller | argument/return
+| x11 | a1 | caller | argument/return
+| x12 | a2 | caller | argument
+| x13 | a3 | caller | argument
+| x14 | a4 | caller | argument
+| x15 | a5 | caller | argument
+| x16-x31 | - | - | reserved for custom use
+|====================================================================================
+
+NOTE: ilp32e with `tp` turned into temporary, number of saved registers still needs to be adjusted
+as there are only 2 of them
+
 ==== RVI
 
-
+[width="100%",options=header]
+|====================================================================================
+| register | ABI name | Saver | description
+| x0 | zero | - | Hardwired zero
+| x1 | ra | caller | return address
+| x2 | sp | callee | stack pointer
+| x3 | gp | - | global pointer
+| x4 | t0 | caller | temporary
+| x5 | t1 | caller | temporary
+| x6 | t2 | caller | temporary
+| x7 | t3 | caller | temporary
+| x8 | s0/fp | callee | saved/frame pointer
+| x9 | s1 | callee | saved
+| x10 | a0 | caller | argument/return
+| x11 | a1 | caller | argument/return
+| x12 | a2 | caller | argument
+| x13 | a3 | caller | argument
+| x14 | a4 | caller | argument
+| x15 | a5 | caller | argument
+| x16 | a6 | caller | argument
+| x17 | a7 | caller | argument
+| x18-x27 | s2-s11 | callee | saved
+| x28-x31 | t4-t7 | caller | temporary
+|====================================================================================
 
 === tooling issues to solve
 
