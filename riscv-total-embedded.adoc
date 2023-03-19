@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.30
+:appversion: 0.1.31
 :toc:
 :toclevels: 4
 :sectnums:
@@ -143,11 +143,12 @@ e.g. there is nothing about what happens to `mepc`, `mcause` or `mstatus` during
 The vendor provided headers, of course, contain 46 instances of "NVIC" string and just 5 for "PFIC"
 
 Introduces HW stacking or single cycle register shadowing (aka HPE).
-It is of course necessary to use custom tuoolchain that implement a "proprietary" attribute:: 
+It is of course necessary to use custom tuoolchain that implement a "proprietary" attribute:
 `\\__attribute__\(((interrupt("WCH-Interrupt-fast"))`
 
-NOTE: without <<prestacked annotation>> there will be no portable way of doing this, naked 
-handler + mret trick doesn't work in llvm, it  shoud break in gcc anyway due to use of callee saved registers.
+NOTE: without <<prestacked annotation>> there will be no portable way of doing this without compilers build
+on custom patches. Naked handler + mret trick doesn't work in llvm, it shoud break in gcc anyway due to
+eventual use of callee saved registers.
 
 There is also under/undocumented "EABI enable" bit in `INTSYSCR` on "V2" core.
 Most probably it reduces number of HW stacked registers to match the official EABI proposal <<riscveabi>>.
@@ -404,8 +405,7 @@ from typical 32bit microcontrollers.
 === required ABI
 
 Ideally we should not change the established ABI to avoid disruption
-
-We should definitely get rid of the `tp` register which is overall useless.
+But definitely get rid of the `tp` register which is overall useless.
 
 ==== stack alignment
 
