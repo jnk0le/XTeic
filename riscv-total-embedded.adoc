@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.31
+:appversion: 0.1.32
 :toc:
 :toclevels: 4
 :sectnums:
@@ -148,7 +148,7 @@ It is of course necessary to use custom tuoolchain that implement a "proprietary
 
 NOTE: without <<prestacked annotation>> there will be no portable way of doing this without compilers build
 on custom patches. Naked handler + mret trick doesn't work in llvm, it shoud break in gcc anyway due to
-eventual use of callee saved registers.
+eventual use of callee saved registers and stack.
 
 There is also under/undocumented "EABI enable" bit in `INTSYSCR` on "V2" core.
 Most probably it reduces number of HW stacked registers to match the official EABI proposal <<riscveabi>>.
@@ -418,7 +418,7 @@ denser code and more efficient use of stack.
 
 Zcmp extension was also designed for 16 byte aligned stack. There is Zcmpe extension 
 postponed to the future which should handle the EABI. Lowering the stack alignment
-requires using more codepoints by `push`/`pop` instructions.
+requires wasting more codepoints by `push`/`pop` instructions.
 
 ==== RVE
 
@@ -464,12 +464,7 @@ as there are only 2 of them
 | x9 | s1 | callee | saved
 | x10 | a0 | caller | argument/return
 | x11 | a1 | caller | argument/return
-| x12 | a2 | caller | argument
-| x13 | a3 | caller | argument
-| x14 | a4 | caller | argument
-| x15 | a5 | caller | argument
-| x16 | a6 | caller | argument
-| x17 | a7 | caller | argument
+| x12-x17 | a2-a7 | caller | argument
 | x18-x27 | s2-s11 | callee | saved
 | x28-x31 | t4-t7 | caller | temporary
 |====================================================================================
@@ -478,7 +473,34 @@ as there are only 2 of them
 
 ==== prestacked annotation
 
-//e.g. `tp` cannot be changed to caller saved due to existing hardware pre-stackers (ch32)
+
+
+`\\__attribute__\((prestacked("")))`
+
+
+must use raw register name instead of ABI mnemonic
+to be used in ABI agnostic way
+ie.
+used on different ABIs without changing 
+
+e.g. `tp` cannot be changed to caller saved due to existing hardware pre-stackers (ch32)
+
+===== optimization for `noreturn` functions 
+
+gcc/llvm compilers can purge the epilogue (even down the call tree) by automatic 
+detection of infinite loop or by using `\\__attribute__\((noreturn))` or `__builtin_unreachable()`.
+
+It doesn't work on prologues though, leading to waste of stack and codespace in the most typical
+embedded scenario of main or thread functions with an infinite loop.
+
+This missing optimization is intentional <<noreturnprologue>> to allow backtracing 
+(`abort()` etc.) and throwing exceptions (of course under -fno-exceptions and with exception less code)
+
+By abusing the "prestacked annotation" we can get rid of this prologue by "prestacking" of all available registers +
+e.g. `\\__attribute__\((prestacked("x1,x5-x31,f0-f31,fcsr")))`
+
+NOTE: addition of `noreturn_nobacktrace_noexcept` attribute is very unlikely, optimizing 
+regular `noreturn` attribute is even less.
 
 ==== IPRA
 
@@ -555,3 +577,4 @@ of course -O3 (forget about -Os and -Oz)
 * [[[qingkev3, 29]]] http://www.wch-ic.com/downloads/QingKeV3_Processor_Manual_PDF.html
 * [[[qingkev4, 30]]] http://www.wch-ic.com/downloads/QingKeV4_Processor_Manual_PDF.html
 * [[[riscveabi, 31]]] https://github.com/riscv-non-isa/riscv-eabi-spec
+* [[[noreturnprologue, 32]]] https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56165#c2
