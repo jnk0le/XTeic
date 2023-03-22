@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.32
+:appversion: 0.1.33
 :toc:
 :toclevels: 4
 :sectnums:
@@ -147,7 +147,7 @@ It is of course necessary to use custom tuoolchain that implement a "proprietary
 `\\__attribute__\(((interrupt("WCH-Interrupt-fast"))`
 
 NOTE: without <<prestacked annotation>> there will be no portable way of doing this without compilers build
-on custom patches. Naked handler + mret trick doesn't work in llvm, it shoud break in gcc anyway due to
+on custom patches. Naked handler + mret trick doesn't work in llvm, it should break in gcc anyway due to
 eventual use of callee saved registers and stack.
 
 There is also under/undocumented "EABI enable" bit in `INTSYSCR` on "V2" core.
@@ -420,6 +420,12 @@ Zcmp extension was also designed for 16 byte aligned stack. There is Zcmpe exten
 postponed to the future which should handle the EABI. Lowering the stack alignment
 requires wasting more codepoints by `push`/`pop` instructions.
 
+NOTE: `addi8sp` won't be neccesary as Zcmpe `push`/`pop` can prepare initial 8 byte
+allocation for an (optionally) following `addi16sp`
+
+NOTE: 2x`XLEN` alignment allows more optimal use of
+microarchitectures capable of stacking 2 registers per cycle
+
 ==== RVE
 
 [width="100%",options=header]
@@ -473,30 +479,39 @@ as there are only 2 of them
 
 ==== prestacked annotation
 
+Currently there is no universal solution to indicate which registers in interrupt handlers
+can be freely used without stacking them.
 
+- `\\__attribute__\((interrupt))` makes all registers callee saved and uses mret to return.
+- `\\__attribute__\((interrupt("SiFive-CLIC-preemptible")))` extends regular interrupt by CLIC preemption
+- `\\__attribute__\(((interrupt("WCH-Interrupt-fast"))` requires custom build toolchain and is bound 
+to selected ABI by `-mabi=` command line parameter, still uses mret
+- Or just a plain C function that requires prestacking of all caller saved registers, reuses standard 
+return mechanism to exit iterrupt context
+
+Even worse there are already hardware stackers designed for ilp32e. When the new and better ABI will be 
+introduced, it will be impossible to use with pre-existing HW stackers.
+
+Therefore we need universal way to annotate 
 
 `\\__attribute__\((prestacked("")))`
 
-
-must use raw register name instead of ABI mnemonic
+use raw register name instead of ABI mnemonic
+to make portable across ABIs
 to be used in ABI agnostic way
-ie.
-used on different ABIs without changing 
 
-e.g. `tp` cannot be changed to caller saved due to existing hardware pre-stackers (ch32)
-
-===== optimization for `noreturn` functions 
+===== optimization for `noreturn` functions
 
 gcc/llvm compilers can purge the epilogue (even down the call tree) by automatic 
 detection of infinite loop or by using `\\__attribute__\((noreturn))` or `__builtin_unreachable()`.
 
 It doesn't work on prologues though, leading to waste of stack and codespace in the most typical
-embedded scenario of main or thread functions with an infinite loop.
+embedded scenario of main or thread functions with an infinite loops.
 
 This missing optimization is intentional <<noreturnprologue>> to allow backtracing 
 (`abort()` etc.) and throwing exceptions (of course under -fno-exceptions and with exception less code)
 
-By abusing the "prestacked annotation" we can get rid of this prologue by "prestacking" of all available registers +
+By abusing the "prestacked annotation" we can get rid of this prologue by "prestacking" of all available registers. +
 e.g. `\\__attribute__\((prestacked("x1,x5-x31,f0-f31,fcsr")))`
 
 NOTE: addition of `noreturn_nobacktrace_noexcept` attribute is very unlikely, optimizing 
