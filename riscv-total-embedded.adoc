@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.33
+:appversion: 0.1.34
 :toc:
 :toclevels: 4
 :sectnums:
@@ -33,12 +33,13 @@ It fails to meet many embedded and hard real time requirements.
 Instead of adding more and more on top of layered legacy, that leads to silicon waste, let's replace
 entire volume II (aka riscv privileged) with minimal yet efficient embedded architecture.
 
-The goal is to achieve interrupt architecture capapble of predictable and low latency
-control loops by providing minimal jitter and interrupt latency. +
+The goal is to achieve interrupt architecture capable of predictable and fast
+control loops by providing minimal interrupt latency and jitter. +
 Optionally offer single digit cycles of interrupt latency to actual code and true zero jitter,
 as to not disturb minimal implementations. +
 By leveraging general purpose computing capability of risc-v architecture, we can
-avoid the need for separate cores (with asymetric architecture) to offload communication tasks etc.
+avoid the need for separate cores (often with asymetric architectures) to offload 
+low priority tasks (communication, HMI etc).
 
 === prior art
 
@@ -410,7 +411,21 @@ But definitely get rid of the `tp` register which is overall useless.
 ==== stack alignment
 
 should be 2x`XLEN`, mandated thorought entire program execution so as to not require
-special realignment in interrupts.
+special realignment in interrupts. 
+
+[NOTE] 
+====
+psABI <<riscvpsabi>> says that:
+>stack pointer must remain aligned throughout procedure execution
+
+and fails to enforce enforce this anyway.
+>Non-standard ABI code must realign the stack pointer prior to invoking standard ABI procedures. The
+>operating system must realign the stack pointer prior to invoking a signal handler; hence, POSIX
+>signal handlers need not realign the stack pointer. In systems that service interrupts using the
+>interruptee’s stack, the interrupt service routine must realign the stack pointer if linked with any
+>code that uses a non-standard stack-alignment discipline, but need not realign the stack pointer if
+>all code adheres to the standard ABI
+====
 
 Major ilp32e issue is that the `addi16sp` instruction works on 16 byte stack increment.
 Once the `c.addi` range (-32..+31) is exausted compilers have to chose beetwen
@@ -418,7 +433,7 @@ denser code and more efficient use of stack.
 
 Zcmp extension was also designed for 16 byte aligned stack. There is Zcmpe extension 
 postponed to the future which should handle the EABI. Lowering the stack alignment
-requires wasting more codepoints by `push`/`pop` instructions.
+requires doubling (per bit of alignment) waste of codepoints by `push`/`pop` instructions.
 
 NOTE: `addi8sp` won't be neccesary as Zcmpe `push`/`pop` can prepare initial 8 byte
 allocation for an (optionally) following `addi16sp`
@@ -487,32 +502,53 @@ can be freely used without stacking them.
 - `\\__attribute__\(((interrupt("WCH-Interrupt-fast"))` requires custom build toolchain and is bound 
 to selected ABI by `-mabi=` command line parameter, still uses mret
 - Or just a plain C function that requires prestacking of all caller saved registers, reuses standard 
-return mechanism to exit iterrupt context
+return mechanism to exit interrupt context
 
-Even worse there are already hardware stackers designed for ilp32e. When the new and better ABI will be 
-introduced, it will be impossible to use with pre-existing HW stackers.
+Even worse there are already hardware stackers designed for ilp32e and ilp32. When the new and better 
+ABI will be introduced, it will be impossible to use with pre-existing HW stackers. The same applies 
+to creating HW stackers that stack less registers to optimize interrupt latency.
 
-Therefore we need universal way to annotate 
+Therefore we need universal way to annotate which registers are available for use in a given function
+as a defacto calller saved one (aka create custom calling convention)
 
-`\\__attribute__\((prestacked("")))`
+- `prestacked("")` attribute
+- no whitespaces in string parameter
+- register range cover all registers between and including specified ("x4-x6" is equivalent to "x4,x5,x6")
+- registers/ranges are separated by comma
+- CSRs taking part in calling conventions are also subject to this mechanism
+- must use raw names instead of ABI mnemonics as to make it ABI agnostic (more portable)
+- registers must be must be sorted (integer, floating point, vector, custom, then by lowest numbered)
+- CSRs must be put after the architectural regfiles, those don't have to be sorted
+- must not collide with `\\__attribute__\((interrupt))` as to support "legacy" handler return mechanisms
 
-use raw register name instead of ABI mnemonic
-to make portable across ABIs
-to be used in ABI agnostic way
+psABI caller saved:
+
+`\\__attribute__\((prestacked("x5-x7,x10-x17,x28-x31")))`
+
+Simplified range (e.g. shadow register file):
+
+`\\__attribute__\((prestacked("x8-x15")))`
+
+psABI with floating point, caller saved:
+
+`\\__attribute__\((prestacked("x5-x7,x10-x17,x28-x31,f0-f7,f10-f17,f28-f31,fcsr")))`
+
+NOTE: unannotated `ra` is assumed as a valid return address, `sp` as a valid stack
 
 ===== optimization for `noreturn` functions
 
 gcc/llvm compilers can purge the epilogue (even down the call tree) by automatic 
 detection of infinite loop or by using `\\__attribute__\((noreturn))` or `__builtin_unreachable()`.
 
-It doesn't work on prologues though, leading to waste of stack and codespace in the most typical
+It is not the case on prologues though, leading to waste of stack and codespace in the most typical
 embedded scenario of main or thread functions with an infinite loops.
 
 This missing optimization is intentional <<noreturnprologue>> to allow backtracing 
 (`abort()` etc.) and throwing exceptions (of course under -fno-exceptions and with exception less code)
 
-By abusing the "prestacked annotation" we can get rid of this prologue by "prestacking" of all available registers. +
-e.g. `\\__attribute__\((prestacked("x1,x5-x31,f0-f31,fcsr")))`
+By abusing the "prestacked annotation" we can get rid of this prologue 
+by "prestacking" all of the available registers. +
+e.g. `\\__attribute__\((prestacked("x1,x4-x31,f0-f31,fcsr")))`
 
 NOTE: addition of `noreturn_nobacktrace_noexcept` attribute is very unlikely, optimizing 
 regular `noreturn` attribute is even less.
@@ -558,6 +594,9 @@ of course -O3 (forget about -Os and -Oz)
 == context switch on tiny profile
 
 
+[appendix]
+== atomic block on tiny profile
+
 [bibliography]
 == Bibliography
 
@@ -593,3 +632,4 @@ of course -O3 (forget about -Os and -Oz)
 * [[[qingkev4, 30]]] http://www.wch-ic.com/downloads/QingKeV4_Processor_Manual_PDF.html
 * [[[riscveabi, 31]]] https://github.com/riscv-non-isa/riscv-eabi-spec
 * [[[noreturnprologue, 32]]] https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56165#c2
+* [[[riscvpsabi, 33]]] https://github.com/riscv-non-isa/riscv-elf-psabi-doc
