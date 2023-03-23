@@ -1,9 +1,9 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.34
+:appversion: 0.1.35
 :toc:
-:toclevels: 4
+:toclevels: 5
 :sectnums:
 
 
@@ -517,7 +517,7 @@ as a defacto calller saved one (aka create custom calling convention)
 - registers/ranges are separated by comma
 - CSRs taking part in calling conventions are also subject to this mechanism
 - must use raw names instead of ABI mnemonics as to make it ABI agnostic (more portable)
-- registers must be must be sorted (integer, floating point, vector, custom, then by lowest numbered)
+- registers must be be sorted (integer, floating point, vector, custom, then by lowest numbered)
 - CSRs must be put after the architectural regfiles, those don't have to be sorted
 - must not collide with `\\__attribute__\((interrupt))` as to support "legacy" handler return mechanisms
 
@@ -596,6 +596,9 @@ of course -O3 (forget about -Os and -Oz)
 
 [appendix]
 == atomic block on tiny profile
+
+no single bit interrupt enable
+use csrrs/c on a mask then restore
 
 [bibliography]
 == Bibliography
