@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.36
+:appversion: 0.1.37
 :toc:
 :toclevels: 5
 :sectnums:
@@ -348,8 +348,9 @@ Nothing should exist as both.
 
 Very often claimed, yet those claims rarely meet with reality.
 
-NOTE: There are also meany non-architectural sources of jitter like caches, waitstated
-flash or accessing peripherals in different clock domains (usually divided from sysclk).
+NOTE: There are also many non-architectural sources of jitter like caches, waitstated
+flash or accessing peripherals in different clock domains (usually divided from sysclk),
+DMA contention etc.
 
 Cortex-m0 offers a "zero jitter" by optional IP configuration that adjusts the best case 
 of interrupt latency by extra cycle to acommodate random stall from bus contention.
@@ -387,14 +388,16 @@ Of course there are actual reasons <<emblinux>> to use linux in embedded.
 ===== RTLinux and hard-realtime
 
 Whenever those rt patches are measured, both the interrupt latency and 
-jitter is always given in microseconds (10-100), not cycles
+jitter is always given in tens or hundreds of microseconds, not cycles
 <<linuxrt1>>,<<linuxrt2>>,<<linuxrt3>>,<<linuxrt4>>.
 
-In some scenarios those numbers are unacceptable.
+In some scenarios those numbers are unacceptable. +
+As an example, industry standard, FOC current loops close within 5-10us <<brianchavens>>
+and in samoe cases it achieves sub 1us latency <<swpy031>>.
 
 ==== lazy stacking
 
-Lazy stacking allows to skip stacking of FP registers if handler doesn't 
+Lazy stacking allows to skip stacking of FP registers if handler doesn't
 touch floating point registers.
 
 The main issue is that all of the caller saved FP registers are saved (execution stalls during push)
@@ -645,3 +648,5 @@ use csrrs/c on a mask then restore
 * [[[riscveabi, 31]]] https://github.com/riscv-non-isa/riscv-eabi-spec
 * [[[noreturnprologue, 32]]] https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56165#c2
 * [[[riscvpsabi, 33]]] https://github.com/riscv-non-isa/riscv-elf-psabi-doc
+* [[[swpy031, 34]]] https://www.ti.com/lit/wp/swpy031/swpy031.pdf
+* [[[brianchavens, 35]]] https://www.brianchavens.com/2018/09/20/motor-control-microcontroller-performance-comparison/
