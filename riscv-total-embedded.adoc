@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.37
+:appversion: 0.1.38
 :toc:
 :toclevels: 5
 :sectnums:
@@ -243,7 +243,7 @@ It will also make the processors capable of stacking 2 registers per cycle, unde
 during HW stacking due to shorter stacking time than pipeline refill.
 
 An alternative is to provide interrupts with defacto customizable ABIs by e.g. <<prestacked annotation>>
-(to match the HW stackers) and handle the function call pressure by <<IPRA>>.
+(to match the HW stackers) and handle the function call pressure by <<IPRA - Inter procedural register allocation, IPRA>>.
 
 ==== "you are better of with soft stacking in inline handlers"
 
@@ -393,7 +393,7 @@ jitter is always given in tens or hundreds of microseconds, not cycles
 
 In some scenarios those numbers are unacceptable. +
 As an example, industry standard, FOC current loops close within 5-10us <<brianchavens>>
-and in samoe cases it achieves sub 1us latency <<swpy031>>.
+and in some cases it achieves sub 1us latency <<swpy031>>.
 
 ==== lazy stacking
 
@@ -565,9 +565,10 @@ e.g. `\\__attribute__\((prestacked("x1,x4-x31,f0-f31,fcsr")))`
 NOTE: addition of `noreturn_nobacktrace_noexcept` attribute is very unlikely, optimizing 
 regular `noreturn` attribute is even less.
 
-==== IPRA
+==== IPRA - Inter procedural register allocation
 
-in llvm <<llvmipra>>
+
+So far implemented only by llvm <<llvmipra>>
 
 in simple explanation
 
@@ -584,6 +585,10 @@ of course -O3 (forget about -Os and -Oz)
 //???===== regression due to
 
 ==== automatic selection of regpush on isr entry config
+
+==== adjusting ipra wrt prestacked regs
+
+compilers usally dont care about non-abi prologues epilogues
 
 == programmers model
 
