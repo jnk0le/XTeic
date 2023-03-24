@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.35
+:appversion: 0.1.36
 :toc:
 :toclevels: 5
 :sectnums:
@@ -139,7 +139,11 @@ Proprietary design by WCH build on top of generic riscv privileged <<qingkev2>>,
 
 The descriptions of a lot of functional behaviour feel like a copy-paste of risc-v privileged.
 Highly under/undocumented. +
-e.g. there is nothing about what happens to `mepc`, `mcause` or `mstatus` during nesting (especially on "V2" core).
+e.g. There is nothing about what happens to `mepc`, `mcause` or `mstatus` during nesting (especially on "V2" core). +
+It is also unknown whether `ra` register doesn't have an additional use (like saving `mepc`...) during 
+interrupt entry/exit and connot be used immediately as the currently implemented gcc attribute treats
+those functions the same way as the regular ABI ones with `mret` based return. +
+Which of course is inline with typical chinese documentation standards.
 
 The vendor provided headers, of course, contain 46 instances of "NVIC" string and just 5 for "PFIC"
 
@@ -533,7 +537,12 @@ psABI with floating point, caller saved:
 
 `\\__attribute__\((prestacked("x5-x7,x10-x17,x28-x31,f0-f7,f10-f17,f28-f31,fcsr")))`
 
-NOTE: unannotated `ra` is assumed as a valid return address, `sp` as a valid stack
+ch32v003 (ilp32e + PFIC HW stacker, assuming `ra` doesn't have some undocumented use)
+
+`\\__attribute__\((interrupt, prestacked("ra,x5-x7,x10-x15")))`
+
+NOTE: unannotated `ra` is assumed as a valid return address, otherwise a special return mechanism must be
+used
 
 ===== optimization for `noreturn` functions
 
