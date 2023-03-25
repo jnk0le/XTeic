@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.38
+:appversion: 0.1.39
 :toc:
 :toclevels: 5
 :sectnums:
@@ -556,7 +556,7 @@ It is not the case on prologues though, leading to waste of stack and codespace 
 embedded scenario of main or thread functions with an infinite loops.
 
 This missing optimization is intentional <<noreturnprologue>> to allow backtracing 
-(`abort()` etc.) and throwing exceptions (of course under -fno-exceptions and with exception less code)
+(`abort()` etc.) and throwing exceptions (of course under -fno-exceptions and exception less code)
 
 By abusing the "prestacked annotation" we can get rid of this prologue 
 by "prestacking" all of the available registers. +
@@ -567,26 +567,47 @@ regular `noreturn` attribute is even less.
 
 ==== IPRA - Inter procedural register allocation
 
+So far implemented only by llvm <<llvmipra>>. +
+Limited to statically linked code. +
+There are almost no benchmarks results, especially the ones other than x86 at -O3.
 
-So far implemented only by llvm <<llvmipra>>
+In simple explanation, it makes every function export information about its usage of 
+caller saved registers effectively allowing non leaf functions to use caller saved
+registers as a callee saved ones. That avoids some of the stacking/spilling leading
+to a more efficiet code.
 
-in simple explanation
+requirements and improvements needed for efficient IPRA:
+
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
 
 
 
-very little information foundable can be googled
-mostly llvm 
+///===== regression due to
 
-even if there is something benchmarked
-of course -O3 (forget about -Os and -Oz)
+NOTE: lowering register pressure will 
+reduce
+when
+compiler starts to stack out own callee saved registers
+which are 
+in riscv `s0` and `s1`
 
+///===== adjusting ipra wrt prestacked regs
 
-
-//???===== regression due to
 
 ==== automatic selection of regpush on isr entry config
 
-==== adjusting ipra wrt prestacked regs
+
 
 compilers usally dont care about non-abi prologues epilogues
 
@@ -616,6 +637,20 @@ compilers usally dont care about non-abi prologues epilogues
 
 no single bit interrupt enable
 use csrrs/c on a mask then restore
+
+[appendix]
+== design decisions in tiny profile
+
+=== no cause code
+
+The cause code can be implied from hardcoded vector table position.
+Therefore it's redundant. The other issue with cause code is that
+it has to be somehow preserved during nesting.
+
+=== no single bit interrupt mask
+
+4 bit mask
+
 
 [bibliography]
 == Bibliography
