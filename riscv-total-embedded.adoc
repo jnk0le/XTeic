@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.39
+:appversion: 0.1.40
 :toc:
 :toclevels: 5
 :sectnums:
@@ -578,12 +578,27 @@ to a more efficiet code.
 
 requirements and improvements needed for efficient IPRA:
 
--
--
--
--
--
--
+- this mechanism must cover the CSRs as well as the registers (e.g. `fcsr`, `vtype`, `vl` etc.)
+- custom registers and CSRs should also be covered (e.g. HW loops in RI5CY)
+- compilers need to avoid using more registers than necessary (currently no reason)
+- registers from compressible range should be allocated only when it will benefit
+code density (currently no reason)
+- to avoid regressions compilers need some kind of heurestic to detect when stacking
+certain compressible callee saved registers would yield better code density than using
+more temporaries from non compressible ranges
+
+NOTE: on riscv it's `s0` and `s1`
+
+NOTE: This is also non IPRA optimization (-Oz kind)
+
+- need special assembly directive to annotate such exports from pure assembly code (workaround exist
+<<applying IPRA to assembly functions>>)
+
+- very important point is resolving IPRA allocation of callbacks
+-- callbacks passed as parameters
+-- callbacks initialized once at startup
+-- queues (of structs) with callbacks
+
 -
 -
 -
@@ -593,23 +608,55 @@ requirements and improvements needed for efficient IPRA:
 
 
 
-///===== regression due to
 
-NOTE: lowering register pressure will 
-reduce
-when
-compiler starts to stack out own callee saved registers
-which are 
-in riscv `s0` and `s1`
+
+
+
 
 ///===== adjusting ipra wrt prestacked regs
+//compilers usally dont care about non-abi prologues epilogues
 
+
+==== applying IPRA to assembly functions
+
+
+a)
+
+proposed by original author of llvm IPRA iplementation
+
+`\\__attribute__\((regmask("clobbered list here")))`
+
+wasn't implemented though
+
+
+The other option is to use inline asm clobbers to make call to such funcions
+
+```
+	__attribute__((always_inline))
+	static inline int weird_call(int n, void* p)
+	{
+		register int result asm("a0") = n;
+		register void* r1 asm("a1") = p;
+
+		asm volatile(
+			"call foo \n\t"
+			: [ARG0] "+r" (result) // return in same register
+			: [ARG1] "r" (r1)
+			: "memory", "ra", "a2" // use clobber for any caller saved regs used
+		);
+
+		return result;
+	}
+```
+
+- requires the `call` pseudoinstruction that expands to a proper sequence.
+Otherwise we get errors when calling too far or missing optimization when short call can be made.
+- works in existing compilers
 
 ==== automatic selection of regpush on isr entry config
 
 
 
-compilers usally dont care about non-abi prologues epilogues
 
 == programmers model
 
@@ -618,10 +665,11 @@ compilers usally dont care about non-abi prologues epilogues
 //little endian only
 
 //common
+	//optional extensions
 	//optional tiny vect table
 
 //profiles
-//tiny
+//tiny // Xteic
 	//limited features
 	//??
 
@@ -647,10 +695,16 @@ The cause code can be implied from hardcoded vector table position.
 Therefore it's redundant. The other issue with cause code is that
 it has to be somehow preserved during nesting.
 
-=== no single bit interrupt mask
+=== no single bit interrupt enable
 
 4 bit mask
 
+=== no "user" NMI interrupts
+
+use highest priority interrupt ad mask out only lower nesting levels
+
+
+=== no `misa` register
 
 [bibliography]
 == Bibliography
