@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.40
+:appversion: 0.1.41
 :toc:
 :toclevels: 5
 :sectnums:
@@ -583,8 +583,8 @@ requirements and improvements needed for efficient IPRA:
 - compilers need to avoid using more registers than necessary (currently no reason)
 - registers from compressible range should be allocated only when it will benefit
 code density (currently no reason)
-- to avoid regressions compilers need some kind of heurestic to detect when stacking
-certain compressible callee saved registers would yield better code density than using
+- to avoid regression, compilers need some kind of heuristic to detect when stacking
+certain (compressible) callee saved registers would yield better code density than using
 more temporaries from non compressible ranges
 
 NOTE: on riscv it's `s0` and `s1`
@@ -594,17 +594,20 @@ NOTE: This is also non IPRA optimization (-Oz kind)
 - need special assembly directive to annotate such exports from pure assembly code (workaround exist
 <<applying IPRA to assembly functions>>)
 
-- very important point is resolving IPRA allocation of callbacks
+- very important point is resolving IPRA annotations of callbacks
 -- callbacks passed as parameters
 -- callbacks initialized once at startup
 -- queues (of structs) with callbacks
+The second type 
 
--
--
--
--
--
--
+NOTE: callbacks are commonly used in interrups
+
+- a
+- b
+- c
+- d
+- e
+- f
 
 
 
@@ -631,6 +634,7 @@ wasn't implemented though
 
 The other option is to use inline asm clobbers to make call to such funcions
 
+[source, C]
 ```
 	__attribute__((always_inline))
 	static inline int weird_call(int n, void* p)
