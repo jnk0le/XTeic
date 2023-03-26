@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.41
+:appversion: 0.1.42
 :toc:
 :toclevels: 5
 :sectnums:
@@ -594,13 +594,14 @@ NOTE: This is also non IPRA optimization (-Oz kind)
 - need special assembly directive to annotate such exports from pure assembly code (workaround exist
 <<applying IPRA to assembly functions>>)
 
-- very important point is resolving IPRA annotations of callbacks
--- callbacks passed as parameters
--- callbacks initialized once at startup
--- queues (of structs) with callbacks
-The second type 
+- very important point is resolving IPRA annotations of callbacks, where the callback call 
+will use the smallest common regmask of all functions that can be called through this point
+** callbacks initialized once at startup (typical in many HALs)
+** callbacks passed as function parameters
+** queues (of structs) with callbacks
 
-NOTE: callbacks are commonly used in interrups
+NOTE: callbacks are commonly used in peripheral interrups, therefore it's important to
+apply IPRA optimizations to those as well
 
 - a
 - b
@@ -616,21 +617,18 @@ NOTE: callbacks are commonly used in interrups
 
 
 
-///===== adjusting ipra wrt prestacked regs
+//===== adjusting ipra wrt prestacked regs
 //compilers usally dont care about non-abi prologues epilogues
 
 
-==== applying IPRA to assembly functions
+===== applying IPRA to assembly functions
 
-
-a)
-
-proposed by original author of llvm IPRA iplementation
+First option as proposed by original author of llvm IPRA iplementation was the
+special attribute to annotate function declaration in header associated with assembly code
 
 `\\__attribute__\((regmask("clobbered list here")))`
 
-wasn't implemented though
-
+It Wasn't implemented upstream.
 
 The other option is to use inline asm clobbers to make call to such funcions
 
@@ -655,7 +653,7 @@ The other option is to use inline asm clobbers to make call to such funcions
 
 - requires the `call` pseudoinstruction that expands to a proper sequence.
 Otherwise we get errors when calling too far or missing optimization when short call can be made.
-- works in existing compilers
+- works in existing compilers (at least in gcc and llvm)
 
 ==== automatic selection of regpush on isr entry config
 
