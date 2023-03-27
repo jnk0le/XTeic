@@ -1,10 +1,11 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.42
+:appversion: 0.1.43
 :toc:
 :toclevels: 5
 :sectnums:
+:sectnumlevels: 3
 
 
 {author} {email} +
@@ -170,8 +171,8 @@ NOTE: FPGA minimum cores, is a non goal for this spec
 
 ==== ti c2000 (main core)
 
-Proprietary TI architecture <<spru430>> sporting an ancient accumulator-memory architecture (with 8 pointer registers),
-similar to the classic CISCs. An x86 of motor control and signal processing.
+Proprietary TI architecture <<spru430>> sporting an ancient looking accumulator-memory architecture 
+(with 8 pointer registers), similar to the classic CISCs. An x86 of motor control and signal processing.
 FPU <<spruhs1c>> is more RISC-ish with a bit of VLIW in some instructions.
 
 NOTE: TI is very hesitant to release any general purpose benchmark scores (speed/size etc.) 
@@ -587,12 +588,23 @@ code density (currently no reason)
 certain (compressible) callee saved registers would yield better code density than using
 more temporaries from non compressible ranges
 
-NOTE: on riscv it's `s0` and `s1`
+NOTE: on riscv it's `s0` and `s1`, in presence of Zcmp[e] pushing `s0,s1` is free in non 
+leaf functions, and just 2 16bit instructions in leaf.
 
 NOTE: This is also non IPRA optimization (-Oz kind)
 
 - need special assembly directive to annotate such exports from pure assembly code (workaround exist
 <<applying IPRA to assembly functions>>)
+
+NOTE: automatic detection is not an option due to self constructed instructions:
+[source, asm]
+```
+.word (0b0000000<<25)|(8<<20)|(0<<15)|(10<<7)|0x43 
+.insn i CUSTOM_1, 0x0, 1, a0, 0x123 
+//equivalent to:
+//tio.add0.xy a0, y0, s0
+//tio.addi0.yx y1, a0, 0x123 
+```
 
 - very important point is resolving IPRA annotations of callbacks, where the callback call 
 will use the smallest common regmask of all functions that can be called through this point
@@ -603,22 +615,23 @@ will use the smallest common regmask of all functions that can be called through
 NOTE: callbacks are commonly used in peripheral interrups, therefore it's important to
 apply IPRA optimizations to those as well
 
-- a
-- b
-- c
-- d
-- e
-- f
+- it can be used to annotate that passed function arguments (through registers or stack) were 
+not modified and can be recycled by caller (e.g. in loops)
+- it can also "export" list of deterministic constants (and addresses) that are left in registers
+after return
 
-
-
-
-
+NOTE: it is portable to other architectures, the more caller saved registers are available,
+the higher relative gain is.
 
 
 
 //===== adjusting ipra wrt prestacked regs
 //compilers usally dont care about non-abi prologues epilogues
+
+in case of Zcmp[e]
+in a leaf function handlers it 
+more efficient to push s registers 
+instead of
 
 
 ===== applying IPRA to assembly functions
@@ -626,9 +639,9 @@ apply IPRA optimizations to those as well
 First option as proposed by original author of llvm IPRA iplementation was the
 special attribute to annotate function declaration in header associated with assembly code
 
-`\\__attribute__\((regmask("clobbered list here")))`
+e.g. `\\__attribute__\((regmask("clobbered list here")))`
 
-It Wasn't implemented upstream.
+- It Wasn't implemented upstream.
 
 The other option is to use inline asm clobbers to make call to such funcions
 
@@ -638,12 +651,12 @@ The other option is to use inline asm clobbers to make call to such funcions
 	static inline int weird_call(int n, void* p)
 	{
 		register int result asm("a0") = n;
-		register void* r1 asm("a1") = p;
+		register void* a1 asm("a1") = p;
 
 		asm volatile(
 			"call foo \n\t"
 			: [ARG0] "+r" (result) // return in same register
-			: [ARG1] "r" (r1)
+			: [ARG1] "r" (a1)
 			: "memory", "ra", "a2" // use clobber for any caller saved regs used
 		);
 
