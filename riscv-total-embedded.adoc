@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.43
+:appversion: 0.1.44
 :toc:
 :toclevels: 5
 :sectnums:
@@ -100,6 +100,7 @@ amount of caller-saved registers. FP registers are handled by lazy stacking.
 Introduces interrupt priority threshold masking.
 
 mandates 4 64bit timers (even on RV32):
+
 - cycle counter
 - instret counter
 - system timer
@@ -277,6 +278,9 @@ Even stacking by the special push instructions (e.g. XTheadInt <<thead>> or
 PUSHINT <<pushint>> and maybe a subsets of those), won't help much. Those start pushing
 after the latency of double (waitstated) miss was taken.
 
+The only situation when soft stacking yields better results is when HW stacker has to push 
+way more registers than is actually used.
+
 ==== EABI for RVE must be subset of RVI EABI.
 
 To be able to call RVE only code from RVI ABI +
@@ -320,7 +324,7 @@ Even though this behaviour simplifies hardware, it was oversighted in ABI design
 by allowing "auxiliary information" in pointers as well as `jalr` 
 immediate, effectively making both useless.
 
-==== vector tables containing jump instructions
+==== vector tables that are jumped to
 
 It's simply inefficient in truly vectored scenario.
 The vector entries will have to be populated with jump instructions anyway.
@@ -474,7 +478,7 @@ microarchitectures capable of stacking 2 registers per cycle
 |====================================================================================
 
 NOTE: ilp32e with `tp` turned into temporary, number of saved registers still needs to be adjusted
-as there are only 2 of them
+wrt. <<IPRA - Inter procedural register allocation, IPRA>> as there are only 2 of them
 
 ==== RVI
 
@@ -588,8 +592,9 @@ code density (currently no reason)
 certain (compressible) callee saved registers would yield better code density than using
 more temporaries from non compressible ranges
 
-NOTE: on riscv it's `s0` and `s1`, in presence of Zcmp[e] pushing `s0,s1` is free in non 
-leaf functions, and just 2 16bit instructions in leaf.
+NOTE: on riscv it's `s0` and `s1`, in presence of Zcmp[e] pushing `s0,s1` is free 
+in non leaf functions, and just 2 16bit instructions in leaf. With IPRA it should be also
+possible to just move `ra` and `s0/s1` into caller saved regs.
 
 NOTE: This is also non IPRA optimization (-Oz kind)
 
@@ -599,7 +604,7 @@ NOTE: This is also non IPRA optimization (-Oz kind)
 NOTE: automatic detection is not an option due to self constructed instructions:
 [source, asm]
 ```
-.word (0b0000000<<25)|(8<<20)|(0<<15)|(10<<7)|0x43 
+.word (0b0000000<<25)|(8<<20)|(0<<15)|(0b001<<12)|(10<<7)|0x43 
 .insn i CUSTOM_1, 0x0, 1, a0, 0x123 
 //equivalent to:
 //tio.add0.xy a0, y0, s0
@@ -620,23 +625,28 @@ not modified and can be recycled by caller (e.g. in loops)
 - it can also "export" list of deterministic constants (and addresses) that are left in registers
 after return
 
-NOTE: it is portable to other architectures, the more caller saved registers are available,
-the higher relative gain is.
+NOTE: This mechanism is portable to other architectures, the more caller saved registers are
+available, the higher relative gain is.
 
+===== adjusting ipra wrt prestacked registers
 
+Because the HW stackers (used with <<prestacked annotation>>) will prefer to stack out the
+compressible registers first, it might not be the best match for IPRA optimized allocation
 
-//===== adjusting ipra wrt prestacked regs
-//compilers usally dont care about non-abi prologues epilogues
+NOTE: compilers usally dont care about non-abi (interrupt) prologues/epilogues
 
-in case of Zcmp[e]
-in a leaf function handlers it 
-more efficient to push s registers 
-instead of
+The solution could be:
 
+- optimize HW stacker for typical allocations
+- make compilers treat specially a call trees growing from interrupt handlers (requires special attribute)
+- trump the general IPRA optimizations
+
+Handlers that are not calling another functions should be straightforward as long as the compiler
+allocators/optimizers are not going to straight out ignore <<prestacked annotation>>.
 
 ===== applying IPRA to assembly functions
 
-First option as proposed by original author of llvm IPRA iplementation was the
+First option as proposed by original author of llvm IPRA iplementation, was the
 special attribute to annotate function declaration in header associated with assembly code
 
 e.g. `\\__attribute__\((regmask("clobbered list here")))`
@@ -677,19 +687,21 @@ Otherwise we get errors when calling too far or missing optimization when short 
 
 //?????
 //non profile ext
-//little endian only
+little endian only
 
-//common
-	//optional extensions
-	//optional tiny vect table
+=== common
+//optional extensions
+//optional tiny vect table
 
 //profiles
 //tiny // Xteic
-	//limited features
-	//??
+//limited features
+//??
 
-//medium
-//sec
+
+=== Xteic (aka Total Embedded Interrupt Controller tiny)
+
+a
 
 [appendix]
 == context switch on tiny profile
@@ -712,6 +724,8 @@ it has to be somehow preserved during nesting.
 
 === no single bit interrupt enable
 
+redundant
+
 4 bit mask
 
 === no "user" NMI interrupts
@@ -720,6 +734,11 @@ use highest priority interrupt ad mask out only lower nesting levels
 
 
 === no `misa` register
+
+
+=== stacking of floating point and vector registers 
+
+currently ???
 
 [bibliography]
 == Bibliography
