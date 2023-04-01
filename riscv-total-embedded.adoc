@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.44
+:appversion: 0.1.45
 :toc:
 :toclevels: 5
 :sectnums:
@@ -182,8 +182,8 @@ real world control applications". Those kind of scores are also almost non exist
 
 According to <<spraan9a>>, the core automatically saves some of the registers, rest must be pushed
 in software. +
-"High priority" interrupts can also save floating point registers into shadow registers using 
-special instructions. +
+"High priority" interrupts can also save and restore all 8 floating point registers into shadow
+registers using special instructions. +
 There are also 5 (4 in prologue) defacto useless instructions for aligning stack and setting "C28 modes"
 
 To allow nesting of "low priority" interrupts handlers must include extra boilerplate code to
@@ -398,7 +398,7 @@ jitter is always given in tens or hundreds of microseconds, not cycles
 
 In some scenarios those numbers are unacceptable. +
 As an example, industry standard, FOC current loops close within 5-10us <<brianchavens>>
-and in some cases it achieves sub 1us latency <<swpy031>>.
+and in some cases it achieves sub 1us latency <<swpy031>>. On a <200 Mhz controllers.
 
 ==== lazy stacking
 
@@ -428,9 +428,11 @@ special realignment in interrupts.
 [NOTE] 
 ====
 psABI <<riscvpsabi>> says that:
+
 >stack pointer must remain aligned throughout procedure execution
 
 and fails to enforce enforce this anyway.
+
 >Non-standard ABI code must realign the stack pointer prior to invoking standard ABI procedures. The
 >operating system must realign the stack pointer prior to invoking a signal handler; hence, POSIX
 >signal handlers need not realign the stack pointer. In systems that service interrupts using the
@@ -628,6 +630,9 @@ after return
 NOTE: This mechanism is portable to other architectures, the more caller saved registers are
 available, the higher relative gain is.
 
+NOTE: vector extension can benefit from IPRA as current psABI makes all vector registers
+temporary, though the syscall destroy entire state
+
 ===== adjusting ipra wrt prestacked registers
 
 Because the HW stackers (used with <<prestacked annotation>>) will prefer to stack out the
@@ -740,6 +745,18 @@ use highest priority interrupt ad mask out only lower nesting levels
 
 currently ???
 
+=== undefined initial state of registers
+
+"to protect software from itself" <<cv32regzeroing>>
+
+
+it doesn't protect softwere from itself, it just hides bugs until
+they manifest in the worst possible scenario
+
+like debugging at -O0
+
+V extension uses all `1` for `tail agnostic` mode just to prevent software relying on uarch dependent zeroing
+
 [bibliography]
 == Bibliography
 
@@ -778,3 +795,4 @@ currently ???
 * [[[riscvpsabi, 33]]] https://github.com/riscv-non-isa/riscv-elf-psabi-doc
 * [[[swpy031, 34]]] https://www.ti.com/lit/wp/swpy031/swpy031.pdf
 * [[[brianchavens, 35]]] https://www.brianchavens.com/2018/09/20/motor-control-microcontroller-performance-comparison/
+* [[[cv32regzeroing, 36]]] https://github.com/openhwgroup/cv32e40p/issues/221
