@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.45
+:appversion: 0.1.46
 :toc:
 :toclevels: 5
 :sectnums:
@@ -431,7 +431,7 @@ psABI <<riscvpsabi>> says that:
 
 >stack pointer must remain aligned throughout procedure execution
 
-and fails to enforce enforce this anyway.
+and fails to enforce enforce this anyway:
 
 >Non-standard ABI code must realign the stack pointer prior to invoking standard ABI procedures. The
 >operating system must realign the stack pointer prior to invoking a signal handler; hence, POSIX
@@ -503,6 +503,16 @@ wrt. <<IPRA - Inter procedural register allocation, IPRA>> as there are only 2 o
 | x18-x27 | s2-s11 | callee | saved
 | x28-x31 | t4-t7 | caller | temporary
 |====================================================================================
+
+=== debug
+
+
+==== interface
+
+JTAG uses too many pins
+
+best would be
+1 wire hanging off reset (cannot attach to running target until reset disabled)
 
 === tooling issues to solve
 
@@ -740,6 +750,12 @@ use highest priority interrupt ad mask out only lower nesting levels
 
 === no `misa` register
 
+It's useless.
+
+will it tell you if there is Zbb or Zca implemented? - no
+
+On embedded targets, HW information about implemented extensions and ability
+to enable/disable them, has a low value.
 
 === stacking of floating point and vector registers 
 
@@ -747,13 +763,9 @@ currently ???
 
 === undefined initial state of registers
 
-"to protect software from itself" <<cv32regzeroing>>
-
-
-it doesn't protect softwere from itself, it just hides bugs until
-they manifest in the worst possible scenario
-
-like debugging at -O0
+It is said that registers have to be zeroed at reset "to protect software from itself" <<cv32regzeroing>>
+It doesn't, it just hides bugs until they manifest in the worst possible scenario.
+Just like developing/debugging code at -O0.
 
 V extension uses all `1` for `tail agnostic` mode just to prevent software relying on uarch dependent zeroing
 
