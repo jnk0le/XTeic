@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.46
+:appversion: 0.1.47
 :toc:
 :toclevels: 5
 :sectnums:
@@ -623,6 +623,7 @@ NOTE: automatic detection is not an option due to self constructed instructions:
 //tio.addi0.yx y1, a0, 0x123 
 ```
 
+- precompiled libraries should also do an "IPRA exports"
 - very important point is resolving IPRA annotations of callbacks, where the callback call 
 will use the smallest common regmask of all functions that can be called through this point
 ** callbacks initialized once at startup (typical in many HALs)
@@ -761,13 +762,18 @@ to enable/disable them, has a low value.
 
 currently ???
 
+Zfinx ???
+
 === undefined initial state of registers
 
 It is said that registers have to be zeroed at reset "to protect software from itself" <<cv32regzeroing>>
 It doesn't, it just hides bugs until they manifest in the worst possible scenario.
-Just like developing/debugging code at -O0.
+Just like developing and debugging code at -O0.
 
-V extension uses all `1` for `tail agnostic` mode just to prevent software relying on uarch dependent zeroing
+This kind of use of uninitailized variables is UB in C/C++ and easily detectable by compilers.
+
+NOTE: V extension uses all `1`s for `tail agnostic` filling just to prevent software relying on
+uarch dependent zeroing.
 
 [bibliography]
 == Bibliography
