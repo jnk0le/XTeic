@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.49
+:appversion: 0.1.50
 :toc:
 :toclevels: 5
 :sectnums:
@@ -63,7 +63,7 @@ All used registers must be saved in software, trampoline handlers need to save a
 Preemption is handled in software by special CSR mechanism, that requires extra boilerplate
 code in every interrupt handler. Even in "inline" handlers.
 
-Highest priority inline handlers are similar to legacy ones.
+Highest priority inline handlers should possible to be made similar to legacy ones.
 
 Introduces unavoidable jitter due to:
 
@@ -701,18 +701,15 @@ Otherwise we get errors when calling too far or missing optimization when short 
 
 == programmers model
 
-//?????
-//non profile ext
-little endian only
+set of profiles
+
+
 
 === common
-//optional extensions
-//optional tiny vect table
 
-//profiles
-//tiny // Xteic
-//limited features
-//??
+little endian only
+
+
 
 === auxiliary extensions
 
@@ -767,6 +764,9 @@ to enable/disable them, has a rather low value.
 currently ???
 
 Zfinx ???
+
+Those can still be handled by IPRA anyway. 
+FP push/pop instruction might be usefull in such case.
 
 === undefined initial state of registers
 
