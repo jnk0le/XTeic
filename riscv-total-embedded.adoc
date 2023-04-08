@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.47
+:appversion: 0.1.48
 :toc:
 :toclevels: 5
 :sectnums:
@@ -714,6 +714,8 @@ little endian only
 //limited features
 //??
 
+=== auxiliary extensions
+
 
 === Xteic (aka Total Embedded Interrupt Controller tiny)
 
@@ -746,6 +748,8 @@ redundant
 
 === no "user" NMI interrupts
 
+typically only 1 NMI handler + exceptions
+
 use highest priority interrupt ad mask out only lower nesting levels
 
 
@@ -756,7 +760,7 @@ It's useless.
 will it tell you if there is Zbb or Zca implemented? - no
 
 On embedded targets, HW information about implemented extensions and ability
-to enable/disable them, has a low value.
+to enable/disable them, has a rather low value.
 
 === stacking of floating point and vector registers 
 
@@ -774,6 +778,18 @@ This kind of use of uninitailized variables is UB in C/C++ and easily detectable
 
 NOTE: V extension uses all `1`s for `tail agnostic` filling just to prevent software relying on
 uarch dependent zeroing.
+
+=== little endian only
+
+Why would you want to have bg endian loads/stores? +
+Probably for handling tasks with "network byte order" which uses big endian representation.
+
+Nice.
+So, lets add a big-endian mode (making it configurable at runtime of course), and enjoy 
+endian neutral loads/stores (<<cryptogamsaesneutralloads>>) used by networking libraries because one 
+cannot be sure on which endianess the code will be run.
+
+Just use `rev8` for "network order" data. It's much better than doing endian neutral access.
 
 [bibliography]
 == Bibliography
@@ -814,3 +830,4 @@ uarch dependent zeroing.
 * [[[swpy031, 34]]] https://www.ti.com/lit/wp/swpy031/swpy031.pdf
 * [[[brianchavens, 35]]] https://www.brianchavens.com/2018/09/20/motor-control-microcontroller-performance-comparison/
 * [[[cv32regzeroing, 36]]] https://github.com/openhwgroup/cv32e40p/issues/221
+* [[[cryptogamsaesneutralloads, 37]]] https://github.com/openssl/openssl/blob/master/crypto/aes/asm/aes-armv4.pl#L216
