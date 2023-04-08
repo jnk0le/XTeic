@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.48
+:appversion: 0.1.49
 :toc:
 :toclevels: 5
 :sectnums:
@@ -76,7 +76,7 @@ assuming 1 cycle per instruction, 10.2 and 11.1 listings from clic spec <<clic>>
 
 - `entry + 6` cycles of jitter from "inline" handlers.
 - `entry + 7 + 16` cycles of jitter from "C-ABI" trampoline entry
-- `4` or `abs(entry - 7)` cycles of jitter from  "C-ABI" trampoline epilogue
+- `4 + exit` or `abs(entry - 7)` cycles of jitter from  "C-ABI" trampoline epilogue
 
 NOTE: the trampoline doesn't need to stack all of the 16 caller saved registers before enabling
 interrupts, but this exact code is about to be pushed down your throat anyway.
