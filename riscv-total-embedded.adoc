@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.50
+:appversion: 0.1.51
 :toc:
 :toclevels: 5
 :sectnums:
@@ -537,13 +537,15 @@ as a defacto calller saved one (aka create custom calling convention)
 
 - `prestacked("")` attribute
 - no whitespaces in string parameter
-- register range cover all registers between and including specified ("x4-x6" is equivalent to "x4,x5,x6")
+- register range cover all registers between and including specified (`x4-x6` is equivalent to `x4,x5,x6`)
 - registers/ranges are separated by comma
 - CSRs taking part in calling conventions are also subject to this mechanism
 - must use raw names instead of ABI mnemonics as to make it ABI agnostic (more portable)
 - registers must be be sorted (integer, floating point, vector, custom, then by lowest numbered)
 - CSRs must be put after the architectural regfiles, those don't have to be sorted
 - must not collide with `\\__attribute__\((interrupt))` as to support "legacy" handler return mechanisms
+- for interop with <<IPRA - Inter procedural register allocation, IPRA>>, unnammed custom CSRs 
+also have to be covered. e.g. `csr:0x801` or `csr:0x803-0x811` for a range
 
 psABI caller saved:
 
@@ -596,7 +598,7 @@ to a more efficiet code.
 requirements and improvements needed for efficient IPRA:
 
 - this mechanism must cover the CSRs as well as the registers (e.g. `fcsr`, `vtype`, `vl` etc.)
-- custom registers and CSRs should also be covered (e.g. HW loops in RI5CY)
+- custom registers and CSRs should also be covered (e.g. HW loops)
 - compilers need to avoid using more registers than necessary (currently no reason)
 - registers from compressible range should be allocated only when it will benefit
 code density (currently no reason)
@@ -649,12 +651,12 @@ temporary, though the syscall destroy entire state
 Because the HW stackers (used with <<prestacked annotation>>) will prefer to stack out the
 compressible registers first, it might not be the best match for IPRA optimized allocation
 
-NOTE: compilers usally dont care about non-abi (interrupt) prologues/epilogues
+NOTE: compilers usally don't care about non-abi (interrupt) prologues/epilogues
 
 The solution could be:
 
 - optimize HW stacker for typical allocations
-- make compilers treat specially a call trees growing from interrupt handlers (requires special attribute)
+- make compilers treat specially a call trees growing from interrupt handlers
 - trump the general IPRA optimizations
 
 Handlers that are not calling another functions should be straightforward as long as the compiler
@@ -696,7 +698,12 @@ Otherwise we get errors when calling too far or missing optimization when short 
 
 ==== automatic selection of regpush on isr entry config
 
+//per nestig level
+//per vector
 
+manually selecting prestacking might be inefficient
+
+saving too little or too many
 
 
 == programmers model
@@ -708,7 +715,7 @@ set of profiles
 === common
 
 little endian only
-
+software shall assume little endian
 
 
 === auxiliary extensions
@@ -716,7 +723,8 @@ little endian only
 
 === Xteic (aka Total Embedded Interrupt Controller tiny)
 
-a
+//tiny vect table
+//tiny zcmp[e] table
 
 [appendix]
 == context switch on tiny profile
@@ -790,6 +798,24 @@ endian neutral loads/stores (<<cryptogamsaesneutralloads>>) used by networking l
 cannot be sure on which endianess the code will be run.
 
 Just use `rev8` for "network order" data. It's much better than doing endian neutral access.
+
+=== `TEIC_BASE` address selection
+
+addressable through `c.lui`
+
+=== no user trigger for NMIs
+
+"to simulate conditions"
+
+instead
+
+the associated peripherals (clock recovery, ECC etc.) should provide 
+
+"simulation mode"
+trigger
+
+some can (like watchdog) can be easily triggered without the artificial trigger
+
 
 [bibliography]
 == Bibliography
