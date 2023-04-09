@@ -11,5 +11,4 @@ $(PDF_RESULT): $(SOURCES)
 	-a compress \
 	--require=asciidoctor-diagram \
 	--out-file=$@ \
-	--trace \
 	$(HEADER_SOURCE)
