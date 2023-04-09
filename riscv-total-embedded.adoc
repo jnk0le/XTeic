@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.2.1
+:appversion: 0.3.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -717,17 +717,33 @@ set of profiles
 little endian only
 software shall assume little endian
 
+==== recycled privileged CSRs
+
+
+
 
 === auxiliary extensions
 
-==== Xfenceipipe
+==== Xfenceiext
 
-Flushes the pipeline before executing next instruction
+Because J extension group is going to simply ignore the fact that `fence.i` instruction
+allocated whole 22.125 bits of opcodes, and introduce a new instructions for operational
+subset of `fence.i` (e.g. `IMPORT.I`) <<zjid1>>,<<zjid2>>. We don't need to care about eventual 
+sync with Zjid encodings.
 
-//??? not suitable for sync with architectural state change??? (ie enable instructions, change `JVT`, `mtvec` etc.)
-//??? another bit for CSR sync???
+The rationale is that the `fence.i` encodes whole instruction side synchronization with all zero immediate.
+Therefore we can remove all of the sync mechanisms by inverting the bits, other than the one designated for
+certain operation.
 
-NOTE: equivalent to ARM `isb` intruction
+The uppermost 4 bits remain zero to allow enabling extra features not covered by `fence.i`.
+
+===== teic.fence.ipipe
+
+Flushes the pipeline before executing next instruction. +
+Encoded in bit 0 of `fence.i` immediate
+
+NOTE: not suitable for synchronizing with architectural state modifications by
+CSR instructions, use `teic.fence.icsrsync` instead
 
 Mnemonic::
 ```
@@ -742,22 +758,35 @@ Encoding (RV32, RV64)::
  { bits: 5, name: 0x0, attr: ['rd'] },
  { bits: 3, name: 0x1 },
  { bits: 5, name: 0x0, attr: ['rs1'] },
- { bits: 12, name: 0x07e },
+ { bits: 12, name: 0x0fe, attr: ['imm'] },
 ]}
 ....
 
-===== meaning of `imm` bits encoding
+===== teic.fence.icsrsync
 
-Because J extension group is going to simply ignore the fact that `fence.i` instruction
-allocated whole 22.125 bits of opcodes, and introduce a new instructions for operational
-subset of `fence.i` (e.g. `IMPORT.I`) <<zjid1>>,<<zjid2>>. We don't need to care about eventual 
-sync with Zjid encodings.
+Ensures that the next instruction is executed after the architectural state change 
+by a preceding CSR instructions (or equivalent) takes effect.
+Encoded in bit 1 of `fence.i` immediate
 
-The rationale is that the `fence.i` encodes whole instruction synchronization with all zero immediate.
-Therefore we can remove all of the sync mechanism by inverting the bits, other than the one designated for
-pipeline flush.
+NOTE: In many cases CSR updates don't require full pipeline flush, though it can be implemented
+as regular pipeline flush.
 
-The uppermost 5 bits remain zero to allow enabling extra features not covered by `fence.i`.
+Mnemonic::
+```
+teic.fence.icsrsync
+```
+
+Encoding (RV32, RV64)::
+[wavedrom, , svg]
+....
+{reg:[
+ { bits: 7, name: 0xf, attr: ['MISC-MEM'] },
+ { bits: 5, name: 0x0, attr: ['rd'] },
+ { bits: 3, name: 0x1 },
+ { bits: 5, name: 0x0, attr: ['rs1'] },
+ { bits: 12, name: 0x0fd, attr: ['imm'] },
+]}
+....
 
 === Xteic (aka Total Embedded Interrupt Controller tiny)
 
@@ -791,7 +820,11 @@ redundant
 
 === no "user" NMI interrupts
 
+on classic application processors/SoCs there was a single external input
+
 typically only 1 NMI handler + exceptions
+
+on some cortex m routed to external pin
 
 use highest priority interrupt ad mask out only lower nesting levels
 
@@ -860,7 +893,9 @@ the generic privileged modes are not used at all
 
 address can be generated with single `lui`/`c.lui`
 
+=== no separate process stack
 
+?
 
 [bibliography]
 == Bibliography
