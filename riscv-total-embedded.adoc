@@ -735,7 +735,7 @@ teic.fence.ipipe
 ```
 
 Encoding (RV32, RV64)::
-[wavedrom, , svg]
+///[wavedrom, , svg]
 ....
 {reg:[
  { bits: 7, name: 0xf, attr: ['MISC-MEM'] },
