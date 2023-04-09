@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.3.1
+:appversion: 0.3.2
 :toc:
 :toclevels: 5
 :sectnums:
@@ -429,7 +429,6 @@ special realignment in interrupts.
 ====
 psABI <<riscvpsabi>> says that:
 
-
 [quote]
 ----
 stack pointer must remain aligned throughout procedure execution
@@ -569,7 +568,7 @@ psABI with floating point, caller saved:
 
 ch32v003 (ilp32e + PFIC HW stacker, assuming `ra` doesn't have some undocumented use)
 
-`\\__attribute__\((interrupt, prestacked("ra,x5-x7,x10-x15")))`
+`\\__attribute__\((interrupt, prestacked("x1,x5-x7,x10-x15")))`
 
 NOTE: unannotated `ra` is assumed as a valid return address, otherwise a special return mechanism must be
 used
