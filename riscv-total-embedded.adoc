@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.3.0
+:appversion: 0.3.1
 :toc:
 :toclevels: 5
 :sectnums:
@@ -429,16 +429,24 @@ special realignment in interrupts.
 ====
 psABI <<riscvpsabi>> says that:
 
->stack pointer must remain aligned throughout procedure execution
+
+[quote]
+----
+stack pointer must remain aligned throughout procedure execution
+----
 
 and fails to enforce enforce this anyway:
 
->Non-standard ABI code must realign the stack pointer prior to invoking standard ABI procedures. The
->operating system must realign the stack pointer prior to invoking a signal handler; hence, POSIX
->signal handlers need not realign the stack pointer. In systems that service interrupts using the
->interruptee’s stack, the interrupt service routine must realign the stack pointer if linked with any
->code that uses a non-standard stack-alignment discipline, but need not realign the stack pointer if
->all code adheres to the standard ABI
+[quote]
+----
+Non-standard ABI code must realign the stack pointer prior to invoking standard ABI procedures. The
+operating system must realign the stack pointer prior to invoking a signal handler; hence, POSIX
+signal handlers need not realign the stack pointer. In systems that service interrupts using the
+interruptee’s stack, the interrupt service routine must realign the stack pointer if linked with any
+code that uses a non-standard stack-alignment discipline, but need not realign the stack pointer if
+all code adheres to the standard ABI
+----
+
 ====
 
 Major ilp32e issue is that the `addi16sp` instruction works on 16 byte stack increment.
