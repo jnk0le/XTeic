@@ -9,6 +9,7 @@ all: $(PDF_RESULT)
 $(PDF_RESULT): $(SOURCES)
 	asciidoctor-pdf \
 	-a compress \
+	--failure-level=WARN \
 	--require=asciidoctor-diagram \
 	--out-file=$@ \
 	$(HEADER_SOURCE)
