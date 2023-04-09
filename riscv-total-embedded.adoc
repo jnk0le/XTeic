@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.1.51
+:appversion: 0.2.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -480,7 +480,7 @@ microarchitectures capable of stacking 2 registers per cycle
 |====================================================================================
 
 NOTE: ilp32e with `tp` turned into temporary, number of saved registers still needs to be adjusted
-wrt. <<IPRA - Inter procedural register allocation, IPRA>> as there are only 2 of them
+wrt. <<IPRA - Inter procedural register allocation, IPRA>> as there are only 2 of them.
 
 ==== RVI
 
@@ -720,6 +720,44 @@ software shall assume little endian
 
 === auxiliary extensions
 
+==== Xfenceipipe
+
+Flushes the pipeline before executing next instruction
+
+//??? not suitable for sync with architectural state change??? (ie enable instructions, change `JVT`, `mtvec` etc.)
+//??? another bit for CSR sync???
+
+NOTE: equivalent to ARM `isb` intruction
+
+Mnemonic::
+```
+teic.fence.ipipe
+```
+
+Encoding (RV32, RV64)::
+[wavedrom, , svg]
+....
+{reg:[
+ { bits: 7, name: 0xf, attr: ['MISC-MEM'] },
+ { bits: 5, name: 0x0, attr: ['rd'] },
+ { bits: 3, name: 0x1 },
+ { bits: 5, name: 0x0, attr: ['rs1'] },
+ { bits: 12, name: 0x07e },
+]}
+....
+
+===== meaning of `imm` bits encoding
+
+Because J extension group is going to simply ignore the fact that `fence.i` instruction
+allocated whole 22.125 bits of opcodes, and introduce a new instructions for operational
+subset of `fence.i` (e.g. `IMPORT.I`) <<zjid1>>,<<zjid2>>. We don't need to care about eventual 
+sync with Zjid encodings.
+
+The rationale is that the `fence.i` encodes whole instruction synchronization with all zero immediate.
+Therefore we can remove all of the sync mechanism by inverting the bits, other than the one designated for
+pipeline flush.
+
+The uppermost 5 bits remain zero to allow enabling extra features not covered by `fence.i`.
 
 === Xteic (aka Total Embedded Interrupt Controller tiny)
 
@@ -805,7 +843,7 @@ addressable through `c.lui`
 
 === no user trigger for NMIs
 
-"to simulate conditions"
+typically used to emulate error events during development.
 
 instead
 
@@ -815,6 +853,13 @@ the associated peripherals (clock recovery, ECC etc.) should provide
 trigger
 
 some can (like watchdog) can be easily triggered without the artificial trigger
+
+=== recycled `0b00` MODE in mtvec
+
+the generic privileged modes are not used at all
+
+address can be generated with single `lui`/`c.lui`
+
 
 
 [bibliography]
@@ -857,3 +902,5 @@ some can (like watchdog) can be easily triggered without the artificial trigger
 * [[[brianchavens, 35]]] https://www.brianchavens.com/2018/09/20/motor-control-microcontroller-performance-comparison/
 * [[[cv32regzeroing, 36]]] https://github.com/openhwgroup/cv32e40p/issues/221
 * [[[cryptogamsaesneutralloads, 37]]] https://github.com/openssl/openssl/blob/master/crypto/aes/asm/aes-armv4.pl#L216
+* [[[zjid1, 38]]] https://github.com/riscv/riscv-j-extension/blob/master/id-consistency-proposal.pdf
+* [[[zjid2, 39]]] https://lists.riscv.org/g/tech-j-ext/message/481
