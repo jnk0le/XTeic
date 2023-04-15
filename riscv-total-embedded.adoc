@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.3.2
+:appversion: 0.3.3
 :toc:
 :toclevels: 5
 :sectnums:
@@ -247,25 +247,11 @@ during HW stacking due to shorter stacking time than pipeline refill.
 An alternative is to provide interrupts with defacto customizable ABIs by e.g. <<prestacked annotation>>
 (to match the HW stackers) and handle the function call pressure by <<IPRA - Inter procedural register allocation, IPRA>>.
 
-==== "you are better of with soft stacking in inline handlers"
+==== "you are better off with soft stacking in inline handlers"
 
 aka generic riscv `\\__attribute__\((interrupt))`
 
-First major issue is decreased code density due to all of the stacking code.
-
-Compilers also barely care about optimizing for register pressure in interrupts.
-The prologues/epilogues seem to be completely transparent for code generation.
-Which is especially visible in cases where majority of the prologue/epilogue code could 
-be easily conditionally skipped, but compilers simply don't do it.
-(just the loads/stores, stack can be fully preallocated on entry)
-
-NOTE: avr8-gcc for a very long time was emitting useless prologues/epilogues for pushing `SREG`, `r0`, `r1` and clearing `r1`
-even though those were not affected or used by ISR code. Of course the version that finally fixed it, was never 
-shipped in Atmel Studio.
-
-NOTE: Zcmp[e] doesn't cover caller saved registers except `ra`.
-
-The other one is one of the principles of hardware stackers.
+The major issue lies within the principles of hardware stackers.
 
 When entering interrupt handler, the core first fetches the entry from vector table and then
 jumps to that address. Both of those fetches can hit a flash waitstate or a cache miss.
@@ -280,6 +266,8 @@ after the latency of double (waitstated) miss was taken.
 
 The only situation when soft stacking yields better results is when HW stacker has to push 
 way more registers than is actually used.
+
+NOTE: Zcmp[e] doesn't cover caller saved registers except `ra`.
 
 ==== EABI for RVE must be subset of RVI EABI.
 
@@ -658,13 +646,14 @@ temporary, though the syscall destroy entire state
 Because the HW stackers (used with <<prestacked annotation>>) will prefer to stack out the
 compressible registers first, it might not be the best match for IPRA optimized allocation
 
-NOTE: compilers usally don't care about non-abi (interrupt) prologues/epilogues
+NOTE: compilers usally don't care about non-abi (interrupt) prologues/epilogues and
+emit code as if it was the regular ABI function
 
 The solution could be:
 
 - optimize HW stacker for typical allocations
 - make compilers treat specially a call trees growing from interrupt handlers
-- trump the general IPRA optimizations
+- trump the general IPRA optimizations to use `a0-a5` first
 
 Handlers that are not calling another functions should be straightforward as long as the compiler
 allocators/optimizers are not going to straight out ignore <<prestacked annotation>>.
@@ -867,13 +856,13 @@ uarch dependent zeroing.
 
 === little endian only
 
-Why would you want to have bg endian loads/stores? +
-Probably for handling tasks with "network byte order" which uses big endian representation.
+Why would you want to have big endian loads/stores? +
+Probably for handling tasks with "network byte order" data which uses big endian representation.
 
 Nice.
 So, lets add a big-endian mode (making it configurable at runtime of course), and enjoy 
-endian neutral loads/stores (<<cryptogamsaesneutralloads>>) used by networking libraries because one 
-cannot be sure on which endianess the code will be run.
+mandatory endian neutral loads/stores (<<cryptogamsaesneutralloads>>) used by networking 
+libraries, because one cannot be sure on which endianess the code will be run.
 
 Just use `rev8` for "network order" data. It's much better than doing endian neutral access.
 
