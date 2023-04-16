@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.3.3
+:appversion: 0.4.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -715,7 +715,15 @@ software shall assume little endian
 
 ==== recycled privileged CSRs
 
+[cols="1,1,1,1",options=header]
+|=================================
 
+
+
+
+
+
+|=================================
 
 
 === auxiliary extensions
@@ -783,6 +791,14 @@ Encoding (RV32, RV64)::
  { bits: 12, name: 0x0fd, attr: ['imm'] },
 ]}
 ....
+
+==== Xicsrmz
+
+Implemented similarly to Zicsr with `uimm=0` mapped into -1 constant.
+`csrrsi`/`csrrci` with `uimm=0` still doesn't write and cause write side effects.
+
+NOTE: This extensions allows to sync `csrrwi` instruction, with some other extensions 
+<<XTightlyCoupledIO>>, as to not cause additional immediate formats.
 
 === Xteic (aka Total Embedded Interrupt Controller tiny)
 
@@ -935,3 +951,4 @@ address can be generated with single `lui`/`c.lui`
 * [[[cryptogamsaesneutralloads, 37]]] https://github.com/openssl/openssl/blob/master/crypto/aes/asm/aes-armv4.pl#L216
 * [[[zjid1, 38]]] https://github.com/riscv/riscv-j-extension/blob/master/id-consistency-proposal.pdf
 * [[[zjid2, 39]]] https://lists.riscv.org/g/tech-j-ext/message/481
+* [[[XTightlyCoupledIO, 39]]] https://github.com/jnk0le/XTightlyCoupledIO
