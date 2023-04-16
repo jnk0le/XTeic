@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.4.0
+:appversion: 0.4.1
 :toc:
 :toclevels: 5
 :sectnums:
@@ -800,6 +800,8 @@ Implemented similarly to Zicsr with `uimm=0` mapped into -1 constant.
 NOTE: This extensions allows to sync `csrrwi` instruction, with some other extensions 
 <<XTightlyCoupledIO>>, as to not cause additional immediate formats.
 
+NOTE: `csrrw rd, csr, x0` can still be used to write a zero into csr.
+
 === Xteic (aka Total Embedded Interrupt Controller tiny)
 
 //tiny vect table
@@ -907,7 +909,16 @@ address can be generated with single `lui`/`c.lui`
 
 === no separate process stack
 
-?
+only 4 levels of nesting
+
+smallest size uc
+
+expected to run rtos less
+
+=== no csr scratch registers
+
+Unlike the big unix machines, the RTOS context can be statically
+addressed by `lui` + `addi` sequence.
 
 [bibliography]
 == Bibliography
