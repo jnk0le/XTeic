@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.4.1
+:appversion: 0.4.2
 :toc:
 :toclevels: 5
 :sectnums:
@@ -713,18 +713,29 @@ set of profiles
 little endian only
 software shall assume little endian
 
-==== recycled privileged CSRs
+==== recycled volume II CSRs
 
-[cols="1,1,1,1",options=header]
+To reduce disruption some of the "privileged" csr have been recycled 
+according to "privileged" specification.
+
+[cols="1,1,2,3",options=header]
+|=================================
+| number | name | description | notes
+| 0x001 | fflags | iee754 exception flags | implemented when F,D,Zfinx,Zdinx is present
+| 0x002 | frm | iee754 dyn rounding mode | implemented when F,D,Zfinx,Zdinx is present
+| 0x003 | fcsr | frm+fflags | implemented when F,D,Zfinx,Zdinx is present
+| 0xf11 | mvendorid | vendor ID | jedec??
+| 0xf12 | marchid | architecture ID |
+| 0xf13 | mimpid | implementation ID | 
+| 0xf14 | mhartid | hart ID |
 |=================================
 
-
-
-
-
-
-|=================================
-
+// vector?
+// overflow flag ??
+// pmp?
+// trace?
+// debug?
+// counters/hpmcounters?
 
 === auxiliary extensions
 
