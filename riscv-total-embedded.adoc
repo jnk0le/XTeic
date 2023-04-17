@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.5.0
+:appversion: 0.5.1
 :toc:
 :toclevels: 5
 :sectnums:
@@ -824,6 +824,9 @@ effects, read a `0` value and have its write ignored
 NOTE: `UNIMP` instruction maps to write into `cycle` csr register, so it can 
 no longer be used. `c.unimp` remains available which is encoded as all zero.
 
+NOTE: Extension designated for silicon waste reduction, reflects behaviour of
+certain privileged csr registers (`misa`, `mvendorid` etc.) when unimplemented
+
 === Xteic (aka Total Embedded Interrupt Controller tiny)
 
 //tiny vect table
@@ -897,7 +900,7 @@ uarch dependent zeroing.
 === little endian only
 
 Why would you want to have big endian loads/stores? +
-Probably for handling tasks with "network byte order" data which uses big endian representation.
+Probably for handling tasks that compute "network byte order" data which uses big endian representation.
 
 Nice.
 So, lets add a big-endian mode (making it configurable at runtime of course), and enjoy 
