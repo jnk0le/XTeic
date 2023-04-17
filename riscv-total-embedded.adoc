@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.5.1
+:appversion: 0.6.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -508,6 +508,7 @@ JTAG uses too many pins
 
 best would be
 1 wire hanging off reset (cannot attach to running target until reset disabled)
+like avr updi
 
 === tooling issues to solve
 
@@ -829,8 +830,35 @@ certain privileged csr registers (`misa`, `mvendorid` etc.) when unimplemented
 
 === Xteic (aka Total Embedded Interrupt Controller tiny)
 
-//tiny vect table
-//tiny zcmp[e] table
+==== startup behaviour
+
+
+==== csrs
+
+==== interrupts ??? vector table
+
+[cols="1,1,2,4",options=header]
+|===========================================================================================
+| irq number | type | name | notes
+| 0 | reserved | - | reserved for startup code (typically jump instruction)
+| 1 | NMI | reserved | (optional) 
+| 2 | NMI | Integrity_NMI | (optional) ECC/parity/lockstep
+| 3 | NMI | ClockRecovery_NMI | (optional)
+| 4 | NMI | WatchdogViolation_NMI | (optional) 
+| 5 | NMI | MemoryViolation_NMI | memory access fault or unallowed access to protected area
+| 6 | NMI | InstructionViolation_NMI | illegal instruction exception or attempt to execute
+									   instructions from (execute) protected area
+| 7 | NMI | Unrecoverable_NMI | nested nmi or a state that cannot be recovered to.
+| 8 | IRQ | SoftDeffered0_IRQ | software deffered interrupt can be used for context switch.
+| 9 | IRQ | | reserved for ecall???
+| 10 | IRQ | | reserved for systick ???
+| 11..255 | IRQ | *_IRQ | device specific interrupts
+|============================================================================================
+
+
+==== additional extensions
+//tiny vect table + ext
+//tiny zcmp[e] table + ext
 
 [appendix]
 == context switch on tiny profile
@@ -944,6 +972,10 @@ expected to run rtos less
 
 Unlike the big unix machines, the RTOS context can be statically
 addressed by `lui` + `addi` sequence.
+
+=== 256 vector entries
+
+can be escaped by single `c.j` instruction 
 
 [bibliography]
 == Bibliography
