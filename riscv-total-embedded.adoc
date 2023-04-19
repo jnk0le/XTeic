@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.6.4
+:appversion: 0.6.5
 :toc:
 :toclevels: 5
 :sectnums:
@@ -839,16 +839,16 @@ certain privileged csr registers (`misa`, `mvendorid` etc.) when unimplemented
 
 [cols="1,1,4,6",options=header]
 |===========================================================================================
-| irq number | type | name | notes
+| irq num | type | name | notes
 | 0 | - | reserved | reserved for startup code (typically jump instruction)
 | 1 | NMI | reserved | (optional) 
 | 2 | NMI | IntegrityViolation_NMI | (optional) ECC/parity/lockstep on memory and busses
 | 3 | NMI | ClockSecurity_NMI | (optional) 
-| 4 | NMI | WatchdogViolation_NMI | (optional) aka "early wakeup". Entered right before any
-									of the watchdogs trips and performs a (device) reset. 
-									Designated for safety measures and error logging, not to reset 
-									the watchdog. It shall be assumed that execution could be frozen at 
-									this point and no further action can or need to be performed.
+| 4 | NMI | WatchdogViolation_NMI | (optional) Entered right before any of the watchdogs trips
+									and performs a (device) reset. Designated for safety measures
+									and error logging, not to reset the watchdog. It shall be
+									assumed that execution could be frozen at this point and no
+									further action can or need to be performed.
 | 5 | NMI | MemoryViolation_NMI | Memory access fault or unallowed access to protected area.
 								  Covers also istruction fetch from non existing memory region. 
 | 6 | NMI | InstructionViolation_NMI | Illegal instruction exception or attempt to execute
