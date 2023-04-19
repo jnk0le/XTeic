@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.6.1
+:appversion: 0.6.2
 :toc:
 :toclevels: 5
 :sectnums:
@@ -843,7 +843,7 @@ certain privileged csr registers (`misa`, `mvendorid` etc.) when unimplemented
 | 0 | reserved | - | reserved for startup code (typically jump instruction)
 | 1 | NMI | reserved | (optional) 
 | 2 | NMI | IntegrityViolation_NMI | (optional) ECC/parity/lockstep on memory and busses
-| 3 | NMI | ClockRecovery_NMI | (optional) 
+| 3 | NMI | ClockSecurity_NMI | (optional) 
 | 4 | NMI | WatchdogViolation_NMI | (optional) aka "early wakeup". Entered right before any
 									of the watchdogs trips and performs a (device) reset. 
 									Designated for safety measures and error logging, not to reset 
