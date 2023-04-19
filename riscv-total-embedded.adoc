@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.6.2
+:appversion: 0.6.3
 :toc:
 :toclevels: 5
 :sectnums:
@@ -837,7 +837,7 @@ certain privileged csr registers (`misa`, `mvendorid` etc.) when unimplemented
 
 ==== interrupts ??? vector table
 
-[cols="1,1,4,6",options=header]
+[cols="1,2,4,7",options=header]
 |===========================================================================================
 | irq number | type | name | notes
 | 0 | reserved | - | reserved for startup code (typically jump instruction)
