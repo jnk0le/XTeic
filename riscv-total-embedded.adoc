@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.6.6
+:appversion: 0.6.7
 :toc:
 :toclevels: 5
 :sectnums:
@@ -842,28 +842,28 @@ certain privileged csr registers (`misa`, `mvendorid` etc.) when unimplemented
 | irq num | type | name | notes
 | 0 | - | reserved | reserved for startup code (typically jump instruction)
 | 1 | NMI | reserved | (optional) 
-| 2 | NMI | IntegrityViolation_NMI | (optional) ECC/parity/lockstep on memory and busses
-| 3 | NMI | ClockViolation_NMI | (optional) Entered after the anomaly on the clock
-								  has been observed. Usually a lost clock. It shall be assumed 
-								  that the core/system clock has been switched to a different one.
+| 2 | NMI | IntegrityViolation_NMI | (optional) ECC, parity, lockstep or other integrity
+									  error on core, memory or buses.
+| 3 | NMI | ClockViolation_NMI | (optional) Lost clock or other anomaly. It shall be assumed 
+								 that the core/system clock has been switched to a different one.
 | 4 | NMI | WatchdogViolation_NMI | (optional) Entered right before any of the watchdogs trips
 									and performs a (device) reset. Designated for safety measures
 									and error logging. It shall be assumed that execution could 
 									be frozen at this point and no further action can or need to 
 									be performed.
 | 5 | NMI | MemoryViolation_NMI | Memory access fault or unallowed access to protected area.
-								  Covers also istruction fetch from non existing memory region. 
 | 6 | NMI | InstructionViolation_NMI | Illegal instruction exception or attempt to execute
 									   instructions from (execute) protected area
 | 7 | NMI | Unrecoverable_NMI | Any nested nmi, unknown or a state that cannot be recovered to.
 								It shall be assumed that the stack is corrupted at this point.
 | 8 | IRQ | Deffered0_IRQ | software deffered interrupt, can be used for context switch.
-| 9 | IRQ | | reserved for ecall???
-| 10 | IRQ | | reserved for systick ???
+| 9 | IRQ | | reserved/ecall???
+| 10 | IRQ | | reserved/systick???
 | 11..255 | IRQ | *_IRQ | device specific interrupts
 |============================================================================================
 
-NOTE: vondor 
+NOTE: Xteic doesn't provide any peripheral API for watchdog, clock and integrity protection
+systems.
 
 ==== additional extensions
 //tiny vect table + ext
