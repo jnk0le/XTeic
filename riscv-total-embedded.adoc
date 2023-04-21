@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.6.7
+:appversion: 0.6.8
 :toc:
 :toclevels: 5
 :sectnums:
@@ -866,6 +866,7 @@ NOTE: Xteic doesn't provide any peripheral API for watchdog, clock and integrity
 systems.
 
 ==== additional extensions
+
 //tiny vect table + ext
 //tiny zcmp[e] table + ext
 
