@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.6.9
+:appversion: 0.6.10
 :toc:
 :toclevels: 5
 :sectnums:
@@ -195,6 +195,7 @@ Use of RPT istruction will introduce even more jitter and latecy as the sequence
 and takes arbitrary numbers of cycles to execute.
 
 NOTE: ISR entry latency is 10 cycles due to 8 stage pipeline and automatically stacking 13 registers.
+<<c2000workshop>> suggests that the latency is 14 cycles for internal signals.
 
 === overwiew/discussion of some concepts/features
 
@@ -1030,3 +1031,4 @@ can be escaped by single `c.j` instruction
 * [[[zjid1, 38]]] https://github.com/riscv/riscv-j-extension/blob/master/id-consistency-proposal.pdf
 * [[[zjid2, 39]]] https://lists.riscv.org/g/tech-j-ext/message/481
 * [[[XTightlyCoupledIO, 39]]] https://github.com/jnk0le/XTightlyCoupledIO
+* [[[c2000workshop, 40]]] https://software-dl.ti.com/trainingTTO/trainingTTO_public_sw/c28x28035/C28x_Piccolo_MDW_2-1.pdf
