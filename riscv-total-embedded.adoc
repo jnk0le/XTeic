@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.6.10
+:appversion: 0.6.11
 :toc:
 :toclevels: 5
 :sectnums:
@@ -377,7 +377,7 @@ Just to run the OS itself.
 
 One of the the most blatant example is NOMMU linux on stm32f429 with SDRAM that is not cached by cpu.
 
-Of course there are actual reasons <<emblinux>> to use linux in embedded.
+Of course there are still actual reasons <<emblinux>> to use linux in embedded.
 
 ===== RTLinux and hard-realtime
 
@@ -756,7 +756,7 @@ The uppermost 4 bits remain zero to allow enabling extra features not covered by
 
 ===== teic.fence.ipipe
 
-Flushes the pipeline before executing next instruction. +
+Flushes the pipeline and prefetch buffers before executing next instruction. +
 Encoded in bit 0 of `fence.i` immediate
 
 NOTE: not suitable for synchronizing with architectural state modifications by
@@ -781,12 +781,17 @@ Encoding (RV32, RV64)::
 
 ===== teic.fence.icsrsync
 
-Ensures that the next instruction is executed after the architectural state change 
+Ensures that the following instructions are executed after the architectural state change 
 by a preceding CSR instructions (or equivalent) takes effect.
 Encoded in bit 1 of `fence.i` immediate
 
 NOTE: In many cases CSR updates don't require full pipeline flush, though it can be implemented
 as regular pipeline flush.
+
+NOTE: necessary to sync e.g irq vector table updates wrt following MMIO access
+
+NOTE: <<cv32e40s>> do require fencing after update of `jvt` and `mtvec` 
+(even though `jvt` falls into "program order" category)
 
 Mnemonic::
 ```
@@ -911,7 +916,7 @@ use highest priority interrupt ad mask out only lower nesting levels
 
 It's useless.
 
-will it tell you if there is Zbb or Zca implemented? - no
+will it tell you if there is Zbb, Zcmt or Zca implemented? - no
 
 On embedded targets, HW information about implemented extensions and ability
 to enable/disable them, has a rather low value.
@@ -1032,3 +1037,4 @@ can be escaped by single `c.j` instruction
 * [[[zjid2, 39]]] https://lists.riscv.org/g/tech-j-ext/message/481
 * [[[XTightlyCoupledIO, 39]]] https://github.com/jnk0le/XTightlyCoupledIO
 * [[[c2000workshop, 40]]] https://software-dl.ti.com/trainingTTO/trainingTTO_public_sw/c28x28035/C28x_Piccolo_MDW_2-1.pdf
+* [[[cv32e40s, 41]]] https://docs.openhwgroup.org/_/downloads/cv32e40s-user-manual/en/latest/pdf/
