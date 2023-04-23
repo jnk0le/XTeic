@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.6.11
+:appversion: 0.7.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -739,6 +739,27 @@ according to "privileged" specification.
 // debug?
 // counters/hpmcounters?
 
+==== recycled volume II instructions
+
+===== wfi
+
+Mnemonic::
+```
+wfi
+```
+
+Encoding (RV32, RV64)::
+[wavedrom, , svg]
+....
+{reg:[
+ { bits: 7, name: 0x73, attr: ['MISC-MEM'] },
+ { bits: 5, name: 0x0, attr: ['rd'] },
+ { bits: 3, name: 0x0, attr: ['PRIV'] },
+ { bits: 5, name: 0x0, attr: ['rs1'] },
+ { bits: 12, name: 0x105, attr: ['WFI'] },
+]}
+....
+
 === auxiliary extensions
 
 ==== Xfenceiext
@@ -851,7 +872,8 @@ certain privileged csr registers (`misa`, `mvendorid` etc.) when unimplemented
 | 2 | NMI | IntegrityViolation_NMI | (optional) ECC, parity, lockstep or other integrity
 									  error on core, memory or buses.
 | 3 | NMI | ClockViolation_NMI | (optional) Lost clock or other anomaly. It shall be assumed
-								 that the core/system clock has been switched to a different one.
+								 that the core/system clock has been switched to a different one
+								 at this point.
 | 4 | NMI | WatchdogViolation_NMI | (optional) Entered right before any of the watchdogs trips
 									and performs a (device) reset. Designated for safety measures
 									and error logging. It shall be assumed that execution could
