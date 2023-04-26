@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.7.1
+:appversion: 0.7.2
 :toc:
 :toclevels: 5
 :sectnums:
@@ -866,6 +866,8 @@ certain privileged csr registers (`misa`, `mvendorid` etc.) when unimplemented
 
 level triggered
 
+higher irq number - higher priority
+
 stack pointer is not realigned, if stack is not 8 byte aligned 
 the behaviour is implementation specified
 
@@ -910,9 +912,20 @@ TEIC_VECT_BASE
 NOTE: Xteic doesn't provide any  peripheral API for optional watchdog, clock and integrity protection
 systems. It's up to the implementer to provide them.
 
-==== additional extensions
+==== additional optional extensions
 
-//tiny vect table + ext
+===== XteicMP
+
+additional per vector entry interrupt enable
+
+multi hart or when peripheral interrupt lines are shared across multiple cores
+
+
+===== XteicTinyIrqTable
+
+
+===== XteicTinyIrqTableExt
+
 //tiny zcmp[e] table + ext
 
 [appendix]
