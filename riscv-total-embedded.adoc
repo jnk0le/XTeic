@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.7.0
+:appversion: 0.7.1
 :toc:
 :toclevels: 5
 :sectnums:
@@ -862,7 +862,24 @@ certain privileged csr registers (`misa`, `mvendorid` etc.) when unimplemented
 
 ==== csrs
 
-==== interrupts ??? vector table
+==== interrupts
+
+level triggered
+
+stack pointer is not realigned, if stack is not 8 byte aligned 
+the behaviour is implementation specified
+
+NOTE: typical HW won't care about 4 byte stack, some dual issuers might want to enter Unrecoverable_NMI
+
+NOTE: Zcmp similarly doesn't specify the required alignment.
+
+===== interrupt entry
+
+===== interrupt exit
+
+===== vector table allocation
+
+TEIC_VECT_BASE
 
 [cols="1,1,4,6",options=header]
 |============================================================================================
@@ -883,15 +900,15 @@ certain privileged csr registers (`misa`, `mvendorid` etc.) when unimplemented
 | 6 | NMI | InstructionViolation_NMI | Illegal instruction exception or attempt to execute
 									   instructions from (execute) protected area
 | 7 | NMI | Unrecoverable_NMI | Any nested nmi, unknown or a state that cannot be recovered to.
-								It shall be assumed that the stack is corrupted at this point.
+								It shall be assumed that the stack pointer is corrupted at this point.
 | 8 | IRQ | Deffered0_IRQ | software deffered interrupt, can be used for context switch.
 | 9 | IRQ | | reserved/ecall???
 | 10 | IRQ | | reserved/systick???
 | 11..255 | IRQ | *_IRQ | device specific interrupts
 |============================================================================================
 
-NOTE: Xteic doesn't provide any peripheral API for watchdog, clock and integrity protection
-systems.
+NOTE: Xteic doesn't provide any  peripheral API for optional watchdog, clock and integrity protection
+systems. It's up to the implementer to provide them.
 
 ==== additional extensions
 
@@ -991,12 +1008,6 @@ the associated peripherals (clock recovery, ECC etc.) should provide
 trigger
 
 some can (like watchdog) can be easily triggered without the artificial trigger
-
-=== recycled `0b00` MODE in mtvec
-
-the generic privileged modes are not used at all
-
-address can be generated with single `lui`/`c.lui`
 
 === no separate process stack
 
