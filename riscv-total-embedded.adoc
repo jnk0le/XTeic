@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.7.2
+:appversion: 0.8.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -722,14 +722,14 @@ according to "privileged" specification.
 
 [cols="1,1,2,3",options=header]
 |=================================
-| number | name | description | notes
-| 0x001 | fflags | iee754 exception flags | implemented when F,D,Zfinx,Zdinx is present
-| 0x002 | frm | iee754 dyn rounding mode | implemented when F,D,Zfinx,Zdinx is present
-| 0x003 | fcsr | frm+fflags | implemented when F,D,Zfinx,Zdinx is present
-| 0xf11 | mvendorid | vendor ID | jedec??
-| 0xf12 | marchid | architecture ID |
-| 0xf13 | mimpid | implementation ID | 
-| 0xf14 | mhartid | hart ID |
+| number | name | privilege | description | notes
+| 0x001 | `fflags` | URW | iee754 exception flags | implemented when F,D,Zfinx,Zdinx is present
+| 0x002 | `frm` | URW | iee754 dyn rounding mode | implemented when F,D,Zfinx,Zdinx is present
+| 0x003 | `fcsr` | URW | frm+fflags | implemented when F,D,Zfinx,Zdinx is present
+| 0xf11 | `mvendorid` | MRO | vendor ID | jedec??
+| 0xf12 | `marchid` | MRO | architecture ID |
+| 0xf13 | `mimpid` | MRO | implementation ID | 
+| 0xf14 | `mhartid` | MRO | hart ID |
 |=================================
 
 // vector?
@@ -852,15 +852,77 @@ effects, read a `0` value and have its write ignored
 NOTE: `UNIMP` instruction maps to write into `cycle` csr register, so it can 
 no longer be used. `c.unimp` remains available which is encoded as all zero.
 
-NOTE: Extension designated for silicon waste reduction, reflects behaviour of
-certain privileged csr registers (`misa`, `mvendorid` etc.) when unimplemented
+NOTE: Extension designated for reduction of gate/silicon use, reflects behaviour of
+certain privileged csr registers (e.g. `misa`, `mvendorid` etc.) when unimplemented
 
 === Xteic (aka Total Embedded Interrupt Controller tiny)
+
+machine mode only
+
+RV32 only
+
+2 or 4 interrupt levels
 
 ==== startup behaviour
 
 
-==== csrs
+==== CSR map
+
+[cols="1,2,1,4",options=header]
+|====
+| number | name | privilege | description 
+| 0xbc0 | `irq_vect` | MRW | interrupt vector table
+| 0xbc1 | `estate` | MRW | saved state
+| 0xbc2 | `irq_msk` | MRW | 
+| 0xbc3 | `` | | // irq status?
+| 0xbc4 | `` | | // cfg?
+| 0xbc5 | `` | |
+| 0xbc6 | `` | |
+|====
+
+
+//as table 
+//row for bitfields
+//col fro reset state
+
+===== `irq_vect`
+
+must be 64 byte aligned minimum
+
+implementations might but a further alignment restriction as to avoid 
+adder circuits (alignment equal to the next power of 2 of implemented vector entries)
+
+
+===== `estate`
+
+
+NOTE: allow a context switch from the lowest priority interrupt
+
+===== `irq_msk`
+
+[cols="1,1,1,1,5",options=header]
+|====
+| bit | name | type | reset value | description 
+| [31:4] | reserved | WPRI | 0 | reserved
+| 3 | `nest4` | WLRL | 0 | enable fourth nesting level when cleared
+| 2 | `nest3` | WARL | 0 | enable third nesting level when cleared
+| 1 | `nest2` | WLRL | 0 | enable second nesting level when cleared
+| 0 | `nest1` | WARL | 0 | enable first nesting level when cleared
+|====
+
+NOTE: only `nest2` and `nest4` are mandatory
+
+===== a
+
+===== b
+
+===== c
+
+===== d
+
+
+
+==== MMIO TEIC registers
 
 ==== interrupts
 
@@ -878,6 +940,8 @@ NOTE: Zcmp similarly doesn't specify the required alignment.
 ===== interrupt entry
 
 ===== interrupt exit
+
+===== NMI interrupts
 
 ===== vector table allocation
 
