@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.8.0
+:appversion: 0.8.1
 :toc:
 :toclevels: 5
 :sectnums:
@@ -720,7 +720,7 @@ software shall assume little endian
 To reduce disruption some of the "privileged" csr have been recycled 
 according to "privileged" specification.
 
-[cols="1,1,2,3",options=header]
+[cols="1,1,1,2,3",options=header]
 |=================================
 | number | name | privilege | description | notes
 | 0x001 | `fflags` | URW | iee754 exception flags | implemented when F,D,Zfinx,Zdinx is present
