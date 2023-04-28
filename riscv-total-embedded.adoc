@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.8.1
+:appversion: 0.8.2
 :toc:
 :toclevels: 5
 :sectnums:
@@ -874,7 +874,7 @@ RV32 only
 | 0xbc0 | `irq_vect` | MRW | interrupt vector table
 | 0xbc1 | `estate` | MRW | saved state
 | 0xbc2 | `irq_msk` | MRW | 
-| 0xbc3 | `` | | // irq status?
+| 0xbc3 | `irq_status` | MRO? | current interrupt status
 | 0xbc4 | `` | | // cfg?
 | 0xbc5 | `` | |
 | 0xbc6 | `` | |
@@ -904,15 +904,29 @@ NOTE: allow a context switch from the lowest priority interrupt
 |====
 | bit | name | type | reset value | description 
 | [31:4] | reserved | WPRI | 0 | reserved
-| 3 | `nest4` | WLRL | 0 | enable fourth nesting level when cleared
+| 3 | `nest4` | rw | 0 | enable fourth nesting level when cleared
 | 2 | `nest3` | WARL | 0 | enable third nesting level when cleared
-| 1 | `nest2` | WLRL | 0 | enable second nesting level when cleared
+| 1 | `nest2` | rw | 0 | enable second nesting level when cleared
 | 0 | `nest1` | WARL | 0 | enable first nesting level when cleared
 |====
 
-NOTE: only `nest2` and `nest4` are mandatory
+NOTE: only `nest2` and `nest4` are mandatory to implemrnt
 
-===== a
+===== `irq_status`
+
+[cols="1,1,1,1,5",options=header]
+|====
+| bit | name | type | reset value | description 
+| [31:6] | reserved | ro | 0 | reserved
+| 5 | `in_nmilockup` | ro | 0 | 
+| 4 | `in_nmi` | ro | 0 | 
+| 3 | `in_nest4` | ro | 0 | 
+| 2 | `in_nest3` | ro | 0 | 
+| 1 | `in_nest2` | ro | 0 | 
+| 0 | `in_nest1` | ro | 0 | 
+|====
+
+
 
 ===== b
 
