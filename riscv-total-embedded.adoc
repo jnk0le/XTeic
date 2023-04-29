@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.8.3
+:appversion: 0.8.4
 :toc:
 :toclevels: 5
 :sectnums:
@@ -151,7 +151,7 @@ The vendor provided headers, of course, contain 46 instances of "NVIC" string an
 
 Introduces HW stacking or single cycle register shadowing (aka HPE).
 It is of course necessary to use custom tuoolchain that implement a "proprietary" attribute:
-`\\__attribute__\(((interrupt("WCH-Interrupt-fast"))`
+`\\__attribute__\((interrupt("WCH-Interrupt-fast")))`
 
 NOTE: without <<prestacked annotation>> there will be no portable way of doing this without compilers build
 on custom patches. Naked handler + mret trick doesn't work in llvm, it should break in gcc anyway due to
@@ -520,7 +520,7 @@ can be freely used without stacking them.
 
 - `\\__attribute__\((interrupt))` makes all registers callee saved and uses mret to return.
 - `\\__attribute__\((interrupt("SiFive-CLIC-preemptible")))` extends regular interrupt by CLIC preemption
-- `\\__attribute__\(((interrupt("WCH-Interrupt-fast"))` requires custom build toolchain and is bound 
+- `\\__attribute__\((interrupt("WCH-Interrupt-fast")))` requires custom build toolchain and is bound 
 to selected ABI by `-mabi=` command line parameter, still uses mret
 - Or just a plain C function that requires prestacking of all caller saved registers, reuses standard 
 return mechanism to exit interrupt context
