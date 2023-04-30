@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.8.4
+:appversion: 0.8.5
 :toc:
 :toclevels: 5
 :sectnums:
@@ -863,6 +863,11 @@ RV32 only
 
 2 or 4 interrupt levels
 
+==== implementation constants
+
+TEIC_MMIO_CTRL_BASE
+TEIC_VECT_BASE //up to the bootloader to redirect??
+
 ==== startup behaviour
 
 
@@ -873,7 +878,7 @@ RV32 only
 | number | name | privilege | description 
 | 0xbc0 | `irq_vect` | MRW | interrupt vector table
 | 0xbc1 | `estate` | MRW | saved state
-| 0xbc2 | `irq_msk` | MRW | 
+| 0xbc2 | `irq_msk` | MRW (U?) | interrupt mask
 | 0xbc3 | `irq_status` | MRO? | current interrupt status
 | 0xbc4 | `nmi_cause` | MRW | coarse mask of NMI cause?
 | 0xbc5 | `` | | // cfg?
@@ -881,16 +886,22 @@ RV32 only
 |====
 
 
-//as table 
-//row for bitfields
-//col fro reset state
-
 ===== `irq_vect`
 
-must be 64 byte aligned minimum
+[cols="1,2,1,1,6",options=header]
+|====
+| bit | name | type | reset value | description 
+| [31:5] | `vect_offset` | WLRL | `TEIC_VECT_BASE>>5` | must be aligned to 64 bytes or rounded up 
+													 to next power of 2, whichever is greater
+| [4:0] | reserved | WLRL | 0 | reserved
+|====
 
-implementations might but a further alignment restriction as to avoid 
-adder circuits (alignment equal to the next power of 2 of implemented vector entries)
+NOTE: alignment reqirement allows to avoid the additional adder circuit during irq dispatch
+
+NOTE: implementations might want to limit the `vect_offset` combinations to existing executable
+areas as to reduce necessary state to implement.
+
+NOTE: `vect_offset` can be implemented as a read only constant pointing to beggining of the flash memory
 
 
 ===== `estate`
@@ -900,7 +911,7 @@ NOTE: allow a context switch from the lowest priority interrupt
 
 ===== `irq_msk`
 
-[cols="1,1,1,1,5",options=header]
+[cols="1,2,1,1,6",options=header]
 |====
 | bit | name | type | reset value | description 
 | [31:4] | reserved | WPRI | 0 | reserved
@@ -914,7 +925,7 @@ NOTE: only `nest2` and `nest4` are mandatory to implemrnt
 
 ===== `irq_status`
 
-[cols="1,1,1,1,5",options=header]
+[cols="1,2,1,1,6",options=header]
 |====
 | bit | name | type | reset value | description 
 | [31:6] | reserved | ro | 0 | reserved
@@ -926,7 +937,7 @@ NOTE: only `nest2` and `nest4` are mandatory to implemrnt
 | 0 | `in_nest1` | ro | 0 | 
 |====
 
-===== b
+===== `nmi_cause`
 
 ===== c
 
@@ -936,7 +947,7 @@ NOTE: only `nest2` and `nest4` are mandatory to implemrnt
 
 ==== MMIO TEIC registers
 
-TEIC_MMIO_CTRL_BASE
+
 
 ===== sys/hart reset req?
 
@@ -962,8 +973,6 @@ NOTE: Zcmp similarly doesn't specify the required alignment.
 ====== NMI lockup
 
 ===== vector table allocation
-
-TEIC_VECT_BASE
 
 [cols="1,1,4,6",options=header]
 |============================================================================================
@@ -1087,7 +1096,7 @@ libraries, because one cannot be sure on which endianess the code will be run.
 
 Just use `rev8` for "network order" data. It's much better than doing endian neutral access.
 
-=== `TEIC_BASE` address selection
+=== `TEIC_MMIO_CTRL_BASE` address selection
 
 addressable through `c.lui`
 
