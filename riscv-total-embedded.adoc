@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.8.5
+:appversion: 0.8.6
 :toc:
 :toclevels: 5
 :sectnums:
@@ -892,16 +892,19 @@ TEIC_VECT_BASE //up to the bootloader to redirect??
 |====
 | bit | name | type | reset value | description 
 | [31:5] | `vect_offset` | WLRL | `TEIC_VECT_BASE>>5` | must be aligned to 64 bytes or rounded up 
-													 to next power of 2, whichever is greater
+														to next power of 2, of the number of entries
+														multiplied by the entry size, whichever is greater
 | [4:0] | reserved | WLRL | 0 | reserved
 |====
 
 NOTE: alignment reqirement allows to avoid the additional adder circuit during irq dispatch
 
-NOTE: implementations might want to limit the `vect_offset` combinations to existing executable
-areas as to reduce necessary state to implement.
+NOTE: If vector table consists of 100 entries total, 4 byte each. Then minimum required alignment is 512 bytes
 
-NOTE: `vect_offset` can be implemented as a read only constant pointing to beggining of the flash memory
+NOTE: `vect_offset` can be implemented with enough state to point at existing executable areas only
+as to reduce necessary gates to implement.
+
+NOTE: `vect_offset` can also be implemented as a read only constant pointing to beggining of the flash memory
 
 
 ===== `estate`
