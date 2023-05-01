@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.8.6
+:appversion: 0.8.7
 :toc:
 :toclevels: 5
 :sectnums:
@@ -888,7 +888,7 @@ TEIC_VECT_BASE //up to the bootloader to redirect??
 
 ===== `irq_vect`
 
-[cols="1,2,1,1,6",options=header]
+[cols="1,2,1,2,6",options=header]
 |====
 | bit | name | type | reset value | description 
 | [31:5] | `vect_offset` | WLRL | `TEIC_VECT_BASE>>5` | must be aligned to 64 bytes or rounded up 
@@ -914,7 +914,7 @@ NOTE: allow a context switch from the lowest priority interrupt
 
 ===== `irq_msk`
 
-[cols="1,2,1,1,6",options=header]
+[cols="1,2,1,2,6",options=header]
 |====
 | bit | name | type | reset value | description 
 | [31:4] | reserved | WPRI | 0 | reserved
@@ -928,7 +928,7 @@ NOTE: only `nest2` and `nest4` are mandatory to implemrnt
 
 ===== `irq_status`
 
-[cols="1,2,1,1,6",options=header]
+[cols="1,2,1,2,6",options=header]
 |====
 | bit | name | type | reset value | description 
 | [31:6] | reserved | ro | 0 | reserved
