@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.8.9
+:appversion: 0.8.10
 :toc:
 :toclevels: 5
 :sectnums:
@@ -880,8 +880,8 @@ TEIC_VECT_BASE //up to the bootloader to redirect??
 | 0xbc1 | `estate` | MRW | saved state
 | 0xbc2 | `irq_msk` | MRW (U?) | interrupt mask
 | 0xbc3 | `irq_status` | MRO? | current interrupt status
-| 0xbc4 | `nmi_cause` | MRW | coarse mask of NMI cause?
-| 0xbc5 | `` | | // cfg?
+| 0xbc4 | `nmi_cause` | MRW (RO?) | coarse mask of NMI cause?
+| 0xbc5 | `cfg` | MRW | config register
 | 0xbc6 | `` | |
 |====
 
@@ -943,13 +943,17 @@ to not push previous state onto stack, that would increase interrupt latency.
 | [31:4] | reserved | WPRI | 0 | reserved
 | 3 | `nest4` | rw | 0 | enable fourth nesting level when cleared
 | 2 | `nest3` | WARL | 0 | enable third nesting level when cleared
-						   If unimplemented it reads 0.
+						   If unimplemented it always read 0.
 | 1 | `nest2` | rw | 0 | enable second nesting level when cleared
 | 0 | `nest1` | WARL | 0 | enable first nesting level when cleared
-						   If unimplemented it reads 0.
+						   If unimplemented it always read 0.
 |====
 
 NOTE: only `nest2` and `nest4` are mandatory to implemrnt
+
+//??
+//binary numbering - requires special logic to do increase only
+//nesting + normal priority???
 
 ===== `irq_status`
 
@@ -965,9 +969,22 @@ NOTE: only `nest2` and `nest4` are mandatory to implemrnt
 | 0 | `in_nest1` | ro | 0 | 
 |====
 
+//tracking in pop preemption?
+
 ===== `nmi_cause`
 
-===== c
+===== `cfg`
+
+[cols="1,2,1,2,6",options=header]
+|====
+| bit | name | type | reset value | description 
+| [31:6] | reserved | WLRL | 0 | reserved
+
+| 0 | `zero_jitter` | WARL | 0 | (optional) 
+
+
+It shall be assumed that highest level interrupt cdoe and stack resides in zero waitstated memories and no HW measures will be implemented to adjust for a different scenario.
+|====
 
 ===== d
 
@@ -975,7 +992,7 @@ NOTE: only `nest2` and `nest4` are mandatory to implemrnt
 
 ==== MMIO TEIC registers
 
-
+private to the hart
 
 ===== sys/hart reset req?
 
@@ -1087,7 +1104,7 @@ use highest priority interrupt ad mask out only lower nesting levels
 
 It's useless.
 
-will it tell you if there is Zbb, Zcmt or Zca implemented? - no
+will it tell you if there is Zbb, Zmmul or Zcmt implemented? - no
 
 On embedded targets, HW information about implemented extensions and ability
 to enable/disable them, has a rather low value.
@@ -1159,6 +1176,10 @@ addressed by `lui` + `addi` sequence.
 can be escaped by single `c.j` instruction
 
 reasonable amount
+
+=== no per irq pending/enable in base extension
+
+probe/write peripherals directly
 
 [bibliography]
 == Bibliography
