@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.8.7
+:appversion: 0.8.8
 :toc:
 :toclevels: 5
 :sectnums:
@@ -909,8 +909,31 @@ NOTE: `vect_offset` can also be implemented as a read only constant pointing to 
 
 ===== `estate`
 
+[cols="1,2,1,2,6",options=header]
+|====
+| bit | name | type | reset value | description 
+| [31:0] | `estate_nl` | WLRL | undefined | implementation specified pattern
+used to recover execution state upon interrupt return. Covers certain csr registers 
+`fcsr`, or (optionally) multi cycle instruction progress. The content read as 
+well as the write to this register is valid only at the lowest implemented nesting level.
+Otherwise read and write operations on this register are undefined.
+|====
 
-NOTE: allow a context switch from the lowest priority interrupt
+//list somewhere mandatory csrs to save??
+
+NOTE: Altough optional, the ability to interrupt multicycle instructions is especially
+important for cores implementing zero jitter features.
+As an example the ratified Zcmp `cm.popretz` intruction has 3 uninterrupible instructions (one is branch).
+Even though it could be just 2 according to common sense and normative Tariq response <<popretzloadzero>>.
+It should be already obvious what will be formally pushed down your throat.
+
+NOTE: designated to allow an efficient context switch from the lowest priority interrupt
+
+NOTE: As the risc-v doesn't have condition codes for branching/predication, it is
+expected that the smallest implementations will not make use of `estate` register.
+
+NOTE: due to maximum 4-level nesting and limited state to preserve, it was decided
+to not push previous state onto stack, that would increase interrupt latency.
 
 ===== `irq_msk`
 
@@ -1118,7 +1141,7 @@ some can (like watchdog) can be easily triggered without the artificial trigger
 
 === no separate process stack
 
-only 4 levels of nesting
+only 4 levels of nesting + one returnable nmi
 
 smallest size uc
 
@@ -1131,7 +1154,9 @@ addressed by `lui` + `addi` sequence.
 
 === 256 vector entries
 
-can be escaped by single `c.j` instruction 
+can be escaped by single `c.j` instruction
+
+reasonable amount
 
 [bibliography]
 == Bibliography
@@ -1178,3 +1203,4 @@ can be escaped by single `c.j` instruction
 * [[[XTightlyCoupledIO, 39]]] https://github.com/jnk0le/XTightlyCoupledIO
 * [[[c2000workshop, 40]]] https://software-dl.ti.com/trainingTTO/trainingTTO_public_sw/c28x28035/C28x_Piccolo_MDW_2-1.pdf
 * [[[cv32e40s, 41]]] https://docs.openhwgroup.org/_/downloads/cv32e40s-user-manual/en/latest/pdf/
+* [[[popretzloadzero, 42]]] https://github.com/riscv/riscv-code-size-reduction/issues/196
