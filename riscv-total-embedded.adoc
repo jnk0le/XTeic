@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.8.8
+:appversion: 0.8.9
 :toc:
 :toclevels: 5
 :sectnums:
@@ -943,8 +943,10 @@ to not push previous state onto stack, that would increase interrupt latency.
 | [31:4] | reserved | WPRI | 0 | reserved
 | 3 | `nest4` | rw | 0 | enable fourth nesting level when cleared
 | 2 | `nest3` | WARL | 0 | enable third nesting level when cleared
+						   If unimplemented it reads 0.
 | 1 | `nest2` | rw | 0 | enable second nesting level when cleared
 | 0 | `nest1` | WARL | 0 | enable first nesting level when cleared
+						   If unimplemented it reads 0.
 |====
 
 NOTE: only `nest2` and `nest4` are mandatory to implemrnt
