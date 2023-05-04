@@ -1038,7 +1038,6 @@ NOTE: Zcmp similarly doesn't specify the required alignment.
 | 6 | NMI | InstructionViolation_NMI | Illegal instruction exception or attempt to execute
 									   instructions from (execute) protected area
 | 7 | NMI | Unrecoverable_NMI | Any nested nmi, unknown, other or a state that cannot be recovered to.
-								It shall be assumed that the stack pointer is corrupted at this point.
 | 8 | IRQ | Deffered0_IRQ | software deffered interrupt, can be used for context switch.
 | 9 | IRQ | | reserved/ecall???
 | 10 | IRQ | | reserved/systick???
