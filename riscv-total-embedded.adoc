@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.8.10
+:appversion: 0.8.11
 :toc:
 :toclevels: 5
 :sectnums:
@@ -214,6 +214,10 @@ done with single `lui` instruction.
 
 There is still a risk of corruption if the compiler decides to reorder something before
 initialization of `.data`/`.bss` sections.
+
+Such startup code is also inefficient as it will have to obey the ABI (spill `ra` to stack) and 
+compilers can't optimize out link time symbols anyway. (even though some can be assumed to
+always be at certain offsets from 0x00000000 or each other)
 
 Of course I often find that there is a competition on who will make
 the worst startup code in assembly. 
