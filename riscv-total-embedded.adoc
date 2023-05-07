@@ -1184,6 +1184,11 @@ reasonable amount
 
 probe/write peripherals directly
 
+=== no nmi/exception nesting
+
+in normal scenario such condition is very rare
+easy way to overflow the stack
+
 [bibliography]
 == Bibliography
 
