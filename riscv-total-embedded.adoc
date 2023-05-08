@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.8.11
+:appversion: 0.8.12
 :toc:
 :toclevels: 5
 :sectnums:
@@ -580,7 +580,7 @@ This missing optimization is intentional <<noreturnprologue>> to allow backtraci
 
 By abusing the "prestacked annotation" we can get rid of this prologue 
 by "prestacking" all of the available registers. +
-e.g. `\\__attribute__\((prestacked("x1,x4-x31,f0-f31,fcsr")))`
+e.g. `\\__attribute__\((noreturn, prestacked("x1,x4-x31,f0-f31,fcsr")))`
 
 NOTE: addition of `noreturn_nobacktrace_noexcept` attribute is very unlikely, optimizing 
 regular `noreturn` attribute is even less.
