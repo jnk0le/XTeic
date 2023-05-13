@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.8.12
+:appversion: 0.8.13
 :toc:
 :toclevels: 5
 :sectnums:
@@ -172,7 +172,7 @@ NOTE: FPGA minimum cores, is a non goal for this spec
 
 ==== ti c2000 (main core)
 
-Proprietary TI architecture <<spru430>> sporting an ancient looking accumulator-memory architecture 
+Proprietary TI architecture <<spru430f>> sporting an ancient looking accumulator-memory architecture 
 (with 8 pointer registers), similar to the classic CISCs. An x86 of motor control and signal processing.
 FPU <<spruhs1c>> is more RISC-ish with a bit of VLIW in some instructions.
 
@@ -560,7 +560,7 @@ psABI with floating point, caller saved:
 
 `\\__attribute__\((prestacked("x5-x7,x10-x17,x28-x31,f0-f7,f10-f17,f28-f31,fcsr")))`
 
-ch32v003 (ilp32e + PFIC HW stacker, assuming `ra` doesn't have some undocumented use)
+ch32v003 irq (ilp32e + PFIC HW stacker, assuming `ra` doesn't have some undocumented use)
 
 `\\__attribute__\((interrupt, prestacked("x1,x5-x7,x10-x15")))`
 
@@ -838,7 +838,8 @@ Encoding (RV32, RV64)::
 ==== Xicsrmz
 
 Implemented similarly to Zicsr with `uimm=0` mapped into -1 constant.
-`csrrsi`/`csrrci` with `uimm=0` still doesn't write and cause write side effects.
+
+NOTE: `csrrsi`/`csrrci` with `uimm=0` still doesn't write and cause write side effects.
 
 NOTE: This extensions allows to sync `csrrwi` instruction, with some other extensions 
 <<XTightlyCoupledIO>>, as to not cause additional immediate formats.
@@ -964,16 +965,18 @@ NOTE: only `nest2` and `nest4` are mandatory to implemrnt
 [cols="1,2,1,2,6",options=header]
 |====
 | bit | name | type | reset value | description 
-| [31:6] | reserved | ro | 0 | reserved
-| 5 | `in_nmilockup` | ro | 0 | 
-| 4 | `in_nmi` | ro | 0 | 
-| 3 | `in_nest4` | ro | 0 | 
-| 2 | `in_nest3` | ro | 0 | 
-| 1 | `in_nest2` | ro | 0 | 
-| 0 | `in_nest1` | ro | 0 | 
+| [31:10] | reserved | ro | 0 | reserved
+| 9 | `in_nmilockup` | ro | 0 | 
+| 8 | `in_nmi` | ro | 0 | 
+| 7 | `in_nest4` | ro | 0 | 
+| 6 | `in_nest3` | ro | 0 | 
+| 5 | `in_nest2` | ro | 0 | 
+| 4 | `in_nest1` | ro | 0 | 
+| 3 | `pending_nest4` | ro | 0 | 
+| 2 | `pending_nest3` | ro | 0 | 
+| 1 | `pending_nest2` | ro | 0 | 
+| 0 | `pending_nest1` | ro | 0 |
 |====
-
-//tracking in pop preemption?
 
 ===== `nmi_cause`
 
@@ -1189,6 +1192,16 @@ probe/write peripherals directly
 in normal scenario such condition is very rare
 easy way to overflow the stack
 
+=== no triggering interrupts by middle??
+
+what if
+requires 
+pending
+
+=== no stack realignment upon interrupt entry/exit
+
+
+
 [bibliography]
 == Bibliography
 
@@ -1205,7 +1218,7 @@ easy way to overflow the stack
 * [[[pushint, 11]]] https://github.com/riscv/riscv-fast-interrupt/issues/108
 * [[[thead, 12]]] https://github.com/T-head-Semi/thead-extension-spec
 * [[[armnvic, 13]]] https://community.arm.com/arm-community-blogs/b/architectures-and-processors-blog/posts/beginner-guide-on-interrupt-latency-and-interrupt-latency-of-the-arm-cortex-m-processors
-* [[[spracs0a, 14]]] https://www.ti.com/lit/an/spracs0a/spracs0a.pdf?ts=1677348911359&ref_url=https%253A%252F%252Fduckduckgo.com%252F
+* [[[spracs0a, 14]]] https://www.ti.com/lit/an/spracs0a/spracs0a.pdf?ts=1677348911359
 * [[[ticladocs, 15]]] https://software-dl.ti.com/C2000/docs/cla_software_dev_guide/intro.html
 * [[[emblinux, 16]]] https://jaycarlson.net/embedded-linux/
 * [[[linuxrt1, 17]]] https://elinux.org/images/d/de/Real_Time_Linux_Scheduling_Performance_Comparison.pdf
@@ -1214,8 +1227,8 @@ easy way to overflow the stack
 * [[[linuxrt4, 20]]] https://www.osadl.org/fileadmin/events/rtlws-2007/Siro.pdf
 * [[[clicentrycycles, 21]]] https://riscv.org/wp-content/uploads/2018/07/DAC-SiFive-Drew-Barbier.pdf
 * [[[spraan9a, 22]]] https://www.ti.com/lit/an/spraan9a/spraan9a.pdf?ts=1677877354340
-* [[[spru430, 23]]] https://www.ti.com/lit/ug/spru430f/spru430f.pdf?ts=1677869437551&ref_url=https%253A%252F%252Fwww.google.com%252F
-* [[[spruhs1c, 24]]] https://www.ti.com/lit/ug/spruhs1c/spruhs1c.pdf?ts=1677888169020&ref_url=https%253A%252F%252Fwww.google.com%252F
+* [[[spru430f, 23]]] https://www.ti.com/lit/ug/spru430f/spru430f.pdf?ts=1677869437551
+* [[[spruhs1c, 24]]] https://www.ti.com/lit/ug/spruhs1c/spruhs1c.pdf?ts=1677888169020
 * [[[c2000coremark, 25]]] https://e2e.ti.com/support/processors-group/processors/f/processors-forum/905744/tms320f28335
 * [[[c2000dhrystone, 26]]] https://e2e.ti.com/support/microcontrollers/c2000-microcontrollers-group/c2000/f/c2000-microcontrollers-forum/567535/tms320f28377d-dmips-calculation
 * [[[ticladevguide, 27]]] https://software-dl.ti.com/C2000/docs/cla_software_dev_guide/_static/pdf/C2000_CLA_Software_Development_Guide.pdf
