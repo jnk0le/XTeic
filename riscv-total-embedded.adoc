@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.8.13
+:appversion: 0.8.14
 :toc:
 :toclevels: 5
 :sectnums:
@@ -860,6 +860,10 @@ no longer be used. `c.unimp` remains available which is encoded as all zero.
 NOTE: Extension designated for reduction of gate/silicon use, reflects behaviour of
 certain privileged csr registers (e.g. `misa`, `mvendorid` etc.) when unimplemented
 
+==== Xmstacklimit
+
+//u stack lim?
+
 === Xteic (aka Total Embedded Interrupt Controller tiny)
 
 machine mode only
@@ -881,17 +885,17 @@ TEIC_VECT_BASE //up to the bootloader to redirect??
 [cols="1,2,1,4",options=header]
 |====
 | number | name | privilege | description 
-| 0xbc0 | `irq_vect` | MRW | interrupt vector table
-| 0xbc1 | `estate` | MRW | saved state
-| 0xbc2 | `irq_msk` | MRW (U?) | interrupt mask
-| 0xbc3 | `irq_status` | MRO? | current interrupt status
-| 0xbc4 | `nmi_cause` | MRW (RO?) | coarse mask of NMI cause?
-| 0xbc5 | `cfg` | MRW | config register
+| 0xbc0 | `teic_irq_vect` | MRW | interrupt vector table
+| 0xbc1 | `teic_estate` | MRW | saved state
+| 0xbc2 | `teic_irq_msk` | MRW (U?) | interrupt mask
+| 0xbc3 | `teic_irq_status` | MRO? | current interrupt status
+| 0xbc4 | `teic_nmi_cause` | MRW (RO?) | coarse mask of NMI cause?
+| 0xbc5 | `teic_cfg` | MRW | config register
 | 0xbc6 | `` | |
 |====
 
 
-===== `irq_vect`
+===== `teic_irq_vect`
 
 [cols="1,2,1,2,6",options=header]
 |====
@@ -912,7 +916,7 @@ as to reduce necessary gates to implement.
 NOTE: `vect_offset` can also be implemented as a read only constant pointing to beggining of the flash memory
 
 
-===== `estate`
+===== `teic_estate`
 
 [cols="1,2,1,2,6",options=header]
 |====
@@ -940,7 +944,7 @@ expected that the smallest implementations will not make use of `estate` registe
 NOTE: due to maximum 4-level nesting and limited state to preserve, it was decided
 to not push previous state onto stack, that would increase interrupt latency.
 
-===== `irq_msk`
+===== `teic_irq_msk`
 
 [cols="1,2,1,2,6",options=header]
 |====
@@ -960,7 +964,7 @@ NOTE: only `nest2` and `nest4` are mandatory to implemrnt
 //binary numbering - requires special logic to do increase only
 //nesting + normal priority???
 
-===== `irq_status`
+===== `teic_irq_status`
 
 [cols="1,2,1,2,6",options=header]
 |====
@@ -978,9 +982,9 @@ NOTE: only `nest2` and `nest4` are mandatory to implemrnt
 | 0 | `pending_nest1` | ro | 0 |
 |====
 
-===== `nmi_cause`
+===== `teic_nmi_cause`
 
-===== `cfg`
+===== `teic_cfg`
 
 [cols="1,2,1,2,6",options=header]
 |====
@@ -990,7 +994,8 @@ NOTE: only `nest2` and `nest4` are mandatory to implemrnt
 | 0 | `zero_jitter` | WARL | 0 | (optional) 
 
 
-It shall be assumed that highest level interrupt cdoe and stack resides in zero waitstated memories and no HW measures will be implemented to adjust for a different scenario.
+It shall be assumed that highest level interrupt code and stack resides in zero
+waitstated memories and no HW measures will be implemented to adjust in a different scenario.
 |====
 
 ===== d
@@ -1003,6 +1008,8 @@ private to the hart
 
 ===== sys/hart reset req?
 
+//deep sleep?
+
 ==== interrupts
 
 level triggered
@@ -1012,7 +1019,7 @@ higher irq number - higher priority
 stack pointer is not realigned, if stack is not 8 byte aligned 
 the behaviour is implementation specified
 
-NOTE: typical HW won't care about 4 byte stack, some dual issuers might want to enter Unrecoverable_NMI
+NOTE: typical HW won't care about 4 byte stack, some dual issuers might want to enter `Unrecoverable_NMI`
 
 NOTE: Zcmp similarly doesn't specify the required alignment.
 
@@ -1194,11 +1201,20 @@ easy way to overflow the stack
 
 === no triggering interrupts by middle??
 
-what if
-requires 
-pending
+aka software trigger
+
+redundant
+requires mechanism clearig pendingpending
 
 === no stack realignment upon interrupt entry/exit
+
+This is just a waste of hardware
+
+The ABI mandated to 8 bytes
+
+if not followed then
+depends on the 
+
 
 
 
