@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.8.14
+:appversion: 0.8.15
 :toc:
 :toclevels: 5
 :sectnums:
@@ -923,7 +923,7 @@ NOTE: `vect_offset` can also be implemented as a read only constant pointing to 
 | bit | name | type | reset value | description 
 | [31:0] | `estate_nl` | WLRL | undefined | implementation specified pattern
 used to recover execution state upon interrupt return. Covers certain csr registers 
-`fcsr`, or (optionally) multi cycle instruction progress. The content read as 
+(`fcsr`), and (optionally) multi cycle instruction progress. The content read as 
 well as the write to this register is valid only at the lowest implemented nesting level.
 Otherwise read and write operations on this register are undefined.
 |====
@@ -993,10 +993,16 @@ NOTE: only `nest2` and `nest4` are mandatory to implemrnt
 
 | 0 | `zero_jitter` | WARL | 0 | (optional) 
 
+enter the interrupt at the highest nesting level
+alway 
+regardless of the interrupted execution state
+(be it WFI, execution from waitstated memory, entry/exit of lower level interrupts)
 
 It shall be assumed that highest level interrupt code and stack resides in zero
 waitstated memories and no HW measures will be implemented to adjust in a different scenario.
 |====
+
+
 
 ===== d
 
@@ -1098,20 +1104,8 @@ it has to be somehow preserved during nesting.
 
 === no single bit interrupt enable
 
-redundant
-
-4 bit mask
-
-=== no "user" NMI interrupts
-
-on classic application processors/SoCs there was a single external input
-
-typically only 1 NMI handler + exceptions
-
-on some cortex m routed to external pin
-
-use highest priority interrupt ad mask out only lower nesting levels
-
+It would be redundant to the 2/4 bit `irq_msk` nest enables.
+Which can be similarly manageed by `csrsi`, `csrci` instructions.
 
 === no `misa` register
 
@@ -1199,12 +1193,15 @@ probe/write peripherals directly
 in normal scenario such condition is very rare
 easy way to overflow the stack
 
-=== no triggering interrupts by middle??
+=== no triggering interrupt handlers by software
 
 aka software trigger
 
 redundant
+complexity
 requires mechanism clearig pendingpending
+
+implement dedicated software deffered interrupts instead
 
 === no stack realignment upon interrupt entry/exit
 
@@ -1215,8 +1212,13 @@ The ABI mandated to 8 bytes
 if not followed then
 depends on the 
 
+=== "zero jitter" only in highest level interrupts
 
+It doesn't make sense to implement "zero jitter" at any other level.
+If given interrupt can by interrupted by a higher nesting priority, then it would
+no longer be considered a "zero jitter" one.
 
+NOTE: NMIs 
 
 [bibliography]
 == Bibliography
