@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.8.15
+:appversion: 0.8.16
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1152,19 +1152,6 @@ Just use `rev8` for "network order" data. It's much better than doing endian neu
 
 addressable through `c.lui`
 
-=== no user trigger for NMIs
-
-typically used to emulate error events during development.
-
-instead
-
-the associated peripherals (clock recovery, ECC etc.) should provide 
-
-"simulation mode"
-trigger
-
-some can (like watchdog) can be easily triggered without the artificial trigger
-
 === no separate process stack
 
 only 4 levels of nesting + one returnable nmi
@@ -1186,6 +1173,7 @@ reasonable amount
 
 === no per irq pending/enable in base extension
 
+a lot of extras to implement
 probe/write peripherals directly
 
 === no nmi/exception nesting
@@ -1193,15 +1181,23 @@ probe/write peripherals directly
 in normal scenario such condition is very rare
 easy way to overflow the stack
 
+there is no MMU and such
+
+NMI is a fatal condition anyway
+
 === no triggering interrupt handlers by software
 
-aka software trigger
+aka software trigger 
+
+usually for unallocated vectors
 
 redundant
 complexity
 requires mechanism clearig pendingpending
 
 implement dedicated software deffered interrupts instead
+
+rarely used
 
 === no stack realignment upon interrupt entry/exit
 
@@ -1212,13 +1208,23 @@ The ABI mandated to 8 bytes
 if not followed then
 depends on the 
 
-=== "zero jitter" only in highest level interrupts
+=== "zero jitter" only in highest nesting level interrupts
 
 It doesn't make sense to implement "zero jitter" at any other level.
 If given interrupt can by interrupted by a higher nesting priority, then it would
 no longer be considered a "zero jitter" one.
 
 NOTE: NMIs 
+
+
+=== only level triggered interrupts
+
+Peripherals usually implement level triggered interrupts. (ie. require clearing trigger source 
+by performing certain actions like reading FIFO registers or clearing the status flags)
+
+Sampling edges on GPIO is done by a separate peripheral that turns it into an
+level triggered interrupt.
+
 
 [bibliography]
 == Bibliography
