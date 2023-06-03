@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.8.17
+:appversion: 0.8.18
 :toc:
 :toclevels: 5
 :sectnums:
@@ -41,6 +41,8 @@ as to not disturb minimal implementations. +
 By leveraging general purpose computing capability of risc-v architecture, we can
 avoid the need for separate cores (often with asymetric architectures) to offload 
 low priority tasks (communication, HMI etc).
+
+The lack of many "legacy" functionalities allows reduction of silicon area, power, and verification costs. 
 
 === prior art
 
