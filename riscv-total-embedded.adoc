@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.8.18
+:appversion: 0.9.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -972,7 +972,9 @@ NOTE: only `nest2` and `nest4` are mandatory to implemrnt
 |====
 | bit | name | type | reset value | description 
 | [31:10] | reserved | ro | 0 | reserved
-| 9 | `in_nmilockup` | ro | 0 | 
+| 10 | `in_nmi_lockup` | ro | 0 | readable only by debugger
+								  can be cleared only by hart/system reset
+| 9 | `in_nmi_unrecoverable` | ro | 0 | can be cleared only by hart/system reset
 | 8 | `in_nmi` | ro | 0 | 
 | 7 | `in_nest4` | ro | 0 | 
 | 6 | `in_nest3` | ro | 0 | 
@@ -992,7 +994,11 @@ NOTE: only `nest2` and `nest4` are mandatory to implemrnt
 |====
 | bit | name | type | reset value | description 
 | [31:6] | reserved | WLRL | 0 | reserved
-
+| 5 | reserved | WARL | 0 |
+| 4 | reserved | WARL | 0 |
+| 3 | reserved | WARL | 0 |
+| 2 | reserved | WARL | 0 |
+| 1 | reserved | WARL | 0 |
 | 0 | `zero_jitter` | WARL | 0 | (optional) 
 
 enter the interrupt at the highest nesting level
@@ -1037,7 +1043,29 @@ NOTE: Zcmp similarly doesn't specify the required alignment.
 
 ===== NMI interrupts
 
-====== NMI lockup
+====== NMI unrecoverable state
+
+nested NMI or directly entering `Unrecoverable_NMI` handler
+
+sets 
+
+====== NMI lockup state
+
+//tripple fault??
+
+Whenever
+attempt to return from `Unrecoverable_NMI` handler 
+
+exception ?? occuring within `Unrecoverable_NMI` 
+
+halts any further code execution, except the one within the debug mode
+
+NOTE: it is necessary to allow debugger to read out state of registers/memory
+after experiencing lockup state.
+
+NOTE: experiencing exceptions within (or return from) unrecoverable handler means a 
+serious issue with control flow, where further attempts to execute code would do 
+more harm than halting until watchdog performs system reset.  
 
 ===== vector table allocation
 
