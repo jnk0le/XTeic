@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.9.3
+:appversion: 0.9.4
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1208,12 +1208,13 @@ addressed by `lui` + `addi` sequence.
 
 can be escaped by single `c.j` instruction
 
-reasonable amount
+reasonable amount?
 
 === no per irq pending/enable in base extension
 
-a lot of extras to implement
-probe/write peripherals directly
+It is simply redundant to the peripherals as well as the core interrupt enables.
+
+Has use case only when the same interrupts are routed to multiple cores.
 
 === no nmi/exception nesting
 
