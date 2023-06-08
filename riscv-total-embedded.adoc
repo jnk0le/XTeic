@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.9.0
+:appversion: 0.9.1
 :toc:
 :toclevels: 5
 :sectnums:
@@ -882,6 +882,79 @@ TEIC_VECT_BASE //up to the bootloader to redirect??
 ==== startup behaviour
 
 
+==== interrupts
+
+level triggered
+
+higher irq number - higher priority
+
+stack pointer is not realigned, if stack is not 8 byte aligned 
+the behaviour is implementation specified
+
+NOTE: typical HW won't care about 4 byte stack, some dual issuers might want to enter `Unrecoverable_NMI`
+
+NOTE: Zcmp similarly doesn't specify the required alignment.
+
+===== interrupt entry
+
+===== interrupt exit
+
+===== NMI interrupts
+
+====== NMI unrecoverable state
+
+nested NMI or directly entering `Unrecoverable_NMI` handler
+
+sets 
+
+====== NMI lockup state
+
+//tripple fault??
+
+Whenever
+attempt to return from `Unrecoverable_NMI` handler 
+
+exception ?? occuring within `Unrecoverable_NMI` 
+
+halts any further code execution, except the one within the debug mode
+
+NOTE: it is necessary to allow debugger to read out state of registers/memory
+after experiencing lockup state.
+
+NOTE: experiencing exceptions within (or return from) unrecoverable handler means a 
+serious issue with control flow, where further attempts to execute code would do 
+more harm than halting until watchdog performs system reset.  
+
+===== vector table allocation
+
+[cols="1,1,4,6",options=header]
+|============================================================================================
+| irq num | type | name | notes
+| 0 | - | reserved | reserved for startup code (typically jump instruction)
+| 1 | NMI | reserved | (optional)
+| 2 | NMI | IntegrityViolation_NMI | (optional) ECC, parity, lockstep or other integrity
+									  error on core, memory or buses. Can be triggered imprecisely.
+| 3 | NMI | ClockViolation_NMI | (optional) Lost clock or other anomaly. It shall be assumed
+								 that the core/system clock has been switched to a different one
+								 at this point.
+| 4 | NMI | WatchdogViolation_NMI | (optional) Entered right before any of the watchdogs trips
+									and performs a (device) reset. Designated for safety measures
+									and error logging. It shall be assumed that execution could
+									be frozen at this point and no further action can or need to
+									be performed.
+| 5 | NMI | MemoryViolation_NMI | Memory access fault or unallowed access to protected area.
+| 6 | NMI | InstructionViolation_NMI | Illegal instruction exception or attempt to execute
+									   instructions from (execute) protected area
+| 7 | NMI | Unrecoverable_NMI | Any nested nmi, unknown, other or a state that cannot be recovered to.
+| 8 | IRQ | Deffered0_IRQ | software deffered interrupt, can be used for context switch.
+| 9 | IRQ | | reserved/ecall???
+| 10 | IRQ | | reserved/systick???
+| 11..255 | IRQ | *_IRQ | device specific interrupts
+|============================================================================================
+
+NOTE: Xteic doesn't provide any  peripheral API for optional watchdog, clock and integrity protection
+systems. It's up to the implementer to provide them.
+
 ==== CSR map
 
 [cols="1,2,1,4",options=header]
@@ -1002,12 +1075,15 @@ NOTE: only `nest2` and `nest4` are mandatory to implemrnt
 | 0 | `zero_jitter` | WARL | 0 | (optional) 
 
 enter the interrupt at the highest nesting level
-alway 
+always within the same 
 regardless of the interrupted execution state
 (be it WFI, execution from waitstated memory, entry/exit of lower level interrupts)
 
 It shall be assumed that highest level interrupt code and stack resides in zero
-waitstated memories and no HW measures will be implemented to adjust in a different scenario.
+waitstated memories and no HW measures will be implemented to adjust in a different scenario. +
+It shall be also assumed that the interrupts at the highest nesting level will not be
+masked out and no HW measueres will be present to ??
+
 |====
 
 
@@ -1023,79 +1099,6 @@ private to the hart
 ===== sys/hart reset req?
 
 //deep sleep?
-
-==== interrupts
-
-level triggered
-
-higher irq number - higher priority
-
-stack pointer is not realigned, if stack is not 8 byte aligned 
-the behaviour is implementation specified
-
-NOTE: typical HW won't care about 4 byte stack, some dual issuers might want to enter `Unrecoverable_NMI`
-
-NOTE: Zcmp similarly doesn't specify the required alignment.
-
-===== interrupt entry
-
-===== interrupt exit
-
-===== NMI interrupts
-
-====== NMI unrecoverable state
-
-nested NMI or directly entering `Unrecoverable_NMI` handler
-
-sets 
-
-====== NMI lockup state
-
-//tripple fault??
-
-Whenever
-attempt to return from `Unrecoverable_NMI` handler 
-
-exception ?? occuring within `Unrecoverable_NMI` 
-
-halts any further code execution, except the one within the debug mode
-
-NOTE: it is necessary to allow debugger to read out state of registers/memory
-after experiencing lockup state.
-
-NOTE: experiencing exceptions within (or return from) unrecoverable handler means a 
-serious issue with control flow, where further attempts to execute code would do 
-more harm than halting until watchdog performs system reset.  
-
-===== vector table allocation
-
-[cols="1,1,4,6",options=header]
-|============================================================================================
-| irq num | type | name | notes
-| 0 | - | reserved | reserved for startup code (typically jump instruction)
-| 1 | NMI | reserved | (optional)
-| 2 | NMI | IntegrityViolation_NMI | (optional) ECC, parity, lockstep or other integrity
-									  error on core, memory or buses. Can be triggered imprecisely.
-| 3 | NMI | ClockViolation_NMI | (optional) Lost clock or other anomaly. It shall be assumed
-								 that the core/system clock has been switched to a different one
-								 at this point.
-| 4 | NMI | WatchdogViolation_NMI | (optional) Entered right before any of the watchdogs trips
-									and performs a (device) reset. Designated for safety measures
-									and error logging. It shall be assumed that execution could
-									be frozen at this point and no further action can or need to
-									be performed.
-| 5 | NMI | MemoryViolation_NMI | Memory access fault or unallowed access to protected area.
-| 6 | NMI | InstructionViolation_NMI | Illegal instruction exception or attempt to execute
-									   instructions from (execute) protected area
-| 7 | NMI | Unrecoverable_NMI | Any nested nmi, unknown, other or a state that cannot be recovered to.
-| 8 | IRQ | Deffered0_IRQ | software deffered interrupt, can be used for context switch.
-| 9 | IRQ | | reserved/ecall???
-| 10 | IRQ | | reserved/systick???
-| 11..255 | IRQ | *_IRQ | device specific interrupts
-|============================================================================================
-
-NOTE: Xteic doesn't provide any  peripheral API for optional watchdog, clock and integrity protection
-systems. It's up to the implementer to provide them.
 
 ==== additional optional subextensions
 
