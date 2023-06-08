@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.9.1
+:appversion: 0.9.2
 :toc:
 :toclevels: 5
 :sectnums:
@@ -879,8 +879,11 @@ RV32 only
 TEIC_MMIO_CTRL_BASE
 TEIC_VECT_BASE //up to the bootloader to redirect??
 
+===== optional parameters
+
 ==== startup behaviour
 
+===== reset state of registers
 
 ==== interrupts
 
@@ -891,7 +894,8 @@ higher irq number - higher priority
 stack pointer is not realigned, if stack is not 8 byte aligned 
 the behaviour is implementation specified
 
-NOTE: typical HW won't care about 4 byte stack, some dual issuers might want to enter `Unrecoverable_NMI`
+NOTE: typical HW won't care about 4 byte stack, some dual issuers or hardened cores
+might want to enter `Unrecoverable_NMI`
 
 NOTE: Zcmp similarly doesn't specify the required alignment.
 
@@ -949,7 +953,7 @@ more harm than halting until watchdog performs system reset.
 | 8 | IRQ | Deffered0_IRQ | software deffered interrupt, can be used for context switch.
 | 9 | IRQ | | reserved/ecall???
 | 10 | IRQ | | reserved/systick???
-| 11..255 | IRQ | *_IRQ | device specific interrupts
+| 11..255 | IRQ | *_IRQ | device specific interrupts (optional)
 |============================================================================================
 
 NOTE: Xteic doesn't provide any  peripheral API for optional watchdog, clock and integrity protection
@@ -1220,28 +1224,27 @@ there is no MMU
 
 NMI is a fatal condition anyway
 
-=== no triggering interrupt handlers by software
+=== no "software interrupts"
 
-aka software trigger 
+aka software trigger in ARM terminology
 
-usually for unallocated vectors
+Designated for triggering unallocated (or unused peripheral) vectors, by writing to
+the special `NVIC->STIR` register
 
-redundant
-complexity
-requires mechanism clearig pendingpending
+However it's rarely used and only "implemented" vectors can be triggered in such 
+way (officially 32 entry granularity in ARM case)
 
-implement dedicated software deffered interrupts instead
+NOTW: Even the PendSV is done by setting `ICSR->PENDSVET` bit instead of executing this mechanism.
 
-rarely used
+NOTE: TEIC provides dedicated "peripheral" for handling software (deffered) interrupts
 
 === no stack realignment upon interrupt entry/exit
 
-This is just a waste of hardware
+This is just a waste of hardware. The ABI should mandate the alignment instead.
+If not followed then the code should be aloowed to trap.
 
-The ABI mandated to 8 bytes
-
-if not followed then
-depends on the 
+NOTE: some architectures, due to legacy codebases, require explicit satck alignment 
+instructions which also contribute to interrupt latency/jitter and impact code density. 
 
 === "zero jitter" only in highest nesting level interrupts
 
@@ -1249,8 +1252,8 @@ It doesn't make sense to implement "zero jitter" at any other level.
 If given interrupt can by interrupted by a higher nesting priority, then it would
 no longer be considered a "zero jitter" one.
 
-NOTE: NMIs 
-
+NOTE: NMIs can still break the "zero jitter" guarantee, thought those should
+be considered as a rare fault/error condition.
 
 === only level triggered interrupts
 
@@ -1262,14 +1265,13 @@ level triggered interrupt.
 
 === no faulting addr register
 
-aka `mtval`
+aka `mtval` which ` is often not impelemnted anyway, even by uarch without unaligned loads/stores support.
 
-`mtval` is often not impelemnted anyway, even by uarch without unaligned loads/stores
+Due to the lack of MMU, the memory access exceptions are considered fatal errors anyway.
 
-there is no MMU
+The faulting address can still be recovered in a more complex way of decompilation of faulting instr.
 
-
-=== no default "legacy" interrupt modes 
+=== no (default) "legacy" interrupt modes 
 
 Having our cores to boot with "legacy" interrupt modes
 - is a waste of silicon
