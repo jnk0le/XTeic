@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.9.2
+:appversion: 0.9.3
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1217,12 +1217,11 @@ probe/write peripherals directly
 
 === no nmi/exception nesting
 
-in normal scenario such condition is very rare
-easy way to overflow the stack
+Nesting NMIs is easy way to overflow the stack or greatly increase
+the worst case in static stack analysis (if there is even a bound)
 
-there is no MMU
-
-NMI is a fatal condition anyway
+Normally such condition is very rare and is a sign of bad coding or
+much more serious hardware issue, that caused everything to fail at the same moment.
 
 === no "software interrupts"
 
@@ -1252,7 +1251,7 @@ It doesn't make sense to implement "zero jitter" at any other level.
 If given interrupt can by interrupted by a higher nesting priority, then it would
 no longer be considered a "zero jitter" one.
 
-NOTE: NMIs can still break the "zero jitter" guarantee, thought those should
+NOTE: NMIs can still break the "zero jitter" guarantee, though those should
 be considered as a rare fault/error condition.
 
 === only level triggered interrupts
