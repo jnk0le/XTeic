@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.9.4
+:appversion: 0.9.5
 :toc:
 :toclevels: 5
 :sectnums:
@@ -866,6 +866,16 @@ certain privileged csr registers (e.g. `misa`, `mvendorid` etc.) when unimplemen
 
 //u stack lim?
 
+throws exception
+when `sp` (x1) register is written with value samller than 
+
+NOTE: local arrays can be created on stack and then accessed by pointer passed in working register.
+Therefore stacklimit comparison must happen on write to `sp` register
+
+==== XTinyZcmtTable
+
+==== XTinyZcmtTableExt
+
 === Xteic (aka Total Embedded Interrupt Controller tiny)
 
 machine mode only
@@ -884,6 +894,11 @@ TEIC_VECT_BASE //up to the bootloader to redirect??
 ==== startup behaviour
 
 ===== reset state of registers
+
+The reset state of all architectural registers is undefined unless explicitly specified
+in specific extension.
+
+NOTE: That means the reset state of integer, fp, and vector registers is undefined
 
 ==== interrupts
 
@@ -1018,7 +1033,7 @@ It should be already obvious what will be formally pushed down your throat.
 NOTE: designated to allow an efficient context switch from the lowest priority interrupt
 
 NOTE: As the risc-v doesn't have condition codes for branching/predication, it is
-expected that the smallest implementations will not make use of `estate` register.
+expected that the smallest implementations will not make use of `estate` register at all.
 
 NOTE: due to maximum 5-level nesting and limited state to preserve, it was decided
 to not push previous state onto stack, that would increase interrupt latency.
@@ -1049,19 +1064,22 @@ NOTE: only `nest2` and `nest4` are mandatory to implemrnt
 |====
 | bit | name | type | reset value | description 
 | [31:10] | reserved | ro | 0 | reserved
-| 10 | `in_nmi_lockup` | ro | 0 | readable only by debugger
+| 10 | `in_nmi_lockup` | ro | 0 | NMI lockup state active,
 								  can be cleared only by hart/system reset
-| 9 | `in_nmi_unrecoverable` | ro | 0 | can be cleared only by hart/system reset
-| 8 | `in_nmi` | ro | 0 | 
-| 7 | `in_nest4` | ro | 0 | 
-| 6 | `in_nest3` | ro | 0 | 
-| 5 | `in_nest2` | ro | 0 | 
-| 4 | `in_nest1` | ro | 0 | 
-| 3 | `pending_nest4` | ro | 0 | 
-| 2 | `pending_nest3` | ro | 0 | 
-| 1 | `pending_nest2` | ro | 0 | 
-| 0 | `pending_nest1` | ro | 0 |
+| 9 | `in_nmi_unrecoverable` | ro | 0 | unrecoverable NMI handler is active
+										can be cleared only by hart/system reset
+| 8 | `in_nmi` | ro | 0 | returnable NMI handler is active
+| 7 | `in_nest4` | ro | 0 | irq handler at 4th nesting priority is active
+| 6 | `in_nest3` | ro | 0 | irq handler at 3rd nesting priority is active
+| 5 | `in_nest2` | ro | 0 | irq handler at 2nd nesting priority is active
+| 4 | `in_nest1` | ro | 0 | irq handler at 1st nesting priority is active
+| 3 | `pending_nest4` | ro | 0 | irq handler at 4th nesting priority is pending
+| 2 | `pending_nest3` | ro | 0 | irq handler at 3rd nesting priority is pending
+| 1 | `pending_nest2` | ro | 0 | irq handler at 2nd nesting priority is pending
+| 0 | `pending_nest1` | ro | 0 | irq handler at 1st nesting priority is pending
 |====
+
+NOTE: `in_nmi_lockup` bit is defacto readable only by debugger
 
 ===== `teic_nmi_cause`
 
@@ -1077,17 +1095,15 @@ NOTE: only `nest2` and `nest4` are mandatory to implemrnt
 | 2 | reserved | WARL | 0 |
 | 1 | reserved | WARL | 0 |
 | 0 | `zero_jitter` | WARL | 0 | (optional) 
-
-enter the interrupt at the highest nesting level
-always within the same 
-regardless of the interrupted execution state
-(be it WFI, execution from waitstated memory, entry/exit of lower level interrupts)
+ensure that the highest nesting priority interrupt is always
+entered within the same number of cycles regardless of the 
+interrupted execution state (be it WFI, execution from waitstated
+memory, entry/exit of lower level interrupts or multi cycle instruction)
 
 It shall be assumed that highest level interrupt code and stack resides in zero
 waitstated memories and no HW measures will be implemented to adjust in a different scenario. +
 It shall be also assumed that the interrupts at the highest nesting level will not be
 masked out and no HW measueres will be present to ??
-
 |====
 
 
@@ -1102,6 +1118,7 @@ private to the hart
 
 ===== sys/hart reset req?
 
+//key+req of hart/sys reset
 //deep sleep?
 
 ==== additional optional subextensions
@@ -1118,7 +1135,6 @@ multi hart or when peripheral interrupt lines are shared across multiple cores
 
 ===== XteicTinyIrqTableExt
 
-//tiny zcmp[e] table + ext
 
 [appendix]
 == context switch on tiny profile
@@ -1189,7 +1205,7 @@ Just use `rev8` for "network order" data. It's much better than doing endian neu
 
 === `TEIC_MMIO_CTRL_BASE` address selection
 
-addressable through `c.lui`
+addressable through `c.lui` + offset
 
 === no separate process stack
 
@@ -1221,8 +1237,10 @@ Has use case only when the same interrupts are routed to multiple cores.
 Nesting NMIs is easy way to overflow the stack or greatly increase
 the worst case in static stack analysis (if there is even a bound)
 
-Normally such condition is very rare and is a sign of bad coding or
-much more serious hardware issue, that caused everything to fail at the same moment.
+It also becomes an issue in pure HW state preservation by `estate_nl`.
+
+Normally such condition is very rare and is usually a sign of bad coding or
+much more serious hardware issue, that's causing everything to fail at the same moment.
 
 === no "software interrupts"
 
@@ -1234,7 +1252,7 @@ the special `NVIC->STIR` register
 However it's rarely used and only "implemented" vectors can be triggered in such 
 way (officially 32 entry granularity in ARM case)
 
-NOTW: Even the PendSV is done by setting `ICSR->PENDSVET` bit instead of executing this mechanism.
+NOTE: Even the PendSV is done by setting `ICSR->PENDSVET` bit instead of executing this mechanism.
 
 NOTE: TEIC provides dedicated "peripheral" for handling software (deffered) interrupts
 
