@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.9.5
+:appversion: 0.9.6
 :toc:
 :toclevels: 5
 :sectnums:
@@ -944,6 +944,8 @@ NOTE: experiencing exceptions within (or return from) unrecoverable handler mean
 serious issue with control flow, where further attempts to execute code would do 
 more harm than halting until watchdog performs system reset.  
 
+NOTE: lack of tripple fault lockout can also lead to security vulnerabilities <<nvidiamtveccve>>
+
 ===== vector table allocation
 
 [cols="1,1,4,6",options=header]
@@ -1097,16 +1099,12 @@ NOTE: `in_nmi_lockup` bit is defacto readable only by debugger
 | 0 | `zero_jitter` | WARL | 0 | (optional) 
 ensure that the highest nesting priority interrupt is always
 entered within the same number of cycles regardless of the 
-interrupted execution state (be it WFI, execution from waitstated
-memory, entry/exit of lower level interrupts or multi cycle instruction)
+interrupted execution state.
 
+Doesn't affect tailchaining of handlers within the highest nesting priority.
 It shall be assumed that highest level interrupt code and stack resides in zero
-waitstated memories and no HW measures will be implemented to adjust in a different scenario. +
-It shall be also assumed that the interrupts at the highest nesting level will not be
-masked out and no HW measueres will be present to ??
+waitstated memories and no HW measures will be implemented to adjust in a different scenario.
 |====
-
-
 
 ===== d
 
@@ -1296,15 +1294,22 @@ Having our cores to boot with "legacy" interrupt modes
 - causes interrupt hole or additional boilerplate code to handle exceptions/NMIs that arrived before setting
 up `mtvec` and thus were routed to reset handler entry.
 
-NOTE: There was even an CVE related to uninitialized `mtvec`: https://youtu.be/iz_Y1lOtX08?t=1740
+NOTE: There was even an CVE related to uninitialized `mtvec`: <<nvidiamtveccve>>
+
+This also allows us to use vector address with zeroed two lowest bits. 
+Which, in some scenarios, allows setup of vector table address with a single `lui` instruction
 
 In cores designated to work in vectored mode, the `mtvec` has the bottom address lines hardwired to 0.
 Which leads to large alignment granularity of the unvectored handler (in ch32v003 it's 1KiB). 
 Making the unvectored mode handler share entry with startup code or require large alignment.
 
+=== no regular priority reflected in irq status registers
 
-This also allows us to use vector address with zeroed lowest bits. 
-Which, in some scenarios, allows setup of vector table address with a single `lui` instruction
+non-nesting priority is used only during irq handler dispatch.
+Current priority field would consume additional circuitry to latch in the current 
+non-nesting priority.
+
+Use cases other than "informative purposes" are rare.
 
 [bibliography]
 == Bibliography
@@ -1352,3 +1357,4 @@ Which, in some scenarios, allows setup of vector table address with a single `lu
 * [[[c2000workshop, 40]]] https://software-dl.ti.com/trainingTTO/trainingTTO_public_sw/c28x28035/C28x_Piccolo_MDW_2-1.pdf
 * [[[cv32e40s, 41]]] https://docs.openhwgroup.org/_/downloads/cv32e40s-user-manual/en/latest/pdf/
 * [[[popretzloadzero, 42]]] https://github.com/riscv/riscv-code-size-reduction/issues/196
+* [[[nvidiamtveccve, 43]]] https://youtu.be/iz_Y1lOtX08?t=1740
