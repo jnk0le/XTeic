@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.10.2
+:appversion: 0.10.3
 :toc:
 :toclevels: 5
 :sectnums:
@@ -710,18 +710,131 @@ manually selecting prestacking might be inefficient
 saving too little or too many
 
 
-== programmers model
+// == programmers model
 
-set of profiles
+== Xteic (aka Total Embedded Interrupt Controller tiny)
 
+smallest profile?
 
+machine mode only
 
-=== common
+RV32 only
+
+2 or 4 interrupt levels
 
 little endian only
 software shall assume little endian
 
-==== recycled volume II CSRs
+=== implementation constants
+
+
+[cols="4,2,5",options=header]
+|====
+| name | default value | notes
+| TEIC_ENTRY_VECT_BASE | implementation specific | Base address of the first application entry point 
+											 as well as its vector table. May have additional
+											 constarints on the alignment.
+| TEIC_MMIO_CTRL_BASE | 0xFFFE0000 | Base address of MMIO control block
+| TEIC_IRQ_NESTING_BITS | {1,2} | number of implemented interrupt nesting bits
+| TEIC_IRQ_PRIORITY_BITS | {1,2,3,4} | number of implemented interrupt priority bits
+| TEIC_IRQ_VECT_ENTRIES | {8..255} | number of implemented interrupts including skipped ones
+| TEIC_IRQ_VECT_ENTRY_SIZE | {2,4} | size in bytes of the single entry in vector table
+|====
+
+=== startup behaviour
+
+// up to the bootloader to redirect?? `teic_irq_vect` to actual application entry point
+// note: app faults should not land in the bootloader handlers
+// note: some bootloaders are starting the application y performing full system reset after 
+// reconfiguring boot options
+
+==== reset state of registers
+
+The reset state of all architectural registers is undefined unless explicitly specified
+in specific extension.
+
+NOTE: That means the reset state of integer, fp, and vector registers is undefined
+
+=== interrupts
+
+level triggered
+
+irq number is the position in vector table 
+// no need for offseting like in arm
+
+higher irq number - higher priority
+
+stack pointer is not realigned, if stack is not 8 byte aligned 
+the behaviour is implementation specified
+
+NOTE: typical HW won't care about 4 byte stack, some dual issuers or hardened cores
+might want to enter `Unrecoverable_NMI`
+
+NOTE: Zcmp similarly doesn't specify the required alignment.
+
+==== interrupt entry
+
+==== interrupt exit
+
+==== NMI interrupts
+
+===== NMI unrecoverable state
+
+nested NMI or directly entering `Unrecoverable_NMI` handler
+
+sets 
+
+===== NMI lockup state
+
+//tripple fault??
+
+Whenever
+attempt to return from `Unrecoverable_NMI` handler 
+
+exception ?? occuring within `Unrecoverable_NMI` 
+
+halts any further code execution, except the one within the debug mode
+
+NOTE: it is necessary to allow debugger to read out state of registers/memory
+after experiencing lockup state.
+
+NOTE: experiencing exceptions within (or return from) unrecoverable handler means a 
+serious issue with control flow, where further attempts to execute code would do 
+more harm than halting until watchdog performs system reset.  
+
+NOTE: lack of tripple fault lockout can also lead to security vulnerabilities <<nvidiamtveccve>>
+
+==== vector table allocation
+
+[cols="1,1,4,6",options=header]
+|============================================================================================
+| irq num | type | name | notes
+| 0 | - | reserved | reserved for startup code (typically jump instruction)
+| 1 | NMI | reserved | (optional)
+| 2 | NMI | IntegrityViolation_NMI | (optional) ECC, parity, lockstep or other integrity
+									  error on core, memory or buses. Can be triggered imprecisely.
+| 3 | NMI | ClockViolation_NMI | (optional) Lost clock or other anomaly. It shall be assumed
+								 that the core/system clock has been switched to a different one
+								 at this point.
+| 4 | NMI | WatchdogViolation_NMI | (optional) Entered right before any of the watchdogs trips
+									and performs a (device) reset. Designated for safety measures
+									and error logging. It shall be assumed that execution could
+									be frozen at this point and no further action can or need to
+									be performed.
+| 5 | NMI | MemoryViolation_NMI | Memory access fault or unallowed access to protected area.
+| 6 | NMI | InstructionViolation_NMI | Illegal instruction exception or attempt to execute
+									   instructions from (execute) protected area
+| 7 | NMI | Unrecoverable_NMI | Any nested nmi, unknown, other or a state that cannot be recovered to.
+| 8 | IRQ | Deffered0_IRQ | software deffered interrupt, can be used for context switch.
+| 9 | IRQ | | reserved/ecall???
+| 10 | IRQ | | reserved/systick???
+| 11..255 | IRQ | *_IRQ | device specific interrupts (optional)
+|============================================================================================
+
+NOTE: Xteic doesn't provide any  peripheral API for optional watchdog, clock and integrity protection
+systems. It's up to the implementer to provide them.
+
+=== recycled volume II CSRs
 
 To reduce disruption some of the "privileged" csr have been recycled 
 according to "privileged" specification.
@@ -745,9 +858,9 @@ according to "privileged" specification.
 // debug?
 // counters/hpmcounters?
 
-==== recycled volume II instructions
+=== recycled volume II instructions
 
-===== wfi
+==== wfi
 
 Mnemonic::
 ```
@@ -766,9 +879,191 @@ Encoding (RV32, RV64)::
 ]}
 ....
 
-=== auxiliary extensions
+=== CSR map
 
-==== Xfenceiext
+[cols="1,2,1,4",options=header]
+|====
+| number | name | privilege | description 
+| 0xbc0 | `teic_irq_vect` | MRW | interrupt vector table
+| 0xbc1 | `teic_estate` | MRW | saved state
+| 0xbc2 | `teic_irq_msk` | MRW (U?) | interrupt mask
+| 0xbc3 | `teic_irq_status` | MRO? | current interrupt status
+| 0xbc4 | `teic_nmi_cause` | MRW (RO?) | coarse mask of NMI cause?
+| 0xbc5 | `teic_cfg` | MRW | config register
+| 0xbc6 | `` | |
+|====
+
+
+==== `teic_irq_vect`
+
+[cols="1,2,1,2,6",options=header]
+|====
+| bit | name | type | reset value | description 
+| [31:5] | `vect_offset` | WLRL | `TEIC_ENTRY_VECT_BASE>>5` | must be aligned to 64 bytes or rounded up 
+														to next power of 2, of the number of entries
+														multiplied by the entry size, whichever is greater
+| [4:0] | reserved | WLRL | 0 | reserved
+|====
+
+NOTE: alignment requirement allows to avoid the additional adder circuit during irq dispatch
+
+NOTE: If vector table consists of 100 entries total, 4 byte each. Then minimum required alignment is 512 bytes
+
+NOTE: `vect_offset` can be implemented with enough state to point at existing memory areas only,
+as to reduce necessary state to implement.
+
+NOTE: Implementations may impose additional alignment requirement
+
+NOTE: `vect_offset` can also be implemented as a read only constant pointing to beggining of the flash memory
+
+
+==== `teic_estate`
+
+[cols="1,2,1,2,6",options=header]
+|====
+| bit | name | type | reset value | description 
+| [31:0] | `estate_nl` | WLRL | undefined | implementation specified pattern
+used to recover execution state upon interrupt return. Covers certain csr registers: 
+(`fcsr`), and (optionally) multi cycle instruction progress. The content read as 
+well as the write to this register is valid only at the lowest implemented nesting level.
+Otherwise read and write operations on this register are undefined.
+|====
+
+//list somewhere mandatory csrs to save??
+
+NOTE: Altough optional, the ability to interrupt multicycle instructions is especially
+important for cores implementing zero jitter features.
+As an example the ratified Zcmp `cm.popretz` intruction has 3 uninterrupible instructions (one is branch).
+Even though it could be just 2 according to common sense and normative Tariq response <<popretzloadzero>>.
+It should be already obvious what will be formally pushed down your throat.
+
+NOTE: designated to allow an efficient context switch from the lowest priority interrupt
+
+NOTE: As the risc-v doesn't have condition codes for branching/predication, it is
+expected that the smallest implementations will not make use of `estate` register at all.
+
+NOTE: due to maximum 5-level nesting and limited state to preserve, it was decided
+to not push previous state onto stack, that would increase interrupt latency.
+
+==== `teic_irq_msk`
+
+[cols="1,2,1,2,6",options=header]
+|====
+| bit | name | type | reset value | description 
+| [31:4] | reserved | WPRI | 0 | reserved
+| 3 | `nest4` | rw | 0 | enable fourth nesting level when cleared
+| 2 | `nest3` | WARL | 0 | enable third nesting level when cleared
+						   If unimplemented it always read 0.
+| 1 | `nest2` | rw | 0 | enable second nesting level when cleared
+| 0 | `nest1` | WARL | 0 | enable first nesting level when cleared
+						   If unimplemented it always read 0.
+|====
+
+NOTE: only `nest2` and `nest4` are mandatory to implemrnt
+
+//??
+//binary numbering - requires special logic to do increase only
+//nesting + normal priority???
+
+==== `teic_irq_status`
+
+[cols="1,2,1,2,6",options=header]
+|====
+| bit | name | type | reset value | description 
+| [31:10] | reserved | ro | 0 | reserved
+| 10 | `in_nmi_lockup` | ro | 0 | NMI lockup state active,
+								  can be cleared only by hart/system reset
+| 9 | `in_nmi_unrecoverable` | ro | 0 | unrecoverable NMI handler is active
+										can be cleared only by hart/system reset
+| 8 | `in_nmi` | ro | 0 | returnable NMI handler is active
+| 7 | `in_nest4` | ro | 0 | irq handler at 4th nesting priority is active
+| 6 | `in_nest3` | ro | 0 | irq handler at 3rd nesting priority is active
+| 5 | `in_nest2` | ro | 0 | irq handler at 2nd nesting priority is active
+| 4 | `in_nest1` | ro | 0 | irq handler at 1st nesting priority is active
+| 3 | `pending_nest4` | ro | 0 | irq handler at 4th nesting priority is pending
+| 2 | `pending_nest3` | ro | 0 | irq handler at 3rd nesting priority is pending
+| 1 | `pending_nest2` | ro | 0 | irq handler at 2nd nesting priority is pending
+| 0 | `pending_nest1` | ro | 0 | irq handler at 1st nesting priority is pending
+|====
+
+NOTE: `in_nmi_lockup` bit is defacto readable only by debugger
+
+==== `teic_nmi_cause`
+
+==== `teic_cfg`
+
+[cols="1,2,1,2,6",options=header]
+|====
+| bit | name | type | reset value | description 
+| [31:6] | reserved | WLRL | 0 | reserved
+| 5 | reserved | WARL | 0 |
+| 4 | reserved | WARL | 0 |
+| 3 | reserved | WARL | 0 |
+| 2 | reserved | WARL | 0 |
+| 1 | reserved | WARL | 0 |
+| 0 | `zero_jitter` | WARL | 0 | (optional) 
+ensure that the highest nesting priority interrupt is always
+entered within the same number of cycles regardless of the 
+interrupted execution state.
+
+Doesn't affect tailchaining of handlers within the highest nesting priority.
+It shall be assumed that highest level interrupt code and stack resides in zero
+waitstated memories and no HW measures will be implemented to adjust in a different scenario.
+|====
+
+==== d
+
+
+
+=== MMIO TEIC registers
+
+private to the hart
+
+==== sys/hart reset req?
+
+//key+req of hart/sys reset
+//deep sleep?
+
+=== additional optional subextensions
+
+==== XteicMP
+
+additional per vector entry interrupt enable
+
+multi hart or when peripheral interrupt lines are shared across multiple cores
+
+
+==== XteicTinyIrqTable
+
+Makes each address entry in irq vector table take only 2 byte in size.
+
+The top 16 bit of the effective addres are substituted with the top 16 bits of 
+`TEIC_ENTRY_VECT_BASE` implementation constant
+
+The `TEIC_ENTRY_VECT_BASE` must be 64KiB aligned.
+
+The entry encoding with least significant bit set, is reserved.
+
+NOTE: Extension designated for smallest devices where a vector table has a more 
+significant impact on code memory.
+
+NOTE: SRAM can be used for enplacing handlers if mapped within the same 64KiB block
+
+==== XteicTinyIrqTableExt
+
+//adds csr upper
+
+
+NOTE: It is possible to implement this on devices with large flash memories
+and resort to compiler tricks to keep handlers within within 64KiB ranges.
+But the gains will be relatively low, even at a total of 256 vector entries.
+
+
+== auxiliary extensions
+
+Additional extensions that are usefull addition to xteic
+
+=== Xfenceiext
 
 Because J extension group is going to simply ignore the fact that `fence.i` instruction
 allocated whole 22.125 bits of opcodes, and introduce a new instructions for operational
@@ -781,7 +1076,7 @@ certain operation.
 
 The uppermost 4 bits remain zero to allow enabling extra features not covered by `fence.i`.
 
-===== teic.fence.ipipe
+==== teic.fence.ipipe
 
 Flushes the pipeline and prefetch buffers before executing next instruction. +
 Encoded in bit 0 of `fence.i` immediate
@@ -806,7 +1101,7 @@ Encoding (RV32, RV64)::
 ]}
 ....
 
-===== teic.fence.icsrsync
+==== teic.fence.icsrsync
 
 Ensures that the following instructions are executed after the architectural state change 
 by a preceding CSR instructions (or equivalent) takes effect.
@@ -837,7 +1132,7 @@ Encoding (RV32, RV64)::
 ]}
 ....
 
-==== Xicsrmz
+=== Xicsrmz
 
 Implemented similarly to Zicsr with `uimm=0` mapped into -1 constant.
 
@@ -848,7 +1143,7 @@ NOTE: This extensions allows to sync `csrrwi` instruction, with some other exten
 
 NOTE: `csrrw rd, csr, x0` can still be used to write a zero into csr.
 
-==== Xtolerantcsr
+=== Xtolerantcsr
 
 None of the CSR access shall raise an exception.
 
@@ -862,7 +1157,7 @@ no longer be used. `c.unimp` remains available which is encoded as all zero.
 NOTE: Extension designated for reduction of silicon use, reflects behaviour of
 certain privileged csr registers (e.g. `misa`, `mvendorid` etc.) when unimplemented
 
-==== Xmstacklimit
+=== Xmstacklimit
 
 //u stack lim?
 
@@ -872,305 +1167,11 @@ when `sp` (x1) register is written with value samller than
 NOTE: local arrays can be created on stack and then accessed by pointer passed in working register.
 Therefore stacklimit comparison must happen on write to `sp` register
 
-==== XTinyZcmtTable
+=== XTinyZcmtTable
 
-==== XTinyZcmtTableExt
+=== XTinyZcmtTableExt
 
-=== Xteic (aka Total Embedded Interrupt Controller tiny)
 
-machine mode only
-
-RV32 only
-
-2 or 4 interrupt levels
-
-==== implementation constants
-
-
-[cols="4,2,5",options=header]
-|====
-| name | default value | notes
-| TEIC_ENTRY_VECT_BASE | implementation specific | Base address of the first application entry point 
-											 as well as its vector table. May have additional
-											 constarints on the alignment.
-| TEIC_MMIO_CTRL_BASE | 0xFFFE0000 | Base address of MMIO control block
-| TEIC_IRQ_NESTING_BITS | {1,2} | number of implemented interrupt nesting bits
-| TEIC_IRQ_PRIORITY_BITS | {1,2,3,4} | number of implemented interrupt priority bits
-| TEIC_IRQ_VECT_ENTRIES | {8..255} | number of implemented interrupts including skipped ones
-| TEIC_IRQ_VECT_ENTRY_SIZE | {2,4} | size in bytes of the single entry in vector table
-|====
-
-==== startup behaviour
-
-//up to the bootloader to redirect?? `teic_irq_vect` to actual application entry point
-//note: app faults should not land in the bootloader handlers
-//note: some bootloaders are starting the application y performing full system reset after 
-// reconfiguring boot options
-
-===== reset state of registers
-
-The reset state of all architectural registers is undefined unless explicitly specified
-in specific extension.
-
-NOTE: That means the reset state of integer, fp, and vector registers is undefined
-
-==== interrupts
-
-level triggered
-
-irq number is the position in vector table 
-//no need for offseting like in arm
-
-higher irq number - higher priority
-
-stack pointer is not realigned, if stack is not 8 byte aligned 
-the behaviour is implementation specified
-
-NOTE: typical HW won't care about 4 byte stack, some dual issuers or hardened cores
-might want to enter `Unrecoverable_NMI`
-
-NOTE: Zcmp similarly doesn't specify the required alignment.
-
-===== interrupt entry
-
-===== interrupt exit
-
-===== NMI interrupts
-
-====== NMI unrecoverable state
-
-nested NMI or directly entering `Unrecoverable_NMI` handler
-
-sets 
-
-====== NMI lockup state
-
-//tripple fault??
-
-Whenever
-attempt to return from `Unrecoverable_NMI` handler 
-
-exception ?? occuring within `Unrecoverable_NMI` 
-
-halts any further code execution, except the one within the debug mode
-
-NOTE: it is necessary to allow debugger to read out state of registers/memory
-after experiencing lockup state.
-
-NOTE: experiencing exceptions within (or return from) unrecoverable handler means a 
-serious issue with control flow, where further attempts to execute code would do 
-more harm than halting until watchdog performs system reset.  
-
-NOTE: lack of tripple fault lockout can also lead to security vulnerabilities <<nvidiamtveccve>>
-
-===== vector table allocation
-
-[cols="1,1,4,6",options=header]
-|============================================================================================
-| irq num | type | name | notes
-| 0 | - | reserved | reserved for startup code (typically jump instruction)
-| 1 | NMI | reserved | (optional)
-| 2 | NMI | IntegrityViolation_NMI | (optional) ECC, parity, lockstep or other integrity
-									  error on core, memory or buses. Can be triggered imprecisely.
-| 3 | NMI | ClockViolation_NMI | (optional) Lost clock or other anomaly. It shall be assumed
-								 that the core/system clock has been switched to a different one
-								 at this point.
-| 4 | NMI | WatchdogViolation_NMI | (optional) Entered right before any of the watchdogs trips
-									and performs a (device) reset. Designated for safety measures
-									and error logging. It shall be assumed that execution could
-									be frozen at this point and no further action can or need to
-									be performed.
-| 5 | NMI | MemoryViolation_NMI | Memory access fault or unallowed access to protected area.
-| 6 | NMI | InstructionViolation_NMI | Illegal instruction exception or attempt to execute
-									   instructions from (execute) protected area
-| 7 | NMI | Unrecoverable_NMI | Any nested nmi, unknown, other or a state that cannot be recovered to.
-| 8 | IRQ | Deffered0_IRQ | software deffered interrupt, can be used for context switch.
-| 9 | IRQ | | reserved/ecall???
-| 10 | IRQ | | reserved/systick???
-| 11..255 | IRQ | *_IRQ | device specific interrupts (optional)
-|============================================================================================
-
-NOTE: Xteic doesn't provide any  peripheral API for optional watchdog, clock and integrity protection
-systems. It's up to the implementer to provide them.
-
-==== CSR map
-
-[cols="1,2,1,4",options=header]
-|====
-| number | name | privilege | description 
-| 0xbc0 | `teic_irq_vect` | MRW | interrupt vector table
-| 0xbc1 | `teic_estate` | MRW | saved state
-| 0xbc2 | `teic_irq_msk` | MRW (U?) | interrupt mask
-| 0xbc3 | `teic_irq_status` | MRO? | current interrupt status
-| 0xbc4 | `teic_nmi_cause` | MRW (RO?) | coarse mask of NMI cause?
-| 0xbc5 | `teic_cfg` | MRW | config register
-| 0xbc6 | `` | |
-|====
-
-
-===== `teic_irq_vect`
-
-[cols="1,2,1,2,6",options=header]
-|====
-| bit | name | type | reset value | description 
-| [31:5] | `vect_offset` | WLRL | `TEIC_ENTRY_VECT_BASE>>5` | must be aligned to 64 bytes or rounded up 
-														to next power of 2, of the number of entries
-														multiplied by the entry size, whichever is greater
-| [4:0] | reserved | WLRL | 0 | reserved
-|====
-
-NOTE: alignment requirement allows to avoid the additional adder circuit during irq dispatch
-
-NOTE: If vector table consists of 100 entries total, 4 byte each. Then minimum required alignment is 512 bytes
-
-NOTE: `vect_offset` can be implemented with enough state to point at existing memory areas only,
-as to reduce necessary state to implement.
-
-NOTE: Implementations may impose additional alignment requirement
-
-NOTE: `vect_offset` can also be implemented as a read only constant pointing to beggining of the flash memory
-
-
-===== `teic_estate`
-
-[cols="1,2,1,2,6",options=header]
-|====
-| bit | name | type | reset value | description 
-| [31:0] | `estate_nl` | WLRL | undefined | implementation specified pattern
-used to recover execution state upon interrupt return. Covers certain csr registers: 
-(`fcsr`), and (optionally) multi cycle instruction progress. The content read as 
-well as the write to this register is valid only at the lowest implemented nesting level.
-Otherwise read and write operations on this register are undefined.
-|====
-
-//list somewhere mandatory csrs to save??
-
-NOTE: Altough optional, the ability to interrupt multicycle instructions is especially
-important for cores implementing zero jitter features.
-As an example the ratified Zcmp `cm.popretz` intruction has 3 uninterrupible instructions (one is branch).
-Even though it could be just 2 according to common sense and normative Tariq response <<popretzloadzero>>.
-It should be already obvious what will be formally pushed down your throat.
-
-NOTE: designated to allow an efficient context switch from the lowest priority interrupt
-
-NOTE: As the risc-v doesn't have condition codes for branching/predication, it is
-expected that the smallest implementations will not make use of `estate` register at all.
-
-NOTE: due to maximum 5-level nesting and limited state to preserve, it was decided
-to not push previous state onto stack, that would increase interrupt latency.
-
-===== `teic_irq_msk`
-
-[cols="1,2,1,2,6",options=header]
-|====
-| bit | name | type | reset value | description 
-| [31:4] | reserved | WPRI | 0 | reserved
-| 3 | `nest4` | rw | 0 | enable fourth nesting level when cleared
-| 2 | `nest3` | WARL | 0 | enable third nesting level when cleared
-						   If unimplemented it always read 0.
-| 1 | `nest2` | rw | 0 | enable second nesting level when cleared
-| 0 | `nest1` | WARL | 0 | enable first nesting level when cleared
-						   If unimplemented it always read 0.
-|====
-
-NOTE: only `nest2` and `nest4` are mandatory to implemrnt
-
-//??
-//binary numbering - requires special logic to do increase only
-//nesting + normal priority???
-
-===== `teic_irq_status`
-
-[cols="1,2,1,2,6",options=header]
-|====
-| bit | name | type | reset value | description 
-| [31:10] | reserved | ro | 0 | reserved
-| 10 | `in_nmi_lockup` | ro | 0 | NMI lockup state active,
-								  can be cleared only by hart/system reset
-| 9 | `in_nmi_unrecoverable` | ro | 0 | unrecoverable NMI handler is active
-										can be cleared only by hart/system reset
-| 8 | `in_nmi` | ro | 0 | returnable NMI handler is active
-| 7 | `in_nest4` | ro | 0 | irq handler at 4th nesting priority is active
-| 6 | `in_nest3` | ro | 0 | irq handler at 3rd nesting priority is active
-| 5 | `in_nest2` | ro | 0 | irq handler at 2nd nesting priority is active
-| 4 | `in_nest1` | ro | 0 | irq handler at 1st nesting priority is active
-| 3 | `pending_nest4` | ro | 0 | irq handler at 4th nesting priority is pending
-| 2 | `pending_nest3` | ro | 0 | irq handler at 3rd nesting priority is pending
-| 1 | `pending_nest2` | ro | 0 | irq handler at 2nd nesting priority is pending
-| 0 | `pending_nest1` | ro | 0 | irq handler at 1st nesting priority is pending
-|====
-
-NOTE: `in_nmi_lockup` bit is defacto readable only by debugger
-
-===== `teic_nmi_cause`
-
-===== `teic_cfg`
-
-[cols="1,2,1,2,6",options=header]
-|====
-| bit | name | type | reset value | description 
-| [31:6] | reserved | WLRL | 0 | reserved
-| 5 | reserved | WARL | 0 |
-| 4 | reserved | WARL | 0 |
-| 3 | reserved | WARL | 0 |
-| 2 | reserved | WARL | 0 |
-| 1 | reserved | WARL | 0 |
-| 0 | `zero_jitter` | WARL | 0 | (optional) 
-ensure that the highest nesting priority interrupt is always
-entered within the same number of cycles regardless of the 
-interrupted execution state.
-
-Doesn't affect tailchaining of handlers within the highest nesting priority.
-It shall be assumed that highest level interrupt code and stack resides in zero
-waitstated memories and no HW measures will be implemented to adjust in a different scenario.
-|====
-
-===== d
-
-
-
-==== MMIO TEIC registers
-
-private to the hart
-
-===== sys/hart reset req?
-
-//key+req of hart/sys reset
-//deep sleep?
-
-==== additional optional subextensions
-
-===== XteicMP
-
-additional per vector entry interrupt enable
-
-multi hart or when peripheral interrupt lines are shared across multiple cores
-
-
-===== XteicTinyIrqTable
-
-Makes each address entry in irq vector table take only 2 byte in size.
-
-The top 16 bit of the effective addres are substituted with the top 16 bits of 
-`TEIC_ENTRY_VECT_BASE` implementation constant
-
-The `TEIC_ENTRY_VECT_BASE` must be 64KiB aligned.
-
-The entry encoding with least significant bit set, is reserved.
-
-NOTE: Extension designated for smallest devices where a vector table has a more 
-significant impact on code memory.
-
-NOTE: SRAM can be used for enplacing handlers if mapped within the same 64KiB block
-
-===== XteicTinyIrqTableExt
-
-//adds csr upper
-
-
-NOTE: It is possible to implement this on devices with large flash memories
-and resort to compiler tricks to keep handlers within within 64KiB ranges.
-But the gains will be relatively low, even at a total of 256 vector entries.
 
 [appendix]
 == context switch on tiny profile
