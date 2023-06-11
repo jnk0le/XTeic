@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.9.6
+:appversion: 0.10.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -889,6 +889,7 @@ RV32 only
 TEIC_MMIO_CTRL_BASE
 TEIC_VECT_BASE //up to the bootloader to redirect??
 
+
 ===== optional parameters
 
 ==== startup behaviour
@@ -1130,9 +1131,28 @@ multi hart or when peripheral interrupt lines are shared across multiple cores
 
 ===== XteicTinyIrqTable
 
+Makes each address entry in irq vector table take only 2 byte in size.
+
+The top 16 bit of the effective addres are substituted with the top 16 bits of 
+`TEIC_VECT_BASE` implementation constant
+
+The `TEIC_VECT_BASE` must be 64KiB aligned.
+
+The entry encoding with least significant bit set, is reserved.
+
+NOTE: Extension designated for smallest devices where a vector table has a more 
+significant impact on code memory.
+
+NOTE: SRAM can be used for enplacing handlers if mapped within the same 64KiB block
 
 ===== XteicTinyIrqTableExt
 
+//adds csr upper
+
+
+NOTE: It is possible to implement this on devices with large flash memories
+and resort to compiler tricks to keep handlers within within 64KiB ranges.
+But the gains will be relatively low, even at a total of 256 vector entries.
 
 [appendix]
 == context switch on tiny profile
