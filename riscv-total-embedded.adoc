@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.10.0
+:appversion: 0.10.1
 :toc:
 :toclevels: 5
 :sectnums:
@@ -815,7 +815,7 @@ Encoded in bit 1 of `fence.i` immediate
 NOTE: In many cases CSR updates don't require full pipeline flush, though it can be implemented
 as regular pipeline flush.
 
-NOTE: necessary to sync e.g irq vector table updates wrt following MMIO access
+NOTE: necessary to sync e.g irq vector table updates wrt following (peripheral) MMIO access
 
 NOTE: <<cv32e40s>> do require fencing after update of `jvt` and `mtvec` 
 (even though `jvt` falls into "program order" category)
@@ -886,13 +886,24 @@ RV32 only
 
 ==== implementation constants
 
-TEIC_MMIO_CTRL_BASE
-TEIC_VECT_BASE //up to the bootloader to redirect??
 
+[cols="4,2,5",options=header]
+|====
+| name | default value | notes
+| TEIC_VECT_BASE | implementation specific | Base address of the application entry point 
+											 as well as its the vector table. May have additional
+											 constarints on the alignment.
+| TEIC_MMIO_CTRL_BASE | 0xFFFE0000 | Base address of MMIO control block
+| | |
+| | |
+|====
 
 ===== optional parameters
 
 ==== startup behaviour
+
+ //up to the bootloader to redirect?? `teic_irq_vect` to TEIC_VECT_BASE
+ //note: app faults should not land in the bootloader handlers
 
 ===== reset state of registers
 
