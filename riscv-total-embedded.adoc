@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.10.3
+:appversion: 0.10.4
 :toc:
 :toclevels: 5
 :sectnums:
@@ -743,6 +743,8 @@ software shall assume little endian
 
 === startup behaviour
 
+
+
 // up to the bootloader to redirect?? `teic_irq_vect` to actual application entry point
 // note: app faults should not land in the bootloader handlers
 // note: some bootloaders are starting the application y performing full system reset after 
@@ -753,7 +755,7 @@ software shall assume little endian
 The reset state of all architectural registers is undefined unless explicitly specified
 in specific extension.
 
-NOTE: That means the reset state of integer, fp, and vector registers is undefined
+NOTE: That means the reset state of integer, fp, and vector registers is undefined. 
 
 === interrupts
 
@@ -924,7 +926,7 @@ NOTE: `vect_offset` can also be implemented as a read only constant pointing to 
 | bit | name | type | reset value | description 
 | [31:0] | `estate_nl` | WLRL | undefined | implementation specified pattern
 used to recover execution state upon interrupt return. Covers certain csr registers: 
-(`fcsr`), and (optionally) multi cycle instruction progress. The content read as 
+(`fcsr`, `vcsr`, `vstart` etc.), and (optionally) multi cycle instruction progress. The content read as 
 well as the write to this register is valid only at the lowest implemented nesting level.
 Otherwise read and write operations on this register are undefined.
 |====
