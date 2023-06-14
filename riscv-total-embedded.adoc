@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.10.5
+:appversion: 0.11.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -737,11 +737,14 @@ software shall assume little endian
 | TEIC_MMIO_CTRL_BASE | 0xFFFE0000 | Base address of MMIO control block
 | TEIC_IRQ_NESTING_BITS | {1,2} | number of implemented interrupt nesting bits
 | TEIC_IRQ_PRIORITY_BITS | {1,2,3,4} | number of implemented interrupt priority bits
-| TEIC_IRQ_VECT_ENTRIES | {8..255} | number of allocated interrupt entries including skipped ones
+| TEIC_IRQ_VECT_ENTRIES | {8..1022} | number of allocated interrupt entries including skipped ones
 | TEIC_IRQ_VECT_ENTRY_SIZE | {2,4} | size in bytes of the single entry in vector table
 |====
 
 === startup behaviour
+
+// power on reset ????
+// other resets??
 
 Upon hart reset all of the architectural registers are initialized to their reset state.
 The MMIO control block registers are also initialized to their reset state.
@@ -845,7 +848,7 @@ NOTE: lack of tripple fault lockout can also lead to security vulnerabilities <<
 | 8 | IRQ | Deffered0_IRQ | software deffered interrupt, can be used for context switch.
 | 9 | IRQ | | reserved/ecall???
 | 10 | IRQ | | reserved/systick???
-| 11..255 | IRQ | *_IRQ | device specific interrupts (optional)
+| 11..1022 | IRQ | *_IRQ | device specific interrupts (optional)
 |============================================================================================
 
 NOTE: Xteic doesn't provide any  peripheral API for optional watchdog, clock and integrity protection
@@ -1073,7 +1076,7 @@ NOTE: SRAM can be used for enplacing handlers if mapped within the same 64KiB bl
 
 NOTE: It is possible to implement this on devices with large flash memories
 and resort to compiler tricks to keep handlers within within 64KiB ranges.
-But the gains will be relatively low, even at a total of 256 vector entries.
+But the gains will be relatively low.
 
 
 == auxiliary extensions
@@ -1274,11 +1277,14 @@ expected to run rtos less
 Unlike the big unix machines, the RTOS context can be statically
 addressed by `lui` + `addi` sequence.
 
-=== 256 vector entries
+=== 1023 vector entries
 
-can be escaped by single `c.j` instruction
+One entry less than full 1024 due to 2s complement jump immediate.
 
-reasonable amount?
+This is the biggest capacity that can be escaped by single `c.j` instruction
+from a first entry in case of 2 bytes per entry (<<XteicTinyIrqTable>>)
+
+This is also more than enough for any microcontroller.
 
 === no per irq pending/enable in base extension
 
