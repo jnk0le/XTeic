@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.11.0
+:appversion: 0.11.1
 :toc:
 :toclevels: 5
 :sectnums:
@@ -114,7 +114,7 @@ Attaches to generic interrupt scheme.
 
 According to <<clint>>, it provides memory mapped interface for timers and IPI.
 
-NOTE: ofiicial CLINT is callet ACLINT but doesn't differ much from CLINT in sifive documentations.
+NOTE: ofiicial CLINT is called ACLINT but doesn't differ much from CLINT in sifive documentations.
 
 ==== generic riscv interrupts as described in "privileged" volume II 
 
@@ -161,6 +161,12 @@ eventual use of callee saved registers and stack.
 
 There is also under/undocumented "EABI enable" bit in `INTSYSCR` on "V2" core.
 Most probably it reduces number of HW stacked registers to match the official EABI proposal <<riscveabi>>.
+
+==== RNMI (aka returnable NMI)
+
+<<privilegedrnmi>> Adds another horizontal nesting level above the machine mode, that works very similarly
+to generic interrupts.
+Achieved by providing additional set of CSR registers as well as interrupt return instruction (`mnret`).
 
 ==== PicoRV32 interrupts
 
@@ -1420,3 +1426,4 @@ Use cases other than "informative purposes" are rare.
 * [[[cv32e40s, 41]]] https://docs.openhwgroup.org/_/downloads/cv32e40s-user-manual/en/latest/pdf/
 * [[[popretzloadzero, 42]]] https://github.com/riscv/riscv-code-size-reduction/issues/196
 * [[[nvidiamtveccve, 43]]] https://youtu.be/iz_Y1lOtX08?t=1740
+* [[[privilegedrnmi, 44]]] https://github.com/riscv/riscv-isa-manual/pull/912/commits/869dcc608e11f9680e950bcb20a9b8294d2b82bd
