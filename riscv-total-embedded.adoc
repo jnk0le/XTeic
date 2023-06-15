@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.11.2
+:appversion: 0.11.3
 :toc:
 :toclevels: 5
 :sectnums:
@@ -934,7 +934,7 @@ Encoding (RV32, RV64)::
 NOTE: alignment requirement allows to avoid use of the additional adder circuit during irq dispatch
 
 NOTE: minimum alignment can by calculated by following equation:
-`pow(2, ceil(log(TEIC_IRQ_VECT_ENTRIES)/log(2))) * TEIC_IRQ_VECT_ENTRY_SIZE`
+`pow(2, ceil(log2(TEIC_IRQ_VECT_ENTRIES)/log2(2))) * TEIC_IRQ_VECT_ENTRY_SIZE`
 
 NOTE: If vector table consists of 100 entries total, 4 byte each. Then minimum required alignment is 512 bytes
 
