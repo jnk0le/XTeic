@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.11.4
+:appversion: 0.11.5
 :toc:
 :toclevels: 5
 :sectnums:
@@ -197,13 +197,15 @@ There are also 5 (4 in prologue) defacto useless instructions for aligning stack
 To allow nesting of "low priority" interrupts handlers must include extra boilerplate code to
 handle prioritiy masking in software. (8 instructions in prologue, 3 in epilogue)
 
-As a consequence there is 21 cycles of jitter and 43 (HPI) or 63 (LPI) cycles of interrupt latency in worst case.
+As a consequence there is 21 cycles of jitter (to HPI and LPI) and 43 (HPI) or 63 (LPI) cycles
+of interrupt latency in worst case.
 
 Use of RPT istruction will introduce even more jitter and latecy as the sequence is uninterruptible
 and takes arbitrary numbers of cycles to execute.
 
 NOTE: ISR entry latency is 10 cycles due to 8 stage pipeline and automatically stacking 13 registers.
-<<c2000workshop>> suggests that the latency is 14 cycles for internal signals.
+<<c2000workshop>> suggests that the latency is 14 cycles for internal signals. Which would 
+further increase the worst case jitter and latencies.
 
 === overwiew/discussion of some concepts/features
 
@@ -356,7 +358,7 @@ Very often claimed, yet those claims rarely meet with reality.
 
 NOTE: There are also many non-architectural sources of jitter like caches, waitstated
 flash or accessing peripherals in different clock domains (usually divided from sysclk),
-DMA contention etc.
+DMA contention, or just the code masking out the interrupts.
 
 Cortex-m0 offers a "zero jitter" by optional IP configuration that adjusts the best case 
 of interrupt latency by extra cycle to acommodate random stall from bus contention.
@@ -383,11 +385,16 @@ The Linux cargo cult. +
 Because a simplest tasks suitable for bunch of 555&74s or a simple microcontroler with a 
 few KiB of flash and RAM must be done under linux so it will work somehow "better".
 
-To be able to properly run linux you need quite beefy cpu with a proper MMU, 2-4MiB of flash, 
+To be able to properly run linux you need quite beefy cpu (usually with MMU), 2-4MiB of flash, 
 4-8MiB of RAM (usually external DRAM), long boot time and a bad power consumption in idle. +
 Just to run the OS itself.
 
-One of the the most blatant example is NOMMU linux on stm32f429 with SDRAM that is not cached by cpu.
+One of the the most blatant example is NOMMU linux on stm32f429 with
+memory mapped to SDRAM that is not even cached by cpu. If the XIP image doesn't fit
+in 2MiB internal flash, it has to land in external parallel NOR flash, which is of course
+not cached by cpu. +
+Any attempt to touch internal SRAM regions will defeat the remaining 
+"universality/portability of linux apps" arguments.
 
 Of course there are still actual reasons <<emblinux>> to use linux in embedded.
 
@@ -741,10 +748,11 @@ software shall assume little endian
 											 as well as its vector table. May have additional
 											 constarints on the alignment.
 | `TEIC_MMIO_CTRL_BASE` | 0xFFFE0000 | Base address of MMIO control block
-| `TEIC_IRQ_NESTING_BITS` | {1,2} | number of implemented interrupt nesting bits
-| `TEIC_IRQ_PRIORITY_BITS` | {1,2,3,4} | number of implemented interrupt priority bits
-| `TEIC_IRQ_VECT_ENTRIES` | {8..1022} | number of allocated interrupt entries including skipped ones
-| `TEIC_IRQ_VECT_ENTRY_SIZE` | {2,4} | size in bytes of the single entry in vector table
+| `TEIC_IRQ_NESTING_BITS` | {1,2} | Number of implemented interrupt nesting bits
+| `TEIC_IRQ_PRIORITY_BITS` | {1,2,3,4} | Number of implemented interrupt priority bits
+| `TEIC_IRQ_VECT_ENTRIES` | {8..1022} | Number of allocated interrupt entries including skipped ones
+| `TEIC_IRQ_VECT_ENTRY_SIZE` | {2,4} | Size in bytes of the single entry in vector table.
+									By default it's 4. 2 if <<XteicTinyIrqTable>> subextension is implemented.
 |====
 
 === startup behaviour
@@ -1064,7 +1072,8 @@ multi hart or when peripheral interrupt lines are shared across multiple cores
 
 ==== XteicTinyIrqTable
 
-Makes each address entry in irq vector table take only 2 byte in size.
+Makes each address entry in irq vector table take only 2 byte in size. 
+(`TEIC_IRQ_VECT_ENTRY_SIZE == 2`)
 
 The top 16 bit of the effective addres are substituted with the top 16 bits of 
 `TEIC_ENTRY_VECT_BASE` implementation constant
@@ -1291,7 +1300,7 @@ addressed by `lui` + `addi` sequence.
 One entry less than full 1024 due to 2s complement jump immediate.
 
 This is the biggest capacity that can be escaped by single `c.j` instruction
-from a first entry in case of 2 bytes per entry (<<XteicTinyIrqTable>>)
+from a first entry in case of `TEIC_IRQ_VECT_ENTRY_SIZE == 2` (<<XteicTinyIrqTable>>)
 
 This is also more than enough for any microcontroller.
 
