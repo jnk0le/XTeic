@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.11.5
+:appversion: 0.11.6
 :toc:
 :toclevels: 5
 :sectnums:
@@ -763,7 +763,7 @@ software shall assume little endian
 Upon hart reset all of the architectural registers are initialized to their reset state.
 The MMIO control block registers are also initialized to their reset state.
 
-the pc is set to the `TEIC_ENTRY_VECT_BASE`. The execution starts as if no interrupt has been entered.
+The pc is set to the `TEIC_ENTRY_VECT_BASE`.
 
 Performing the system reset will additionally initialize the state of the peripheral registers to their reset state.
 
@@ -780,14 +780,24 @@ NOTE: some of the CSR registers also remain in undefined state.
 
 ==== bootloaders
 
-// app to boot
-// boot to app
-// always set
+If the application start is preceeded by bootloader, or the application enters
+the bootloader, then the the switch code shall ensure that
+before redirecting execution to the target address:
+- all peripherals are disabled, or initialized to reset state if enabled on reset (e.g. watchdogs)
+- external GPIOs are configured to reset state 
+- the oscillators, PLLs, clock selects and divisors are configured to their reset state
+- all nesting levels in `teic_irq_msk` are enabled
+- `teic_irq_vect` is set to the target entry point, right before the jump happens
 
-// up to the bootloader to redirect?? `teic_irq_vect` to actual application entry point
-// note: app faults should not land in the bootloader handlers
-// note: some bootloaders are starting the application y performing full system reset after 
-// reconfiguring boot options
+NOTE: The rationale of these rules is to avoid bloat in startup
+code (and duplicate of it in `SystemInit()`), which is a result of assuming the worst case scenario
+
+NOTE: bootloaders placed at application entry area (at `TEIC_ENTRY_VECT_BASE`)
+can be entered by setting a certain pattern in backup register and then executing system reset.
+
+NOTE: Some devices switch between bootloader and application modes by performing 
+whole system reset after modifying certain configuration registers (remap of executable area
+at `TEIC_ENTRY_VECT_BASE`)
 
 === interrupts
 
@@ -942,9 +952,8 @@ Encoding (RV32, RV64)::
 NOTE: alignment requirement allows to avoid use of the additional adder circuit during irq dispatch
 
 NOTE: minimum alignment can by calculated by following formula:
-`pow(2, ceil(log2(TEIC_IRQ_VECT_ENTRIES)/log2(2))) * TEIC_IRQ_VECT_ENTRY_SIZE`
-
-NOTE: If vector table consists of 100 entries total, 4 byte each. Then minimum required alignment is 512 bytes
+`pow(2, ceil(log2(TEIC_IRQ_VECT_ENTRIES)/log2(2))) * TEIC_IRQ_VECT_ENTRY_SIZE` +
+If vector table consists of 100 entries total, 4 byte each. Then minimum required alignment is 512 bytes
 
 NOTE: `vect_offset` can be implemented with just enough bits to point at existing memory areas only,
 as to reduce necessary state to implement.
