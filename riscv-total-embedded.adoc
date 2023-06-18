@@ -23,6 +23,7 @@ This document is released under a Creative Commons Attribution 4.0 International
 This document uses semantic versioning with respect to potential hardware designs. 
 Assembly syntax change is a minor increment. Version 1.0.0 is the first publicly released. 
 Changes in prior versions are not versioned properly and not tracked in revision history.
+The number in a major revision doesn't hold the freeze or ratification status.
 
 Document is written in a way that reduces the duplications as those are hard to maintain.
 
@@ -757,17 +758,14 @@ software shall assume little endian
 
 === startup behaviour
 
-// power on reset ????
-// other resets??
-
-Upon hart reset all of the architectural registers are initialized to their reset state.
-The MMIO control block registers are also initialized to their reset state.
-
-The pc is set to the `TEIC_ENTRY_VECT_BASE`.
+Upon hart reset:
+- all of the architectural registers are initialized to their reset state.
+- The MMIO control block registers are also initialized to their reset state.
+- The pc is set to the `TEIC_ENTRY_VECT_BASE`.
 
 Performing the system reset will additionally initialize the state of the peripheral registers to their reset state.
 
-The hart reset is always performed as a system reset until XteicMP extension is used.
+The hart reset is always equivalent to a system reset until XteicMP extension is implemented.
 
 ==== reset state of registers
 
