@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.11.6
+:appversion: 0.11.7
 :toc:
 :toclevels: 5
 :sectnums:
@@ -522,6 +522,19 @@ wrt. <<IPRA - Inter procedural register allocation, IPRA>> as there are only 2 o
 
 === debug
 
+The official risc-v debug spec <<riscvdebug>> is good enough to not necessitate another incompatible one.
+
+Biggest offenders are of course the actual implementations that despite beeing the "minimal"
+ones designated as "8bit killers", are happily implementing more than necessary.
+Like 8-word `progbuf` in ch32v003 <<qingkev2>>.
+
+The very minor things that could "improve" minimal implementations:
+- 1 entry `progbuf` accepting 32bit instructions only (saves 2 bits, currently
+must accept compressed insns)
+- writing this 1 entry progbuf immediately executes written instruction (ie. no storage in progbuf)
+- remove `dpc` CSR, and allow debuggers to get the "current" `pc` by executing `auipc` from `progbuf`
+- no abstract register reads (data exchange only through `datax` message registers)
+- get rid of certain discovery bits
 
 ==== interface
 
@@ -530,6 +543,9 @@ JTAG uses too many pins
 best would be
 1 wire hanging off reset (cannot attach to running target until reset disabled)
 like avr updi
+
+
+proprietary wch 2 wire and 1 wire
 
 === tooling issues to solve
 
@@ -1446,3 +1462,4 @@ Use cases other than "informative purposes" are rare.
 * [[[popretzloadzero, 42]]] https://github.com/riscv/riscv-code-size-reduction/issues/196
 * [[[nvidiamtveccve, 43]]] https://youtu.be/iz_Y1lOtX08?t=1740
 * [[[privilegedrnmi, 44]]] https://github.com/riscv/riscv-isa-manual/pull/912/commits/869dcc608e11f9680e950bcb20a9b8294d2b82bd
+* [[[riscvdebug, 45]]] https://github.com/riscv/riscv-debug-spec
