@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.11.7
+:appversion: 0.11.8
 :toc:
 :toclevels: 5
 :sectnums:
@@ -533,19 +533,18 @@ The very minor things that could "improve" minimal implementations:
 must accept compressed insns)
 - writing this 1 entry progbuf immediately executes written instruction (ie. no storage in progbuf)
 - remove `dpc` CSR, and allow debuggers to get the "current" `pc` by executing `auipc` from `progbuf`
-- no abstract register reads (data exchange only through `datax` message registers)
+- no mandatory abstract register reads (data exchange only through message registers)
 - get rid of certain discovery bits
 
-==== interface
+==== DTM
 
-JTAG uses too many pins
+For low pin count devices (8-32) JTAG uses too many pins.
+
 
 best would be
 1 wire hanging off reset (cannot attach to running target until reset disabled)
 like avr updi
 
-
-proprietary wch 2 wire and 1 wire
 
 === tooling issues to solve
 
