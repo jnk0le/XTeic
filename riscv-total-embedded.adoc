@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.11.8
+:appversion: 0.11.9
 :toc:
 :toclevels: 5
 :sectnums:
@@ -522,29 +522,29 @@ wrt. <<IPRA - Inter procedural register allocation, IPRA>> as there are only 2 o
 
 === debug
 
-The official risc-v debug spec <<riscvdebug>> is good enough to not necessitate another incompatible one.
+The official risc-v debug spec <<riscvdebug>> is good enough to not necessitate another incompatible
+one, although the "minimal debug implementation" is actually not minimal.
 
-Biggest offenders are of course the actual implementations that despite beeing the "minimal"
-ones designated as "8bit killers", are happily implementing more than necessary.
-Like 8-word `progbuf` in ch32v003 <<qingkev2>>.
-
-The very minor things that could "improve" minimal implementations:
+Some of the  minor things that could "improved" for minimal implementations:
 - 1 entry `progbuf` accepting 32bit instructions only (saves 2 bits, currently
 must accept compressed insns)
 - writing this 1 entry progbuf immediately executes written instruction (ie. no storage in progbuf)
 - remove `dpc` CSR, and allow debuggers to get the "current" `pc` by executing `auipc` from `progbuf`
 - no mandatory abstract register reads (data exchange only through message registers)
 - get rid of certain discovery bits
+- etc.
+
+Biggest offenders of course are and will be the actual implementations that despite being the "minimal"
+ones designated as "8bit killers", are happily implementing more than necessary.
+Like 8-word `progbuf` in ch32v003 <<qingkev2>>.
 
 ==== DTM
 
-For low pin count devices (8-32) JTAG uses too many pins.
+Low pin count devices (8-32) need a denser debug interface as the JTAG uses too many wires.
 
-
-best would be
-1 wire hanging off reset (cannot attach to running target until reset disabled)
-like avr updi
-
+There are industry proven 2 wire interfaces like cJTAG or ARM SWD. +
+It would be best to have 1 wire solution like avr8 debugWIRE/updi
+or the WCH "SDI" aka "SWD" <<qingkev2debug>>
 
 === tooling issues to solve
 
@@ -1462,3 +1462,4 @@ Use cases other than "informative purposes" are rare.
 * [[[nvidiamtveccve, 43]]] https://youtu.be/iz_Y1lOtX08?t=1740
 * [[[privilegedrnmi, 44]]] https://github.com/riscv/riscv-isa-manual/pull/912/commits/869dcc608e11f9680e950bcb20a9b8294d2b82bd
 * [[[riscvdebug, 45]]] https://github.com/riscv/riscv-debug-spec
+* [[[qingkev2debug, 46]]] https://github.com/openwch/ch32v003/blob/main/RISC-V%20QingKeV2%20Microprocessor%20Debug%20Manual.pdf
