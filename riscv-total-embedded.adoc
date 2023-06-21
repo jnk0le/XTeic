@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.11.9
+:appversion: 0.11.10
 :toc:
 :toclevels: 5
 :sectnums:
@@ -831,6 +831,10 @@ NOTE: Zcmp similarly doesn't specify the required alignment.
 
 ==== interrupt entry
 
+when 
+becomes pending
+
+
 ==== interrupt exit
 
 ==== NMI interrupts
@@ -850,9 +854,9 @@ attempt to return from `Unrecoverable_NMI` handler
 
 certain exception/nmis ?? occuring within `Unrecoverable_NMI` 
 
-halts any further code execution, except the one within the debug mode
+halts any further code execution, except debug mode one.
 
-NOTE: it is necessary to allow debugger to read out state of registers/memory
+NOTE: it is necessary to allow debuggers to read out state of registers/memory
 after experiencing lockup state.
 
 NOTE: experiencing exceptions within (or return from) unrecoverable handler means a 
@@ -1088,6 +1092,8 @@ private to the hart
 ==== XteicMP
 
 additional per vector entry interrupt enable
+
+private to the hart
 
 multi hart or when peripheral interrupt lines are shared across multiple cores
 
@@ -1344,24 +1350,33 @@ much more serious hardware issue, that's causing everything to fail at the same 
 
 === no "software interrupts"
 
-aka software trigger in ARM terminology
+aka software trigger in ARM terminology <<DUI0553A>>
 
 Designated for triggering unallocated (or unused peripheral) vectors, by writing to
 the special `NVIC->STIR` register
 
+It is of course redundant to the use of `NVIC->ISPRx` registers.
+
 However it's rarely used and only "implemented" vectors can be triggered in such 
-way (officially 32 entry granularity in ARM case)
+way. Officially it is supposed to be 32 entry in ARM case, but it's not even
+obvious wether you can use unimplemented vectors at all. <<customsoftirqcm3>>
 
 NOTE: Even the PendSV is done by setting `ICSR->PENDSVET` bit instead of executing this mechanism.
 
 NOTE: TEIC provides dedicated "peripheral" for handling software (deffered) interrupts
 
+All of this causes a lot of redundancy to allow handling peripheral interrupts and "software" 
+triggered ones by the same handler. The ARM implementation also depends on level triggered
+irq mechanism, which is also ommited by xteic <<customsoftirqcm3>>
+
+// move nvic descr to prior section ???
+
 === no stack realignment upon interrupt entry/exit
 
 This is just a waste of hardware. The ABI should mandate the alignment instead.
-If not followed then the code should be aloowed to trap.
+If not followed then the microarchitecture should be allowed to trap.
 
-NOTE: some architectures, due to legacy codebases, require explicit satck alignment 
+NOTE: some architectures, due to legacy codebases, require explicit stack alignment 
 instructions which also contribute to interrupt latency/jitter and impact code density. 
 
 === "zero jitter" only in highest nesting level interrupts
@@ -1378,8 +1393,12 @@ be considered as a rare fault/error condition.
 Peripherals usually implement level triggered interrupts. (ie. require clearing trigger source 
 by performing certain actions like reading FIFO registers or clearing the status flags)
 
-Sampling edges on GPIO is done by a separate peripheral that turns it into an
-level triggered interrupt.
+Therefore it's wastefull to spend additional resources (e.g. latch for pending status and related 
+clear on irq entry) on the edge triggered mechanism which is made redundant on 
+every irq line (see <<no "software interrupts">>)
+
+NOTE: Sampling edges on GPIO is usually done by a separate peripheral that turns those into an
+level triggered ones.
 
 === no faulting addr register
 
@@ -1392,6 +1411,7 @@ The faulting address can still be recovered in a more complex way of decompilati
 === no (default) "legacy" interrupt modes 
 
 Having our cores to boot with "legacy" interrupt modes
+
 - is a waste of silicon
 - causes interrupt hole or additional boilerplate code to handle exceptions/NMIs that arrived before setting
 up `mtvec` and thus were routed to reset handler entry.
@@ -1463,3 +1483,5 @@ Use cases other than "informative purposes" are rare.
 * [[[privilegedrnmi, 44]]] https://github.com/riscv/riscv-isa-manual/pull/912/commits/869dcc608e11f9680e950bcb20a9b8294d2b82bd
 * [[[riscvdebug, 45]]] https://github.com/riscv/riscv-debug-spec
 * [[[qingkev2debug, 46]]] https://github.com/openwch/ch32v003/blob/main/RISC-V%20QingKeV2%20Microprocessor%20Debug%20Manual.pdf
+* [[[DUI0553A, 47]]] https://developer.arm.com/documentation/dui0553/a/
+* [[[customsoftirqcm3, 48]]] https://stackoverflow.com/questions/72523639/arm-cortex-m3-add-a-new-interrupt-to-the-end-of-the-vector-table
