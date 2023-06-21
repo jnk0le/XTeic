@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.11.10
+:appversion: 0.11.11
 :toc:
 :toclevels: 5
 :sectnums:
@@ -829,13 +829,36 @@ might want to enter `Unrecoverable_NMI`
 
 NOTE: Zcmp similarly doesn't specify the required alignment.
 
+==== register ranges
+
+// stacking
+// range 0 always
+// range 1 shadow regs // xteicshadowrange1
+// range 2 ...
+
 ==== interrupt entry
 
-when 
-becomes pending
+when peripheral asserts
+becomes pending // at configured nesting priority
+if current level is lower than
+
+stacks configured register ranges and updates `sp`
+puts content of interrupted `pc` into `ra` register with lowest bit set
+sets `in_nestx` in `teic_irq_status`
+
+fetches from vector at `teic_irq_vect`
+jumps to the address fetched from vector table
+
+
 
 
 ==== interrupt exit
+
+if
+`jalr` instruction 
+lowest bit is set
+
+
 
 ==== NMI interrupts
 
