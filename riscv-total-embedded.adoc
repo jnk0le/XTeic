@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.11.11
+:appversion: 0.12.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -377,8 +377,8 @@ though it does exactly the opposite when there is more than 1 async interrupt to
 
 NOTE: Of course whenever TI compares CLA to "classic cpu", it's always a cpu with preemption 
 priorities only and background task not present on CLA. As if the similar "task machine" couldn't
-be achieved by regular cpu (e.g. risc-v) without nesting and WFI loop (or "sleep on exit" feature)
-giving access to all GPRs in interrupts without stacking.
+be achieved by regular general purpose architecture (e.g. risc-v) without nesting and WFI loop
+(or "sleep on exit" feature) giving access to all GPRs in interrupts without stacking.
 
 ==== "everything will run Linux in future"
 
@@ -764,9 +764,9 @@ software shall assume little endian
 											 as well as its vector table. May have additional
 											 constarints on the alignment.
 | `TEIC_MMIO_CTRL_BASE` | 0xFFFE0000 | Base address of MMIO control block
-| `TEIC_IRQ_NESTING_BITS` | {1,2} | Number of implemented interrupt nesting bits
+| `TEIC_IRQ_NESTING_BITS` | {1,2} | Number of implemented interrupt nesting priority bits
 | `TEIC_IRQ_PRIORITY_BITS` | {1,2,3,4} | Number of implemented interrupt priority bits
-| `TEIC_IRQ_VECT_ENTRIES` | {8..1022} | Number of allocated interrupt entries including skipped ones
+| `TEIC_IRQ_VECT_ENTRIES` | {8..1022} | Number of allocated interrupt entries including skipped ones and NMIs
 | `TEIC_IRQ_VECT_ENTRY_SIZE` | {2,4} | Size in bytes of the single entry in vector table.
 									By default it's 4. 2 if <<XteicTinyIrqTable>> subextension is implemented.
 |====
@@ -814,10 +814,12 @@ at `TEIC_ENTRY_VECT_BASE`)
 
 === interrupts
 
-level triggered
+The interrupt controller supports only level triggered interrupts.
+// polarity??
 
-irq number is the position in vector table 
-// no need for offseting like in arm
+The irq number is the position in vector table 
+
+NOTE: there is no irq offseting like in NVIC
 
 higher irq number - higher priority
 
@@ -838,27 +840,49 @@ NOTE: Zcmp similarly doesn't specify the required alignment.
 
 ==== interrupt entry
 
-when peripheral asserts
-becomes pending // at configured nesting priority
-if current level is lower than
+when a given interrupt nesting level (reflected by `pending_nestx` in `teic_irq_status`)
+becomes pending which is not masked out by corresponing bit in `teic_irq_msk` register,
+the interrupt entry procedure is triggered.
 
-stacks configured register ranges and updates `sp`
-puts content of interrupted `pc` into `ra` register with lowest bit set
-sets `in_nestx` in `teic_irq_status`
+During the interrupt entry the hardware will:
 
-fetches from vector at `teic_irq_vect`
-jumps to the address fetched from vector table
+- stacks configured register ranges
+- decrement `sp` according to configured register range
+- put content of interrupted `pc` into `ra` register with lowest bit set
+- set `in_nestx` bit in `teic_irq_status`
+- fetches target address from vector table pointed by `teic_irq_vect`.
+The vector entry is selected by handler dispatch process.
+- jumps to the fetched address
 
+NOTE: optimized microarchitectures will implement late arrival, tail chaining and
+pop preemption which further complicate entry/exit procedures
 
+===== handler dispatch
 
+// nesting priority, prioruity, irq num prio
+// not a separate par ?
 
 ==== interrupt exit
 
-if
-`jalr` instruction 
-lowest bit is set
+when `jalr` instruction is executed and the lowest bit in the source register is
+set, the interrupt exit procedure is triggered. +
+If no interrupt is currently active then `Unrecoverable_NMI` is taken.
 
+// limit it only to `ra` ???
+// nmi cause ??
 
+During the interrupt exit the hardware will:
+
+- unstack configured register range
+- increment `sp` according to configured register range
+- clear `in_nestx` bit in `teic_irq_status`
+- jumps to the target address of `jalr` instruction 
+
+NOTE: The bogus `jalr` target address issue remains as per unprivileged spec.
+Therefore conforming software shall not set the lsb in `jalr` immediate used for function returns
+
+NOTE: optimized microarchitectures will implement late arrival, tail chaining and
+pop preemption which further complicate entry/exit procedures
 
 ==== NMI interrupts
 
@@ -962,6 +986,12 @@ Encoding (RV32, RV64)::
  { bits: 12, name: 0x105, attr: ['WFI'] },
 ]}
 ....
+
+
+NOTE: In addition, the `wfi` instruction can optionally stack certain registers ahead of the interrupts,
+to reduce their latency. In this case, `sp` is not changed until interrupt arrives.
+
+// wfi with a nesting prio mask??
 
 === CSR map
 
@@ -1076,6 +1106,18 @@ NOTE: `in_nmi_lockup` bit is defacto readable only by debugger
 
 ==== `teic_nmi_cause`
 
+[cols="1,2,1,2,6",options=header]
+|====
+| bit | name | type | reset value | description 
+| [31:6] | reserved | | 0 | reserved
+| 5 | reserved | rw1c | 0 |
+| 4 | reserved | rw1c | 0 |
+| 3 | reserved | rw1c | 0 |
+| 2 | `illegal_instruction_exc` | rw1c | 0 |
+| 1 | `integrity_async_exc` | rw1c | 0 | (optional)
+| 0 | `integrity_exc` | rw1c | 0 | (optional)
+|====
+
 ==== `teic_cfg`
 
 [cols="1,2,1,2,6",options=header]
@@ -1090,7 +1132,7 @@ NOTE: `in_nmi_lockup` bit is defacto readable only by debugger
 | 0 | `zero_jitter` | WARL | 0 | (optional) 
 ensure that the highest nesting priority interrupt is always
 entered within the same number of cycles regardless of the 
-interrupted execution state.
+interrupted execution (or sleep) state.
 
 Doesn't affect tailchaining of handlers within the highest nesting priority.
 It shall be assumed that highest level interrupt code and stack resides in zero
@@ -1133,7 +1175,7 @@ The `TEIC_ENTRY_VECT_BASE` must be 64KiB aligned.
 
 The entry encoding with least significant bit set, is reserved.
 
-NOTE: Extension designated for smallest devices where a vector table has a more 
+NOTE: Extension designated for smallest devices where a vector table size has a more 
 significant impact on code memory.
 
 NOTE: SRAM can be used for enplacing handlers if mapped within the same 64KiB block
@@ -1144,7 +1186,7 @@ NOTE: SRAM can be used for enplacing handlers if mapped within the same 64KiB bl
 
 
 NOTE: It is possible to implement this on devices with large flash memories
-and resort to compiler tricks to keep handlers within within 64KiB ranges.
+and resort to compiler tricks to keep handlers within within 64/128KiB range.
 But the gains will be relatively low.
 
 
@@ -1334,6 +1376,8 @@ Just use `rev8` for "network order" data. It's much better than doing endian neu
 addressable through `c.lui` + offset
 
 === no separate process stack
+
+???
 
 only 4 levels of nesting + one returnable nmi
 
