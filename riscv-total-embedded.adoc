@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.13.1
+:appversion: 0.13.2
 :toc:
 :toclevels: 5
 :sectnums:
@@ -997,8 +997,9 @@ Encoding (RV32, RV64)::
 ....
 
 
-NOTE: In addition, the `wfi` instruction can optionally stack certain registers ahead of the interrupts,
-to reduce their latency. In this case, `sp` is not changed until interrupt arrives.
+NOTE: In addition, the `wfi` instruction is allowed to optionally stack certain 
+registers ahead of the interrupts, to reduce their latency. In this case, `sp` 
+is not changed until interrupt arrives.
 
 // wfi with a nesting prio mask??
 
