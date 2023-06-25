@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.12.2
+:appversion: 0.13.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -917,11 +917,12 @@ NOTE: lack of tripple fault lockout can also lead to security vulnerabilities <<
 
 ==== vector table allocation
 
-[cols="1,1,4,6",options=header]
+[cols="3,2,7,12",options=header]
 |============================================================================================
 | irq num | type | name | notes
 | 0 | - | reserved | reserved for startup code (typically jump instruction)
-| 1 | NMI | reserved | (optional) // permission violation nmi ???
+| 1 | NMI | PermissionViolation_NMI | (optional) unallowed access to protected area or attempt to
+										execute instructions from (execute) protected area
 | 2 | NMI | IntegrityViolation_NMI | (optional) ECC, parity, lockstep or other integrity
 									  error on core, memory or buses. Can be triggered imprecisely.
 | 3 | NMI | ClockViolation_NMI | (optional) Lost clock or other anomaly. It shall be assumed
@@ -932,15 +933,17 @@ NOTE: lack of tripple fault lockout can also lead to security vulnerabilities <<
 									and error logging. It shall be assumed that execution could
 									be frozen at this point and no further action can or need to
 									be performed.
-| 5 | NMI | MemoryViolation_NMI | Memory access fault or unallowed access to protected area.
-| 6 | NMI | InstructionViolation_NMI | Illegal instruction exception or attempt to execute
-									   instructions from (execute) protected area
-| 7 | NMI | Unrecoverable_NMI | Any nested nmi, unknown, other or a state that cannot be recovered to.
+| 5 | NMI | MemoryViolation_NMI | Bus or memory access fault
+| 6 | NMI | InstructionViolation_NMI | Illegal instruction exception 
+| 7 | NMI | Unrecoverable_NMI | Any nested nmi, unknown, other or a state that cannot be easily 
+								recovered to.
 | 8 | IRQ | Deffered0_IRQ | software deffered interrupt, can be used for context switch.
 | 9 | IRQ | | reserved/ecall???
 | 10 | IRQ | | reserved/systick???
 | 11..1022 | IRQ | *_IRQ | device specific interrupts (optional)
 |============================================================================================
+
+Unimplemented optional NMIs can be recycled for custom NMIs other than the ones provided in table above.
 
 NOTE: Xteic doesn't provide any  peripheral API for optional watchdog, clock and integrity protection
 systems. It's up to the implementer to provide them.
