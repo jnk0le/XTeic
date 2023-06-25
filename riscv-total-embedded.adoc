@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.12.1
+:appversion: 0.12.2
 :toc:
 :toclevels: 5
 :sectnums:
@@ -353,6 +353,9 @@ in CSR space and keep the rest in MMIO.
 
 Nothing should exist as both.
 
+There is no point in avoiding  CSR registers when the cost of Zicsr
+instructions is already taken.
+
 ==== "reduced/zero jitter"
 
 Very often claimed, yet those claims rarely meet with reality.
@@ -377,7 +380,7 @@ though it does exactly the opposite when there is more than 1 async interrupt to
 
 NOTE: Of course whenever TI compares CLA to "classic cpu", it's always a cpu with preemption 
 priorities only and background task not present on CLA. As if the similar "task machine" couldn't
-be achieved by regular general purpose architecture (e.g. risc-v) without nesting and WFI loop
+be achieved by regular general purpose architecture (e.g. risc-v, cortex-m) without nesting and WFI loop
 (or "sleep on exit" feature) giving access to all GPRs in interrupts without stacking.
 
 ==== "everything will run Linux in future"
