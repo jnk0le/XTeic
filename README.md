@@ -1,5 +1,6 @@
 # riscv-total-embedded
-custom riscv embedded profile, replacing volume II (aka riscv privileged)
+Custom riscv embedded profile, replacing volume II (aka riscv privileged).
+Defines a custom interrupt controller TEIC (Xteic extension).
 
 Generated PDFs are provided in [Releases](https://github.com/jnk0le/riscv-total-embedded/releases)
 
