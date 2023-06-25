@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.13.0
+:appversion: 0.13.1
 :toc:
 :toclevels: 5
 :sectnums:
@@ -148,7 +148,7 @@ e.g. There is nothing about what happens to `mepc`, `mcause` or `mstatus` during
 It is also unknown whether `ra` register doesn't have an additional use (like saving `mepc`...) during 
 interrupt entry/exit and connot be used immediately as the currently implemented gcc attribute treats
 those functions the same way as the regular ABI ones with `mret` based return. +
-Which of course is inline with typical chinese documentation standards.
+Inline with average chinese documentation standards.
 
 The vendor provided headers, of course, contain 46 instances of "NVIC" string and just 5 for "PFIC"
 
@@ -650,7 +650,9 @@ NOTE: This is also non IPRA optimization (-Oz kind)
 - need special assembly directive to annotate such exports from pure assembly code (workaround exist
 <<applying IPRA to assembly functions>>)
 
-NOTE: automatic detection is not an option due to self constructed instructions:
+[NOTE]
+----
+Automatic detection is not an option due to self constructed instructions (from <<XTightlyCoupledIO>>):
 [source, asm]
 ```
 .word (0b0000000<<25)|(8<<20)|(0<<15)|(0b001<<12)|(10<<7)|0x43 
@@ -659,6 +661,7 @@ NOTE: automatic detection is not an option due to self constructed instructions:
 //tio.add0.xy a0, y0, s0
 //tio.addi0.yx y1, a0, 0x123 
 ```
+----
 
 - precompiled libraries should also do an "IPRA exports"
 - very important point is resolving IPRA annotations of callbacks, where the callback call 
@@ -1134,15 +1137,16 @@ NOTE: `in_nmi_lockup` bit is defacto readable only by debugger
 | 4 | reserved | WARL | 0 |
 | 3 | reserved | WARL | 0 |
 | 2 | reserved | WARL | 0 |
-| 1 | reserved | WARL | 0 |
+| 1 | `sleeponexit` | WARL | 0 | (optional)
 | 0 | `zero_jitter` | WARL | 0 | (optional) 
-ensure that the highest nesting priority interrupt is always
+Ensure that the highest nesting priority interrupt is always
 entered within the same number of cycles regardless of the 
 interrupted execution (or sleep) state.
 
 Doesn't affect tailchaining of handlers within the highest nesting priority.
+
 It shall be assumed that highest level interrupt code and stack resides in zero
-waitstated memories and no HW measures will be implemented to adjust in a different scenario.
+waitstated memories and no HW measures will be implemented to adjust for a different scenario.
 |====
 
 ==== d
