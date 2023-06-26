@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.14.0
+:appversion: 0.14.1
 :toc:
 :toclevels: 5
 :sectnums:
@@ -651,7 +651,7 @@ NOTE: This is also non IPRA optimization (-Oz kind)
 <<applying IPRA to assembly functions>>)
 
 [NOTE]
-----
+--
 Automatic detection is not an option due to self constructed instructions (from <<XTightlyCoupledIO>>):
 [source, asm]
 ```
@@ -661,7 +661,7 @@ Automatic detection is not an option due to self constructed instructions (from 
 //tio.add0.xy a0, y0, s0
 //tio.addi0.yx y1, a0, 0x123 
 ```
-----
+--
 
 - precompiled libraries should also do an "IPRA exports"
 - very important point is resolving IPRA annotations of callbacks, where the callback call 
