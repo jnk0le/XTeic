@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.14.1
+:appversion: 0.15.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -747,7 +747,7 @@ saving too little or too many
 
 // == programmers model
 
-== Xteic (aka Total Embedded Interrupt Controller tiny)
+== Xteic (aka Total Embedded Interrupt Controller)
 
 smallest profile?
 
@@ -772,7 +772,7 @@ software shall assume little endian
 | `TEIC_EXEC_SRAM_BASE` | implementation specific | Base address of the most designated executable SRAM
 													memory. 
 													(Some devices implement a special memory area
-													designated to place interrupt code. aka "ITCM". Usually
+													designated for interrupt handlers. aka "ITCM". Usually
 													it will be the main memoy address)
 | `TEIC_MMIO_CTRL_BASE` | 0xFFFE0000 | Base address of Xteic MMIO control block
 | `TEIC_IRQ_NESTING_BITS` | {1,2} | Number of implemented interrupt nesting priority bits
@@ -834,11 +834,14 @@ NOTE: there is no irq offseting like in NVIC
 
 higher irq number has a higher priority
 
-stack pointer is not realigned, if stack is not 8 byte aligned 
+higher number in nesting priority or regular priority encodes a higher priority
+// ???
+
+Stack pointer is not realigned, if stack is not 8 byte aligned 
 the behaviour is implementation specified
 
 NOTE: typical HW won't care about 4 byte stack, some dual issuers or hardened cores
-might want to enter `Unrecoverable_NMI`
+might want to set `irqentryexit_unrec` nmi request
 
 NOTE: Zcmp similarly doesn't specify the required alignment.
 
@@ -877,7 +880,7 @@ pop preemption which further complicate entry/exit procedures
 
 when `jalr` instruction is executed and the lowest bit in the source register is
 set, the interrupt exit procedure is triggered. +
-If no interrupt is currently active then `Unrecoverable_NMI` is taken.
+If no interrupt is currently active then `irqretnest0_unrec` nmi request is set.
 
 // limit it only to `ra` ???
 // nmi cause ??
@@ -1008,7 +1011,7 @@ is not changed until interrupt arrives.
 
 // wfi with a nesting prio mask??
 
-=== CSR map
+=== TEIC CSR map
 
 [cols="1,2,1,4",options=header]
 |====
@@ -1017,7 +1020,7 @@ is not changed until interrupt arrives.
 | 0xbc1 | `teic_estate` | MRW | irq saved state
 | 0xbc2 | `teic_irq_msk` | MRW (U?) | interrupt mask
 | 0xbc3 | `teic_irq_status` | MRO? | current interrupt status
-| 0xbc4 | `teic_nmi_cause` | MRW (RO?) | coarse mask of NMI cause?
+| 0xbc4 | `teic_nmi_cause` | MRW | coarse mask of NMI causes
 | 0xbc5 | `teic_cfg` | MRW | config register
 |====
 
@@ -1123,14 +1126,30 @@ NOTE: `in_nmi_lockup` bit is defacto readable only by debugger
 [cols="1,2,1,2,6",options=header]
 |====
 | bit | name | type | reset value | description 
-| [31:6] | reserved | | 0 | reserved
-| 5 | reserved | rw1c | 0 |
-| 4 | reserved | rw1c | 0 |
-| 3 | reserved | rw1c | 0 |
-| 2 | `illegal_instruction_exc` | rw1c | 0 |
-| 1 | `integrity_async_exc` | rw1c | 0 | (optional)
-| 0 | `integrity_exc` | rw1c | 0 | (optional)
+| 31 | reserved | ro | 0 |
+| 30 | `irqretnest0_unrec` | ro | 0 | irq return without active irq/nmi
+| 29 | `irqentryexit_unrec` | ro | 0 | fault during irq entry/exit (stack alignment,
+										memory faults etc.)
+| 28 | `bus_fault_imprecise_unrec` | ro | 0 | (optional) imprecise bus faults
+| 27 | `integrity_imprecise_unrec` | ro | 0 | (optional) imprecise integrity error
+| 26 | `double_exc_unrec` | ro | 0 | double exception fault of the same or different type
+| [25:10] | reserved | rw1c | 0 | reserved
+| 9 | `clock_async` | ro | 0 | (optional)
+| 8 | `watchdog_async` | ro | 0 | (optional)
+| 7 | `permission_async` | ro | 0 | (optional) asynchronous permission error not related to
+										the architectural control flow (e.g. DMA accessing protected area)
+| 6 | `integrity_async` | ro | 0 | (optional) asynchronous integrity error not related to
+										the architectural control flow (e.g. unrecoverable ECC 
+										error triggered by scrubber or speculative prefetch)
+| 5 | reserved | rw1c | 0 | reserved
+| 4 | `permission_exc` | rw1c | 0 | (optional)
+| 3 | `integrity_exc` | rw1c | 0 | (optional)
+| 2 | `misaligned_address_exc` | rw1c | 0 | (optional) misaligned load/store address
+| 1 | `bus_fault_exc` | rw1c | 0 |
+| 0 | `illegal_instruction_exc` | rw1c | 0 | Illegal instruction exception and misaligned instr
 |====
+
+The `*_async` nmi requests have to be cleared within the source peripheral.
 
 ==== `teic_cfg`
 
