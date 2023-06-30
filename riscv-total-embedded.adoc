@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.15.1
+:appversion: 0.15.2
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1394,9 +1394,9 @@ or code memory for zeroing those.
 NOTE: V extension uses all ones for `tail agnostic` filling just to prevent software relying on
 uarch dependent zeroing.
 
-However, certain hardened cores need to have all registers initialized to consistent state, as to
+However, certain hardened cores may need to have all registers initialized to consistent state, as to
 avoid integrity faults when stacking out yet unused registers.
-In most cases, it's still possible to require initialization of all registers in startup code.
+In most cases, it's still possible to require initialization of all registers in startup code instead.
 
 === little endian only
 
