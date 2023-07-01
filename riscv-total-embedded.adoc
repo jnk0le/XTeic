@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.15.4
+:appversion: 0.15.5
 :toc:
 :toclevels: 5
 :sectnums:
@@ -845,10 +845,10 @@ NOTE: Zcmp similarly doesn't specify the required alignment.
 [cols="1,3,2,2,2",options=header]
 |====
 | range | registers | allocated stack area | mandatory supported | mandatory configurable
-| 0 | "x1,x10,x11,reserved" | XLEN * 4 | ✓ | x
-| 1 | "x12-x15" | XLEN * 4 | ✓ | x
-| 2 | "x4-x7" | XLEN * 4 | x | ✓
-| 3 | "x16,x17,x28-x31" | XLEN * 6 | x | ✓
+| 0 | "x1,x10,x11,reserved" | XLEN * 4 | yes | no
+| 1 | "x12-x15" | XLEN * 4 | yes | no
+| 2 | "x4-x7" | XLEN * 4 | no | yes
+| 3 | "x16,x17,x28-x31" | XLEN * 6 | no | yes
 |====
 
 stack frame pseudocode::
@@ -884,7 +884,7 @@ sw x31, -72(sp)
 addi sp, sp, -72
 ```
 
-NOTE: unlike Zcmp registers are pushed starting from highest stack position
+NOTE: unlike Zcmp registers are pushed starting from highest stack position due to configurable ranges
 
 ranges lower than configured can be excluded from stacking only when their registers are preserved in a different
 manner (e.g. shadow registers)
