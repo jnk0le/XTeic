@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.15.3
+:appversion: 0.15.4
 :toc:
 :toclevels: 5
 :sectnums:
@@ -177,7 +177,7 @@ Achieved by providing additional set of CSR registers as well as interrupt retur
 Original author of the PicoRV found the riscv-privileged to be too heavy for minimal core,
 and provided own <<picorvint>> interrupt scheme.
 
-NOTE: FPGA minimum cores, is a non goal for this spec
+NOTE: FPGA minimum cores, is a non goal for Xteic
 
 ==== ti c2000 (main core)
 
