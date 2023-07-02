@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.15.5
+:appversion: 0.16.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -844,7 +844,7 @@ NOTE: Zcmp similarly doesn't specify the required alignment.
 
 [cols="1,3,2,2,2",options=header]
 |====
-| range | registers | allocated stack area | mandatory supported | mandatory configurable
+| range | registers | added stack area | mandatory supported | mandatory configurable
 | 0 | "x1,x10,x11,reserved" | XLEN * 4 | yes | no
 | 1 | "x12-x15" | XLEN * 4 | yes | no
 | 2 | "x4-x7" | XLEN * 4 | no | yes
@@ -903,7 +903,7 @@ During the interrupt entry the hardware will:
 - stacks configured register ranges
 - decrement `sp` according to configured register range
 - put content of interrupted `pc` into `ra` register with lowest bit set
-- set `in_nestx` bit in `teic_irq_status`
+- set `in_nestx` bit in `teic_irq_status` register
 - fetches target address from vector table pointed by `teic_irq_vect`.
 The vector entry is selected by handler dispatch process.
 - jumps to the fetched address
@@ -928,13 +928,12 @@ set, the interrupt exit procedure is triggered. +
 If no interrupt is currently active then `irqretnest0_unrec` nmi request is set.
 
 // limit it only to `ra` ???
-// nmi cause ??
 
 During the interrupt exit the hardware will:
 
 - unstack configured register range
 - increment `sp` according to configured register range
-- clear `in_nestx` bit in `teic_irq_status`
+- clear `in_nestx` bit in `teic_irq_status` register
 - jumps to the target address of `jalr` instruction 
 
 NOTE: The bogus `jalr` target address issue remains as per unprivileged spec.
@@ -945,22 +944,35 @@ pop preemption which further complicate entry/exit procedures
 
 ==== NMI interrupts
 
+NMIs (non maskable interrupts) are a special type of interrupts that cannot be masked
+by `teic_irq_msk` register. Typically used for signalling critical conditions.
+
+Entry/exit procedure is similar to regular IRQs with the following excepions:
+- activity is signalled by `in_nmi` in `teic_irq_status` register
+- stacks only range 0 registers
+- adjusts `sp` by range 0 area
+
 ===== NMI unrecoverable state
 
-nested NMI or directly entering `Unrecoverable_NMI` handler
+unrecoverable NMI handler is entered whenever:
+- any of the `*_unrec` requests is raised in `teic_nmi_cause`
+- synchronous exception is raised during active NMI handler 
+- any of the synchronous exception flag (`*_exc` in `teic_nmi_cause`) is not cleared before performing
+interrupt exit from NMI handler
+- `*_async` that was escalated to unrecoverable nmi request (`escalated_async_unrec` in `teic_nmi_cause`)
 
-sets 
+
+Entry procedure is similar to regular NMIs with the following excepions:
+- activity is signalled by `in_nmi_unrecoverable` in `teic_irq_status` register
+- busfaults, alignment or other errors during stacking are ignored
 
 ===== NMI lockup state
 
-//tripple fault??
+The hart enters the NMI lockup state whenever
+- code attempts to return from `Unrecoverable_NMI` handler 
+- synchronous or imprecise exception is raised within `Unrecoverable_NMI` handler 
 
-Whenever
-attempt to return from `Unrecoverable_NMI` handler 
-
-certain exception/nmis ?? occuring within `Unrecoverable_NMI` 
-
-halts any further code execution, except debug mode one.
+NMI lockup state halts any further code execution, except debug mode one.
 
 NOTE: it is necessary to allow debuggers to read out state of registers/memory
 after experiencing lockup state.
@@ -1177,14 +1189,15 @@ NOTE: `in_nmi_lockup` bit is defacto readable only by debugger
 										memory faults etc.)
 | 28 | `bus_fault_imprecise_unrec` | ro | 0 | (optional) imprecise bus faults
 | 27 | `integrity_imprecise_unrec` | ro | 0 | (optional) imprecise integrity error
-| 26 | `double_exc_unrec` | ro | 0 | double exception fault of the same or different type
-| [25:10] | reserved | rw1c | 0 | reserved
+| 26 | `nested_exc_unrec` | ro | 0 | synchronous exception raised during execution of nmi handler
+| 26 | `escalated_async_unrec` | ro | 0 | (optional) escalated `*_async` requests
+| [24:10] | reserved | rw1c | 0 | reserved
 | 9 | `clock_async` | ro | 0 | (optional)
 | 8 | `watchdog_async` | ro | 0 | (optional)
 | 7 | `permission_async` | ro | 0 | (optional) asynchronous permission error not related to
 										the architectural control flow (e.g. DMA accessing protected area)
 | 6 | `integrity_async` | ro | 0 | (optional) asynchronous integrity error not related to
-										the architectural control flow (e.g. unrecoverable ECC 
+										the architectural control flow (e.g. unrecoverable ECC
 										error triggered by scrubber or speculative prefetch)
 | 5 | reserved | rw1c | 0 | reserved
 | 4 | `permission_exc` | rw1c | 0 | (optional)
@@ -1205,9 +1218,11 @@ The `*_async` nmi requests have to be cleared within the source peripheral.
 | 5 | reserved | WARL | 0 |
 | 4 | reserved | WARL | 0 |
 | 3 | reserved | WARL | 0 |
-| 2 | reserved | WARL | 0 |
+| 2 | `escalate_async_nmi` | WARL | 0 | (optional) if `*_async` nmi request is raised during 
+										active nmi, it will be escalated to unrecoverable nmi 
+										request (i.e. raises `escalated_async_unrec` nmi request)
 | 1 | `sleeponexit` | WARL | 0 | (optional)
-| 0 | `zero_jitter` | WARL | 0 | (optional) 
+| 0 | `zero_jitter` | WARL | 0 | (optional)
 Ensure that the highest nesting priority interrupt is always
 entered within the same number of cycles regardless of the 
 interrupted execution (or sleep) state.
