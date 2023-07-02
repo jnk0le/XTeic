@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.16.0
+:appversion: 0.16.1
 :toc:
 :toclevels: 5
 :sectnums:
@@ -913,12 +913,10 @@ pop preemption which further complicate entry/exit procedures
 
 ===== handler dispatch
 
-higher irq number has a higher priority
+During the handler dispatch the hardware will evaluate all pending irq requests
+and select the one with highest configured priority, ties are resolved by 
+highest irq number.
 
-higher number in nesting priority or regular priority encodes a higher priority
-// ???
-
-// nesting priority, prioruity, irq num prio
 // not a separate par ?
 
 ==== interrupt exit
