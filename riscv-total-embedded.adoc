@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.16.5
+:appversion: 0.16.6
 :toc:
 :toclevels: 5
 :sectnums:
@@ -962,8 +962,8 @@ unrecoverable NMI handler is entered whenever:
 interrupt exit from NMI handler
 - `*_async` that was escalated to unrecoverable nmi request (`escalated_async_unrec` in `teic_nmi_cause`)
 
-
 Entry procedure is similar to regular NMIs with the following excepions:
+
 - activity is signalled by `in_nmi_unrecoverable` in `teic_irq_status` register
 - busfaults, alignment or other errors during stacking are ignored
 
