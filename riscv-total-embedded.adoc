@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.16.3
+:appversion: 0.16.4
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1225,7 +1225,8 @@ Ensure that the highest nesting priority interrupt is always
 entered within the same number of cycles regardless of the 
 interrupted execution (or sleep) state.
 
-Doesn't affect tailchaining of handlers within the highest nesting priority.
+Doesn't affect tailchaining of handlers within the highest nesting priority,
+as well as irq return procedure.
 
 It shall be assumed that highest level interrupt code and stack resides in zero
 waitstated memories and no HW measures will be implemented to adjust for a different scenario.
@@ -1282,7 +1283,8 @@ additional per vector entry interrupt enable
 
 private to the hart
 
-NOTE: multi hart or when peripheral interrupt lines are shared across multiple cores
+NOTE: multi hart or when peripheral interrupt lines are shared across multiple master units
+(e.g. FIFO empty irq signal shared with DMA)
 
 
 ==== irq_enable registers
