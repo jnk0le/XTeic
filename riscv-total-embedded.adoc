@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.16.4
+:appversion: 0.16.5
 :toc:
 :toclevels: 5
 :sectnums:
@@ -807,6 +807,7 @@ NOTE: some of the CSR registers also remain in undefined state.
 If the application start is preceeded by bootloader, or the application enters
 the bootloader, then the the switch code shall ensure that
 before redirecting execution to the target address:
+
 - all peripherals are disabled, or initialized to reset state if enabled on reset (e.g. watchdogs)
 - external GPIOs are configured to reset state 
 - the oscillators, PLLs, clock selects and divisors are configured to their reset state
@@ -946,6 +947,7 @@ NMIs (non maskable interrupts) are a special type of interrupts that cannot be m
 by `teic_irq_msk` register. Typically used for signalling critical conditions.
 
 Entry/exit procedure is similar to regular IRQs with the following excepions:
+
 - activity is signalled by `in_nmi` in `teic_irq_status` register
 - stacks only range 0 registers
 - adjusts `sp` by range 0 area
@@ -953,6 +955,7 @@ Entry/exit procedure is similar to regular IRQs with the following excepions:
 ===== NMI unrecoverable state
 
 unrecoverable NMI handler is entered whenever:
+
 - any of the `*_unrec` requests is raised in `teic_nmi_cause`
 - synchronous exception is raised during active NMI handler 
 - any of the synchronous exception flag (`*_exc` in `teic_nmi_cause`) is not cleared before performing
@@ -967,6 +970,7 @@ Entry procedure is similar to regular NMIs with the following excepions:
 ===== NMI lockup state
 
 The hart enters the NMI lockup state whenever
+
 - code attempts to return from `Unrecoverable_NMI` handler 
 - synchronous or imprecise exception is raised within `Unrecoverable_NMI` handler 
 
