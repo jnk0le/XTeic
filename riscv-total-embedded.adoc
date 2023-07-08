@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.16.1
+:appversion: 0.16.2
 :toc:
 :toclevels: 5
 :sectnums:
@@ -100,7 +100,7 @@ NOTE: Currently development is stalled due to "not encouraging general interest"
 Achieves lower interrupt latency by introducing EABI with reduced
 amount of caller-saved registers. FP registers are handled by lazy stacking.
 
-Introduces interrupt priority threshold masking.
+Many similarities with <<cortex-m NVIC, NVIC>>.
 
 mandates 4 64bit timers (even on RV32):
 
@@ -341,7 +341,7 @@ code density and performance in typical use scenarios.
 
 NOTE: 8051 allocated 8 bytes per entry, but it was able to sometimes fit entire handler or
 one of the conditional path. Especially when following entries were unused. This kind of 
-optimizations is exlusive to assmebly programming and not practised today.
+optimizations is exlusive to assmebly programming and generally not practised today.
 
 ==== MMIO vs CSR mapped config registers
 
@@ -847,7 +847,7 @@ NOTE: Zcmp similarly doesn't specify the required alignment.
 | range | registers | added stack area | mandatory supported | mandatory configurable
 | 0 | "x1,x10,x11,reserved" | XLEN * 4 | yes | no
 | 1 | "x12-x15" | XLEN * 4 | yes | no
-| 2 | "x4-x7" | XLEN * 4 | no | yes
+| 2 | "x4-x7" | XLEN * 4 | no | no
 | 3 | "x16,x17,x28-x31" | XLEN * 6 | no | yes
 |====
 
@@ -1237,8 +1237,42 @@ private to the hart
 
 ==== sys/hart reset req?
 
-//key+req of hart/sys reset
-//deep sleep?
+`TEIC_MMIO_CTRL_BASE` + 0x0
+
+// key+req of hart/sys reset
+// deep sleep?
+
+// not byte addressable
+
+// reset cause ??
+// deepsleep ??
+
+==== software deferred
+
+`TEIC_MMIO_CTRL_BASE` + 0x4 // pending rw1c
+`TEIC_MMIO_CTRL_BASE` + 0x8 // request set w1s
+
+// not byte addressable
+
+==== pending
+
+`TEIC_MMIO_CTRL_BASE` + 0x20
+
+// 32 * 4
+
+==== priority config
+
+`TEIC_MMIO_CTRL_BASE` + 0x400
+
+1 byte entries
+
+// 1024 entry, last and nmis reserved
+
+===== priority encoding
+
+// nesting prority bits is implementation constant
+// top to bottom
+// nesting then regular bts
 
 === additional optional subextensions
 
@@ -1248,8 +1282,14 @@ additional per vector entry interrupt enable
 
 private to the hart
 
-multi hart or when peripheral interrupt lines are shared across multiple cores
+NOTE: multi hart or when peripheral interrupt lines are shared across multiple cores
 
+
+==== irq_enable registers
+
+`TEIC_MMIO_CTRL_BASE` + 0x40
+
+// 32 * 4
 
 ==== XteicTinyIrqTable
 
@@ -1272,9 +1312,9 @@ NOTE: SRAM can be used for enplacing handlers if mapped within the same 64KiB bl
 
 Implies XteicTinyIrqTable extension.
 
-If the fetched vector entriey has the lowest bit set, then 
+If the fetched vector entry has the lowest bit set, then 
 the effective addres is constructed by concatenation of the 2 bytes of the
-vector entry content and top 16 bit of `TEIC_EXEC_SRAM_BASE` implementation constant.
+vector entry content and top 16 bits of `TEIC_EXEC_SRAM_BASE` implementation constant.
 
 The `TEIC_EXEC_SRAM_BASE` must be 64KiB aligned.
 
