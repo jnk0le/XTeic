@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.2
+:appversion: 0.17.3
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1556,7 +1556,8 @@ Has use case only when the same interrupts are routed to multiple cores.
 Nesting NMIs is easy way to overflow the stack or greatly increase
 the worst case in static stack analysis (if there is even a bound)
 
-It also becomes an issue in pure HW state preservation by `estate_nl`.
+It also becomes an issue in pure HW state preservation by `estate_nl`
+or shadow registers.
 
 Normally such condition is very rare and is usually a sign of bad coding or
 much more serious hardware issue, that's causing everything to fail at the same moment.
@@ -1566,12 +1567,11 @@ much more serious hardware issue, that's causing everything to fail at the same 
 aka software trigger in ARM terminology <<DUI0553A>>
 
 Designated for triggering unallocated (or unused peripheral) vectors, by writing to
-the special `NVIC->STIR` register
-
-It is of course redundant to the use of `NVIC->ISPRx` registers.
+the special `NVIC->STIR` register.
+Which is of course redundant to the use of `NVIC->ISPRx` registers.
 
 However it's rarely used and only "implemented" vectors can be triggered in such 
-way. Officially it is supposed to be 32 entry in ARM case, but it's not even
+way. Officially it is supposed to be 32 entry granularity in ARM case, but it's not even
 obvious wether you can use unimplemented vectors at all. <<customsoftirqcm3>>
 
 NOTE: Even the PendSV is done by setting `ICSR->PENDSVET` bit instead of executing this mechanism.
@@ -1580,7 +1580,7 @@ NOTE: TEIC provides dedicated "peripheral" for handling software (deffered) inte
 
 All of this causes a lot of redundancy to allow handling peripheral interrupts and "software" 
 triggered ones by the same handler. The ARM implementation also depends on level triggered
-irq mechanism, which is also ommited by xteic <<customsoftirqcm3>>
+irq mechanism, which is also ommited by xteic.
 
 // move nvic descr to prior section ???
 
