@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.3
+:appversion: 0.17.4
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1266,9 +1266,21 @@ private to the hart
 
 ==== `teic_Deffered_pending`
 
+[cols="1,2,1,2,6",options=header]
+|====
+| bit | name | type | reset value | description 
+| [31:1] | `deffered[i]_pending` | rw1c | 0 | (optional) pending status of deffered1-deffered31 irq requests
+| [0] | `deffered0_pending` | rw1c | 0 | pending status of deffered0 irq request
+|====
+
 ==== `teic_Deffered_request`
 
-
+[cols="1,2,1,2,6",options=header]
+|====
+| bit | name | type | reset value | description 
+| [31:1] | `deffered[i]_req` | w1s | 0 | (optional) write 1 to send deffered1-deffered31 irq requests
+| [0] | `deffered0_req` | w1s | 0 | write 1 to send deffered0 irq request
+|====
 
 ==== `teic_irq_pending`
 
