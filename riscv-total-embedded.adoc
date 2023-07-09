@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.0
+:appversion: 0.17.1
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1298,12 +1298,7 @@ private to the hart
 NOTE: multi hart or when peripheral interrupt lines are shared across multiple master units
 (e.g. FIFO empty irq signal shared with DMA)
 
-
-==== irq_enable registers
-
-`TEIC_MMIO_CTRL_BASE` + 0x40
-
-// 32 * 4
+===== `teicMP_irq_enable`
 
 ==== XteicTinyIrqTable
 
