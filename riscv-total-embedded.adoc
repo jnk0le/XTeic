@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.16.6
+:appversion: 0.17.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1240,9 +1240,21 @@ waitstated memories and no HW measures will be implemented to adjust for a diffe
 
 private to the hart
 
-==== sys/hart reset req?
+[cols="2,2,3,1,1,1",options=header]
+|====
+| offset from `TEIC_MMIO_CTRL_BASE` | total bytes | name | byte/half access | type | description
+| 0x0 | 4 | `teic_??` | no | |
+| 0x4 | 4 | `teic_reset_req??` | no | rw?? |
+| 0x8 | 4 | `teic_Deffered_pending` | no | rw1c |
+| 0xC | 4 | `teic_Deffered_request` | no | w1s |
+| 0x20 | 32 | `teic_irq_pending` | no | ro |
+| 0x40 | 32 | `teicMP_irq_enable` | no | rw | added with <<XteicMP>>
+| 0x400 | 1023 | `teic_prio_cfg` | yes | rw |
+|====
 
-`TEIC_MMIO_CTRL_BASE` + 0x0
+
+==== `teic_reset_req??`
+
 
 // key+req of hart/sys reset
 // deep sleep?
@@ -1252,22 +1264,18 @@ private to the hart
 // reset cause ??
 // deepsleep ??
 
-==== software deferred
+==== `teic_Deffered_pending`
 
-`TEIC_MMIO_CTRL_BASE` + 0x4 // pending rw1c
-`TEIC_MMIO_CTRL_BASE` + 0x8 // request set w1s
+==== `teic_Deffered_request`
 
-// not byte addressable
 
-==== pending
 
-`TEIC_MMIO_CTRL_BASE` + 0x20
+==== `teic_irq_pending`
 
-// 32 * 4
 
-==== priority config
 
-`TEIC_MMIO_CTRL_BASE` + 0x400
+==== `teic_prio_cfg`
+
 
 1 byte entries
 
