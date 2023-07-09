@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.1
+:appversion: 0.17.2
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1240,7 +1240,7 @@ waitstated memories and no HW measures will be implemented to adjust for a diffe
 
 private to the hart
 
-[cols="2,2,3,1,1,1",options=header]
+[cols="2,1,3,1,1,4",options=header]
 |====
 | offset from `TEIC_MMIO_CTRL_BASE` | total bytes | name | byte/half access | type | description
 | 0x0 | 4 | `teic_??` | no | |
