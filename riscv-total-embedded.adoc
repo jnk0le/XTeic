@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.4
+:appversion: 0.17.5
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1288,12 +1288,24 @@ private to the hart
 
 ==== `teic_prio_cfg`
 
+consists of 1023 entries 
+first 8 entries (NMIs) are reserved
 
-1 byte entries
-
-// 1024 entry, last and nmis reserved
+1 byte  `teic_prio_cfg[IRQn]`
 
 ===== priority encoding
+
+each implemented irq vector 
+
+`teic_prio_cfg[IRQn]`
+
+[cols="6,2,1,2,3",options=header]
+|====
+| bit | name | type | reset value | description 
+| [8:(8-`TEIC_IRQ_NESTING_BITS`)] | `nest_prio` | rw | 0 | nesting priority bits
+| [(8-`TEIC_IRQ_NESTING_BITS`):(8-(`TEIC_IRQ_NESTING_BITS`+`TEIC_IRQ_PRIORITY_BITS`))] | `sub_prio` | rw | 0 | sub-priority bits
+| [(8-(`TEIC_IRQ_NESTING_BITS`+`TEIC_IRQ_PRIORITY_BITS`)):0] | reserved | rw | 0 | reserved
+|====
 
 // nesting prority bits is implementation constant
 // top to bottom
