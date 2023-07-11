@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.5
+:appversion: 0.17.6
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1242,14 +1242,14 @@ private to the hart
 
 [cols="2,1,3,1,1,4",options=header]
 |====
-| offset from `TEIC_MMIO_CTRL_BASE` | total bytes | name | byte/half access | type | description
-| 0x0 | 4 | `teic_??` | no | |
-| 0x4 | 4 | `teic_reset_req??` | no | rw?? |
-| 0x8 | 4 | `teic_Deffered_pending` | no | rw1c |
-| 0xC | 4 | `teic_Deffered_request` | no | w1s |
-| 0x20 | 32 | `teic_irq_pending` | no | ro |
-| 0x40 | 32 | `teicMP_irq_enable` | no | rw | added with <<XteicMP>>
-| 0x400 | 1023 | `teic_prio_cfg` | yes | rw |
+| offset from `TEIC_MMIO_CTRL_BASE` | total bytes | name | byte/half access | description
+| 0x0 | 4 | `teic_??` | no |
+| 0x4 | 4 | `teic_reset_req??` | no |
+| 0x8 | 4 | `teic_Deffered_pending` | no |
+| 0xC | 4 | `teic_Deffered_request` | no |
+| 0x20 | 32 | `teic_irq_pending` | no |
+| 0x40 | 32 | `teicMP_irq_enable` | no | added with <<XteicMP>>
+| 0x400 | 1023 | `teic_prio_cfg` | yes |
 |====
 
 
@@ -1263,6 +1263,10 @@ private to the hart
 
 // reset cause ??
 // deepsleep ??
+
+==== `teic_??` 
+
+
 
 ==== `teic_Deffered_pending`
 
