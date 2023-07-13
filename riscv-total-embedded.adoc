@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.8
+:appversion: 0.17.9
 :toc:
 :toclevels: 5
 :sectnums:
@@ -529,6 +529,7 @@ The official risc-v debug spec <<riscvdebug>> is good enough to not necessitate 
 one, although the "minimal debug implementation" is actually not minimal.
 
 Some of the  minor things that could "improved" for minimal implementations:
+
 - 1 entry `progbuf` accepting 32bit instructions only (saves 2 bits, currently
 must accept compressed insns)
 - writing this 1 entry progbuf immediately executes written instruction (ie. no storage in progbuf)
