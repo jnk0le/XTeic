@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.11
+:appversion: 0.17.12
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1285,24 +1285,30 @@ private to the hart
 [cols="1,2,1,2,6",options=header]
 |====
 | bit | name | type | reset value | description 
-| [31:1] | `deffered{i}_req` | w1s | 0 | (optional) write 1 to send deffered1-deffered31 irq requests
-| [0] | `deffered0_req` | w1s | 0 | write 1 to send deffered0 irq request
+| [31:1] | `deffered{i}_req` | w1s | undefined | (optional) write 1 to send deffered1-deffered31 irq requests
+| [0] | `deffered0_req` | w1s | undefined | write 1 to send deffered0 irq request
 |====
 
 ==== `teic_irq_pending[8]`
 
-For each implemented irq vector, there is corresponding
+For each implemented irq vector, there is corresponding pending bit in pending register at 
+`teic_irq_pending[IRQn/32]` position.
 
+First 8 bit entries (corresponding to NMIs) are reserved.
 
-
+[cols="1,2,1,2,6",options=header]
+|====
+| bit | name | type | reset value | description 
+| [31:0] | `pending{i}_irq` | ro | 0 | signals pending status of `IRQn % 32` interrupt 
+|====
 
 
 ==== `teic_prio_cfg[1023]`
 
 Consists of 1023 entries, 1 byte each.
-First 8 entries (NMIs) are reserved.
+First 8 entries (corresponding to NMIs) are reserved.
 
-For each implemented irq vector, there is corresponding priority confg regster at 
+For each implemented irq vector, there is corresponding priority confg register at 
 `teic_prio_cfg[IRQn]` position.
 
 priority encoding::
