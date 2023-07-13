@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.6
+:appversion: 0.17.7
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1242,16 +1242,18 @@ private to the hart
 
 [cols="2,1,3,1,1,4",options=header]
 |====
-| offset from `TEIC_MMIO_CTRL_BASE` | total bytes | name | byte/half access | description
+| offset from `TEIC_MMIO_CTRL_BASE` | entry size | name | non-native access | description
 | 0x0 | 4 | `teic_??` | no |
 | 0x4 | 4 | `teic_reset_req??` | no |
 | 0x8 | 4 | `teic_Deffered_pending` | no |
 | 0xC | 4 | `teic_Deffered_request` | no |
-| 0x20 | 32 | `teic_irq_pending` | no |
-| 0x40 | 32 | `teicMP_irq_enable` | no | added with <<XteicMP>>
-| 0x400 | 1023 | `teic_prio_cfg` | yes |
+| 0x20 | 4 | `teic_irq_pending[8]` | no |
+| 0x40 | 4 | `teicMP_irq_enable[8]` | no | added with <<XteicMP>>
+| 0x400 | 1 | `teic_prio_cfg[1023]` | yes |
 |====
 
+
+==== `teic_??` 
 
 ==== `teic_reset_req??`
 
@@ -1264,7 +1266,7 @@ private to the hart
 // reset cause ??
 // deepsleep ??
 
-==== `teic_??` 
+
 
 
 
@@ -1273,7 +1275,7 @@ private to the hart
 [cols="1,2,1,2,6",options=header]
 |====
 | bit | name | type | reset value | description 
-| [31:1] | `deffered[i]_pending` | rw1c | 0 | (optional) pending status of deffered1-deffered31 irq requests
+| [31:1] | `deffered{i}_pending` | rw1c | 0 | (optional) pending status of deffered1-deffered31 irq requests
 | [0] | `deffered0_pending` | rw1c | 0 | pending status of deffered0 irq request
 |====
 
@@ -1282,38 +1284,30 @@ private to the hart
 [cols="1,2,1,2,6",options=header]
 |====
 | bit | name | type | reset value | description 
-| [31:1] | `deffered[i]_req` | w1s | 0 | (optional) write 1 to send deffered1-deffered31 irq requests
+| [31:1] | `deffered{i}_req` | w1s | 0 | (optional) write 1 to send deffered1-deffered31 irq requests
 | [0] | `deffered0_req` | w1s | 0 | write 1 to send deffered0 irq request
 |====
 
-==== `teic_irq_pending`
+==== `teic_irq_pending[8]`
 
 
 
-==== `teic_prio_cfg`
+==== `teic_prio_cfg[1023]`
 
-consists of 1023 entries 
-first 8 entries (NMIs) are reserved
+Consists of 1023 entries, 1 byte each.
+First 8 entries (NMIs) are reserved.
 
-1 byte  `teic_prio_cfg[IRQn]`
+For each each implemented irq vector, there is corresponding priority confg regster at 
+`teic_prio_cfg[IRQn]` position.
 
-===== priority encoding
-
-each implemented irq vector 
-
-`teic_prio_cfg[IRQn]`
-
+priority encoding::
 [cols="6,2,1,2,3",options=header]
 |====
 | bit | name | type | reset value | description 
-| [8:(8-`TEIC_IRQ_NESTING_BITS`)] | `nest_prio` | rw | 0 | nesting priority bits
-| [(8-`TEIC_IRQ_NESTING_BITS`):(8-(`TEIC_IRQ_NESTING_BITS`+`TEIC_IRQ_PRIORITY_BITS`))] | `sub_prio` | rw | 0 | sub-priority bits
-| [(8-(`TEIC_IRQ_NESTING_BITS`+`TEIC_IRQ_PRIORITY_BITS`)):0] | reserved | rw | 0 | reserved
+| [8:(9 - `TEIC_IRQ_NESTING_BITS`)] | `nest_prio` | rw | 0 | nesting priority bits
+| [(9 - `TEIC_IRQ_NESTING_BITS`):(9 - (`TEIC_IRQ_NESTING_BITS` + `TEIC_IRQ_PRIORITY_BITS`))] | `sub_prio` | rw | 0 | sub-priority bits
+| [(9 - (`TEIC_IRQ_NESTING_BITS` + `TEIC_IRQ_PRIORITY_BITS`)):0] | reserved | rw | 0 | reserved
 |====
-
-// nesting prority bits is implementation constant
-// top to bottom
-// nesting then sub-prio
 
 === additional optional subextensions
 
@@ -1326,7 +1320,7 @@ private to the hart
 NOTE: multi hart or when peripheral interrupt lines are shared across multiple master units
 (e.g. FIFO empty irq signal shared with DMA)
 
-===== `teicMP_irq_enable`
+===== `teicMP_irq_enable[8]`
 
 ==== XteicTinyIrqTable
 
