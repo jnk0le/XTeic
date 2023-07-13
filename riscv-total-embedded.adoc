@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.9
+:appversion: 0.17.10
 :toc:
 :toclevels: 5
 :sectnums:
@@ -528,7 +528,7 @@ wrt. <<IPRA - Inter procedural register allocation, IPRA>> as there are only 2 o
 The official risc-v debug spec <<riscvdebug>> is good enough to not necessitate another incompatible
 one, although the "minimal debug implementation" is actually not minimal.
 
-Some of the  minor things that could "improved" for minimal implementations:
+Some of the  minor things that could be "improved" for minimal implementations:
 
 - 1 entry `progbuf` accepting 32bit instructions only (saves 2 bits, currently
 must accept compressed insns)
