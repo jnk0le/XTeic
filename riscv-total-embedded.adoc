@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.7
+:appversion: 0.17.8
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1240,7 +1240,7 @@ waitstated memories and no HW measures will be implemented to adjust for a diffe
 
 private to the hart
 
-[cols="2,1,3,1,1,4",options=header]
+[cols="2,1,3,1,2",options=header]
 |====
 | offset from `TEIC_MMIO_CTRL_BASE` | entry size | name | non-native access | description
 | 0x0 | 4 | `teic_??` | no |
@@ -1290,6 +1290,10 @@ private to the hart
 
 ==== `teic_irq_pending[8]`
 
+For each implemented irq vector, there is corresponding
+
+
+
 
 
 ==== `teic_prio_cfg[1023]`
@@ -1297,7 +1301,7 @@ private to the hart
 Consists of 1023 entries, 1 byte each.
 First 8 entries (NMIs) are reserved.
 
-For each each implemented irq vector, there is corresponding priority confg regster at 
+For each implemented irq vector, there is corresponding priority confg regster at 
 `teic_prio_cfg[IRQn]` position.
 
 priority encoding::
