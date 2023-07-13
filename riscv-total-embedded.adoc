@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.10
+:appversion: 0.17.11
 :toc:
 :toclevels: 5
 :sectnums:
@@ -778,7 +778,7 @@ software shall assume little endian
 | `TEIC_MMIO_CTRL_BASE` | 0xFFFE0000 | Base address of Xteic MMIO control block
 | `TEIC_IRQ_NESTING_BITS` | {1,2} | Number of implemented interrupt nesting priority bits
 | `TEIC_IRQ_PRIORITY_BITS` | {1,2,3,4} | Number of implemented interrupt sub-priority bits
-| `TEIC_IRQ_VECT_ENTRIES` | {8..1022} | Number of allocated interrupt entries including skipped ones and NMIs
+| `TEIC_IRQ_VECT_ENTRIES` | {9..1023} | Number of allocated interrupt entries including skipped ones and NMIs
 | `TEIC_IRQ_VECT_ENTRY_SIZE` | {2,4} | Size in bytes of the single entry in vector table.
 									By default it's 4. 2 if <<XteicTinyIrqTable>> subextension is implemented.
 |====
