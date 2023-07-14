@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.12
+:appversion: 0.17.13
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1316,8 +1316,8 @@ priority encoding::
 |====
 | bit | name | type | reset value | description 
 | [8:(9 - `TEIC_IRQ_NESTING_BITS`)] | `nest_prio` | rw | 0 | nesting priority bits
-| [(9 - `TEIC_IRQ_NESTING_BITS`):(9 - (`TEIC_IRQ_NESTING_BITS` + `TEIC_IRQ_PRIORITY_BITS`))] | `sub_prio` | rw | 0 | sub-priority bits
-| [(9 - (`TEIC_IRQ_NESTING_BITS` + `TEIC_IRQ_PRIORITY_BITS`)):0] | reserved | rw | 0 | reserved
+| [(8 - `TEIC_IRQ_NESTING_BITS`):(9 - (`TEIC_IRQ_NESTING_BITS` + `TEIC_IRQ_PRIORITY_BITS`))] | `sub_prio` | rw | 0 | sub-priority bits
+| [(8 - (`TEIC_IRQ_NESTING_BITS` + `TEIC_IRQ_PRIORITY_BITS`)):0] | reserved | rw | 0 | reserved
 |====
 
 === additional optional subextensions
