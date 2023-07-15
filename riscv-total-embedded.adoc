@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.13
+:appversion: 0.17.14
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1302,7 +1302,6 @@ First 8 bit entries (corresponding to NMIs) are reserved.
 | [31:0] | `pending{i}_irq` | ro | 0 | signals pending status of `IRQn % 32` interrupt 
 |====
 
-
 ==== `teic_prio_cfg[1023]`
 
 Consists of 1023 entries, 1 byte each.
@@ -1314,11 +1313,14 @@ For each implemented irq vector, there is corresponding priority confg register 
 priority encoding::
 [cols="6,2,1,2,3",options=header]
 |====
-| bit | name | type | reset value | description 
+| bit | name | type | reset value | description
 | [8:(9 - `TEIC_IRQ_NESTING_BITS`)] | `nest_prio` | rw | 0 | nesting priority bits
 | [(8 - `TEIC_IRQ_NESTING_BITS`):(9 - (`TEIC_IRQ_NESTING_BITS` + `TEIC_IRQ_PRIORITY_BITS`))] | `sub_prio` | rw | 0 | sub-priority bits
 | [(8 - (`TEIC_IRQ_NESTING_BITS` + `TEIC_IRQ_PRIORITY_BITS`)):0] | reserved | rw | 0 | reserved
 |====
+
+Unimplemented nesting bits are treated as if they were hardwired to 1.
+If only 1 bit is implemented then only `nest2` and `nest4` levels are possible.
 
 === additional optional subextensions
 
