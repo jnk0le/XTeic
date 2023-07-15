@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.16
+:appversion: 0.17.17
 :toc:
 :toclevels: 5
 :sectnums:
@@ -40,10 +40,10 @@ control loops by providing minimal interrupt latency and jitter. +
 Optionally offer single digit cycles of interrupt latency to actual code and true zero jitter,
 as to not disturb minimal implementations. +
 By leveraging general purpose computing capability of risc-v architecture, we can
-avoid the need for separate cores (often with asymetric architectures) to offload 
+avoid the need for separate cores (often with asymetric architectures) to offload
 low priority tasks (communication, HMI etc).
 
-The lack of many "legacy" functionalities allows reduction of silicon area, power, and verification costs. 
+The lack of many "legacy" functionalities allows reduction of silicon area, power, and verification costs.
 
 === prior art
 
@@ -87,12 +87,12 @@ interrupts, but this exact code is about to be pushed down your throat anyway.
 NOTE: according to <<clicentrycycles>>, handler entry time is 6 cycles on sifive E2 and
 10 cycles in E3/5
 
-NOTE: BTW, my prediction is that the "competitor A" will be able to do a 
+NOTE: BTW, my prediction is that the "competitor A" will be able to do a
 "comparison against riscv" without resorting to FUD tactics, right after CLIC is ratified
 
 ==== emb-riscv
 
-emb-riscv <<embriscv>> is clean sheet design that attempts to be universal solution 
+emb-riscv <<embriscv>> is clean sheet design that attempts to be universal solution
 for every microcontroller. Designed with a strong focus on RTOS support.
 
 NOTE: Currently development is stalled due to "not encouraging general interest"
@@ -117,9 +117,9 @@ According to <<clint>>, it provides memory mapped interface for timers and IPI.
 
 NOTE: ofiicial CLINT is called ACLINT but doesn't differ much from CLINT in sifive documentations.
 
-==== generic riscv interrupts as described in "privileged" volume II 
+==== generic riscv interrupts as described in "privileged" volume II
 
-Very often refered to as CLINT. e.g. <<sififeintcookbook>> claims that volume II 
+Very often refered to as CLINT. e.g. <<sififeintcookbook>> claims that volume II
 stuff is CLINT exclusive.
 
 has vectored mode which simply jumps to the position in vector table.
@@ -131,7 +131,7 @@ Registers and CSR state (`fcsr` etc.) have to be pushed by software before use
 
 <<plic>>, <<aia>>
 
-A heavyweight frontend for delivering interrupts to multiple cores 
+A heavyweight frontend for delivering interrupts to multiple cores
 running typical unix OS. Not suitable for microcontrolers.
 
 claim/complete architecture
@@ -145,7 +145,7 @@ Proprietary design by WCH build on top of generic riscv privileged <<qingkev2>>,
 The descriptions of a lot of functional behaviour feel like a copy-paste of risc-v privileged.
 Highly under/undocumented. +
 e.g. There is nothing about what happens to `mepc`, `mcause` or `mstatus` during nesting (especially on "V2" core). +
-It is also unknown whether `ra` register doesn't have an additional use (like saving `mepc`...) during 
+It is also unknown whether `ra` register doesn't have an additional use (like saving `mepc`...) during
 interrupt entry/exit and connot be used immediately as the currently implemented gcc attribute treats
 those functions the same way as the regular ABI ones with `mret` based return. +
 Inline with average chinese documentation standards.
@@ -181,11 +181,11 @@ NOTE: FPGA minimum cores, is a non goal for Xteic
 
 ==== ti c2000 (main core)
 
-Proprietary TI architecture <<spru430f>> sporting an ancient looking accumulator-memory architecture 
+Proprietary TI architecture <<spru430f>> sporting an ancient looking accumulator-memory architecture
 (with 8 pointer registers), similar to the classic CISCs. An x86 of motor control and signal processing.
 FPU <<spruhs1c>> is more RISC-ish with a bit of VLIW in some instructions.
 
-NOTE: TI is very hesitant to release any general purpose benchmark scores (speed/size etc.) 
+NOTE: TI is very hesitant to release any general purpose benchmark scores (speed/size etc.)
 <<c2000coremark>>, <<c2000dhrystone>>. Claiming that their architecture "is optimized for
 real world control applications". Those kind of scores are also almost non existent in independent sources.
 
@@ -205,14 +205,14 @@ Use of RPT istruction will introduce even more jitter and latecy as the sequence
 and takes arbitrary numbers of cycles to execute.
 
 NOTE: ISR entry latency is 10 cycles due to 8 stage pipeline and automatically stacking 13 registers.
-<<c2000workshop>> suggests that the latency is 14 cycles for internal signals. Which would 
+<<c2000workshop>> suggests that the latency is 14 cycles for internal signals. Which would
 further increase the worst case jitter and latencies.
 
 === overwiew/discussion of some concepts/features
 
 ==== whole app must be doable in C/C++
 
-In this case interrupts must always push all caller saved registers to be able to use functions without 
+In this case interrupts must always push all caller saved registers to be able to use functions without
 `\\__attribute__\((interrupt*))` annotation. Leading to <<ABIs with less caller saved registers>>
 
 NOTE: those are usually wrapped with `extern "C"` anyway
@@ -226,12 +226,12 @@ done with single `lui` instruction.
 There is still a risk of corruption if the compiler decides to reorder something before
 initialization of `.data`/`.bss` sections.
 
-Such startup code is also inefficient as it will have to obey the ABI (spill `ra` to stack) and 
+Such startup code is also inefficient as it will have to obey the ABI (spill `ra` to stack) and
 compilers can't optimize out link time symbols anyway. (even though some can be assumed to
 always be at certain offsets from 0x00000000 or each other)
 
 Of course I often find that there is a competition on who will make
-the worst startup code in assembly. 
+the worst startup code in assembly.
 So pure C/C++ startup code turns out to be "better" due to confirmation effect.
 But let's have a look at my "combotablecrt" implementation <<combotablecrt>> for stm32f030x4/6. 
 Is your compiler able to do that?
@@ -241,20 +241,20 @@ and don't need to take latency of the whole ABI/EABI.
 
 ==== ABIs with less caller saved registers
 
-The rationale of introducing ABIs with reduced number of caller saved registers is to 
-reduce interrupt latency. 
+The rationale of introducing ABIs with reduced number of caller saved registers is to
+reduce interrupt latency.
 
-The major downside of such approach is lowered overall performance 
-and code denisty. Which is highly unliked across riscv community <<bhvseabi>> and stalls 
+The major downside of such approach is lowered overall performance
+and code denisty. Which is highly unliked across riscv community <<bhvseabi>> and stalls
 development of such (E)ABI.
 
-> I think for marketing reasons we should have the RISC-V EABI mimic the competitor ABI as 
-> closely as possible, and be available and supported by the tools, even if almost no-one 
+> I think for marketing reasons we should have the RISC-V EABI mimic the competitor ABI as
+> closely as possible, and be available and supported by the tools, even if almost no-one
 > should end up actually using it.
 
 Zcmp[e] was also prepared for such fragmentation by reserving first 4 points in rlist for EABI,
 so the cores can implement UABI and EABI push/pop instructions at the same time.
-Those 4 points are of course supposed to handle 20 caller saved regs of EABI (probably with some 
+Those 4 points are of course supposed to handle 20 caller saved regs of EABI (probably with some
 reuse of few higher points).
 
 It will also make the processors capable of stacking 2 registers per cycle, underutilized
@@ -280,7 +280,7 @@ Even stacking by the special push instructions (e.g. XTheadInt <<thead>> or
 PUSHINT <<pushint>> and maybe a subsets of those), won't help much. Those start pushing
 after the latency of double (waitstated) miss was taken.
 
-The only situation when soft stacking yields better results is when HW stacker has to push 
+The only situation when soft stacking yields better results is when HW stacker has to push
 way more registers than is actually used.
 
 NOTE: Zcmp[e] doesn't cover caller saved registers except `ra`.
@@ -293,15 +293,15 @@ Recurrig thing in RVE ABI proposals.
 The idea is to allow compilers and software vendors to provide a single
 set of precompiled libraries for RVI and RVE ABIs.
 
-The issue with this approach is that the code arbitrarily compiled for RVE 
+The issue with this approach is that the code arbitrarily compiled for RVE
 might turn out to be less efficient than RVI one. It also limits the capabilities
 of RVI ABI like trading off argument registers for temporary/saved ones.
 
 ==== one universal standard for everyone use cases
 
 Having one universal solution for all possible scenarios
-brings a lot of inefficiency to all of them. Due to mandatory 
-support for a lot of useless functionality, or just the need 
+brings a lot of inefficiency to all of them. Due to mandatory
+support for a lot of useless functionality, or just the need
 to keep compatibility with useless legacy.
 
 ==== special handler return pattern
@@ -309,23 +309,23 @@ to keep compatibility with useless legacy.
 aka "HANDLER_RETURN" on emb-riscv and "EXC_RETURN" on ARM
 
 The idea is to put special pattern in `ra` during handler entry and
-exit by reusing regular return mechanism provided by the ABI. Requires 
+exit by reusing regular return mechanism provided by the ABI. Requires
 certain memory area to be non executable (e.g. 0xF0000000 - 0xFFFFFFFF)
 
-This mechanism follows the typical ABI function call and together with HW 
+This mechanism follows the typical ABI function call and together with HW
 stacking, allows the interrupt handlers to be a regular C functions.
 
 The downside is that the `ra` and `pc` both have to be pushed onto stack
 and in some specifc cases, it could add extra stall cycles after the tail due
 to the waitstates/cache miss caused by delayed prefetch.
 
-Alternatively we can just stack the `ra` and put there current `pc` with lowest bit set 
+Alternatively we can just stack the `ra` and put there current `pc` with lowest bit set
 to trigger handler return operation. One less register counted towards interrupt latency.
 
 NOTE: normally the `jalr` instruction just ignores the LSB bit of resulting address.
 LSB in register and immediate will lead to "bogus" jump over 2 extra bytes.
-Even though this behaviour simplifies hardware, it was oversighted in ABI design 
-by allowing "auxiliary information" in pointers as well as `jalr` 
+Even though this behaviour simplifies hardware, it was oversighted in ABI design
+by allowing "auxiliary information" in pointers as well as `jalr`
 immediate, effectively making both useless.
 
 ==== vector tables that are jumped to
@@ -336,11 +336,11 @@ Those have to take the second round of waitstates/cache miss without amortizatio
 
 And if the code is far away from vector table (e.g. in SRAM for more deterministic execution),
 compiler will have to emit a jump island, aka "veener", that will perform yet another unamortized jump.
-allocating 8 bytes per entry and enforcing `lui` + `jalr` sequence will severly trump the 
+allocating 8 bytes per entry and enforcing `lui` + `jalr` sequence will severly trump the
 code density and performance in typical use scenarios.
 
 NOTE: 8051 allocated 8 bytes per entry, but it was able to sometimes fit entire handler or
-one of the conditional path. Especially when following entries were unused. This kind of 
+one of the conditional path. Especially when following entries were unused. This kind of
 optimizations is exlusive to assmebly programming and generally not practised today.
 
 ==== MMIO vs CSR mapped config registers
@@ -348,7 +348,7 @@ optimizations is exlusive to assmebly programming and generally not practised to
 In case of mass initialization MMIO could result in better code density
 CSR space is also limited.
 
-My take is that anything architecturally coupled to the core should reside 
+My take is that anything architecturally coupled to the core should reside
 in CSR space and keep the rest in MMIO.
 
 Nothing should exist as both.
@@ -371,14 +371,14 @@ Cortex-m3/4 offer up to 6 cycles of jitter due to "late arrival" and "pop pre-em
 Regular handler entry is dominated by stacking registers, giving some headroom for extra
 vector/instruction fetch latency.
 
-Cortex-cm7 of course suffers from Proprietary&Confidential syndrome. 
+Cortex-cm7 of course suffers from Proprietary&Confidential syndrome.
 Most probably it's similar to cm3/4.
 
-In case of C2000 CLA, TI claims <<spracs0a>>,<<ticladocs>>,<<ticladevguide>> that their task driven machine 
+In case of C2000 CLA, TI claims <<spracs0a>>,<<ticladocs>>,<<ticladevguide>> that their task driven machine
 (non preemptible) "reduces interrupt latency and jitter" compared to classic CPU, even
 though it does exactly the opposite when there is more than 1 async interrupt to handle.
 
-NOTE: Of course whenever TI compares CLA to "classic cpu", it's always a cpu with preemption 
+NOTE: Of course whenever TI compares CLA to "classic cpu", it's always a cpu with preemption
 priorities only and background task not present on CLA. As if the similar "task machine" couldn't
 be achieved by regular general purpose architecture (e.g. risc-v, cortex-m) without nesting and WFI loop
 (or "sleep on exit" feature) giving access to all GPRs in interrupts without stacking.
@@ -386,10 +386,10 @@ be achieved by regular general purpose architecture (e.g. risc-v, cortex-m) with
 ==== "everything will run Linux in future"
 
 The Linux cargo cult. +
-Because a simplest tasks suitable for bunch of 555&74s or a simple microcontroler with a 
+Because a simplest tasks suitable for bunch of 555&74s or a simple microcontroler with a
 few KiB of flash and RAM must be done under linux so it will work somehow "better".
 
-To be able to properly run linux you need quite beefy cpu (usually with MMU), 2-4MiB of flash, 
+To be able to properly run linux you need quite beefy cpu (usually with MMU), 2-4MiB of flash,
 4-8MiB of RAM (usually external DRAM), long boot time and a bad power consumption in idle. +
 Just to run the OS itself.
 
@@ -435,7 +435,7 @@ But definitely get rid of the `tp` register which is overall useless.
 ==== stack alignment
 
 should be 2x`XLEN`, mandated thorought entire program execution so as to not require
-special realignment in interrupts. 
+special realignment in interrupts.
 
 [NOTE] 
 ====
@@ -559,13 +559,13 @@ can be freely used without stacking them.
 
 - `\\__attribute__\((interrupt))` makes all registers callee saved and uses mret to return.
 - `\\__attribute__\((interrupt("SiFive-CLIC-preemptible")))` extends regular interrupt by CLIC preemption
-- `\\__attribute__\((interrupt("WCH-Interrupt-fast")))` requires custom build toolchain and is bound 
+- `\\__attribute__\((interrupt("WCH-Interrupt-fast")))` requires custom build toolchain and is bound
 to selected ABI by `-mabi=` command line parameter, still uses mret
-- Or just a plain C function that requires prestacking of all caller saved registers, reuses standard 
+- Or just a plain C function that requires prestacking of all caller saved registers, reuses standard
 return mechanism to exit interrupt context
 
-Even worse there are already hardware stackers designed for ilp32e and ilp32. When the new and better 
-ABI will be introduced, it will be impossible to use with pre-existing HW stackers. The same applies 
+Even worse there are already hardware stackers designed for ilp32e and ilp32. When the new and better
+ABI will be introduced, it will be impossible to use with pre-existing HW stackers. The same applies
 to creating HW stackers that stack less registers to optimize interrupt latency.
 
 Therefore we need universal way to annotate which registers are available for use in a given function
@@ -580,7 +580,7 @@ as a defacto calller saved one (aka create custom calling convention)
 - registers must be be sorted (integer, floating point, vector, custom, then by lowest numbered)
 - CSRs must be put after the architectural regfiles, those don't have to be sorted
 - must not collide with `\\__attribute__\((interrupt))` as to support "legacy" handler return mechanisms
-- for interop with <<IPRA - Inter procedural register allocation, IPRA>>, custom CSRs 
+- for interop with <<IPRA - Inter procedural register allocation, IPRA>>, custom CSRs
 also have to be covered.
 
 psABI caller saved:
@@ -604,20 +604,20 @@ used
 
 ===== optimization for `noreturn` functions
 
-gcc/llvm compilers can purge the epilogue (even down the call tree) by automatic 
+gcc/llvm compilers can purge the epilogue (even down the call tree) by automatic
 detection of infinite loop or by using `\\__attribute__\((noreturn))` or `__builtin_unreachable()`.
 
 It is not the case on prologues though, leading to waste of stack and codespace in the most typical
 embedded scenario of main or thread functions with an infinite loops.
 
-This missing optimization is intentional <<noreturnprologue>> to allow backtracing 
+This missing optimization is intentional <<noreturnprologue>> to allow backtracing
 (`abort()` etc.) and throwing exceptions (of course under -fno-exceptions and exception less code)
 
-By abusing the "prestacked annotation" we can get rid of this prologue 
+By abusing the "prestacked annotation" we can get rid of this prologue
 by "prestacking" all of the available registers. +
 e.g. `\\__attribute__\((noreturn, prestacked("x1,x4-x31,f0-f31,fcsr")))`
 
-NOTE: addition of `noreturn_nobacktrace_noexcept` attribute is very unlikely, optimizing 
+NOTE: addition of `noreturn_nobacktrace_noexcept` attribute is very unlikely, optimizing
 regular `noreturn` attribute is even less.
 
 ==== IPRA - Inter procedural register allocation
@@ -626,7 +626,7 @@ So far implemented only by llvm <<llvmipra>>. +
 Limited to statically linked code. +
 There are almost no benchmarks results, especially the ones other than x86 at -O3.
 
-In simple explanation, it makes every function export information about its usage of 
+In simple explanation, it makes every function export information about its usage of
 caller saved registers effectively allowing non leaf functions to use caller saved
 registers as a callee saved ones. That avoids some of the stacking/spilling leading
 to a more efficiet code.
@@ -642,7 +642,7 @@ code density (currently no reason)
 certain (compressible) callee saved registers would yield better code density than using
 more temporaries from non compressible ranges
 
-NOTE: on riscv it's `s0` and `s1`, in presence of Zcmp[e] pushing `s0,s1` is free 
+NOTE: on riscv it's `s0` and `s1`, in presence of Zcmp[e] pushing `s0,s1` is free
 in non leaf functions, and just 2 16bit instructions in leaf. With IPRA it should be also
 possible to just move `ra` and `s0/s1` into caller saved regs.
 
@@ -656,8 +656,8 @@ NOTE: This is also non IPRA optimization (-Oz kind)
 Automatic detection is not an option due to self constructed instructions (e.g. from <<XTightlyCoupledIO>>):
 [source, asm]
 ```
-.word (0b0000000<<25)|(8<<20)|(0<<15)|(0b001<<12)|(10<<7)|0x43 
-.insn i CUSTOM_1, 0x0, 1, a0, 0x123 
+.word (0b0000000<<25)|(8<<20)|(0<<15)|(0b001<<12)|(10<<7)|0x43
+.insn i CUSTOM_1, 0x0, 1, a0, 0x123
 //equivalent to:
 //tio.add0.xy a0, y0, s0
 //tio.addi0.yx y1, a0, 0x123
@@ -665,7 +665,7 @@ Automatic detection is not an option due to self constructed instructions (e.g. 
 --
 
 - precompiled libraries should also do an "IPRA exports"
-- very important point is resolving IPRA annotations of callbacks, where the callback call 
+- very important point is resolving IPRA annotations of callbacks, where the callback call
 will use the smallest common regmask of all functions that can be called through this point
 ** callbacks initialized once at startup (typical in many HALs)
 ** callbacks passed as function parameters
@@ -674,7 +674,7 @@ will use the smallest common regmask of all functions that can be called through
 NOTE: callbacks are commonly used in peripheral interrups, therefore it's important to
 apply IPRA optimizations to those as well
 
-- it can be used to annotate that passed function arguments (through registers or stack) were 
+- it can be used to annotate that passed function arguments (through registers or stack) were
 not modified and can be recycled by caller (e.g. in loops)
 - it can also "export" list of deterministic constants (and addresses) that are left in registers
 after return
@@ -767,11 +767,11 @@ software shall assume little endian
 [cols="4,2,5",options=header]
 |====
 | name | default value | notes
-| `TEIC_ENTRY_VECT_BASE` | implementation specific | Base address of the first application entry point 
+| `TEIC_ENTRY_VECT_BASE` | implementation specific | Base address of the first application entry point
 													 as well as its vector table. May have additional
 													 constarints on the alignment.
 | `TEIC_EXEC_SRAM_BASE` | implementation specific | Base address of the most designated executable SRAM
-													memory. 
+													memory.
 													(Some devices implement a special memory area
 													designated for interrupt handlers. aka "ITCM". Usually
 													it will be the main memoy address)
@@ -799,7 +799,7 @@ The hart reset is always equivalent to a system reset until XteicMP extension is
 The reset state of all architectural registers is undefined unless explicitly specified
 in specific extension.
 
-NOTE: That means the reset state of integer, fp, and vector registers is undefined. 
+NOTE: That means the reset state of integer, fp, and vector registers is undefined.
 
 NOTE: some of the CSR registers also remain in undefined state.
 
@@ -810,7 +810,7 @@ the bootloader, then the the switch code shall ensure that
 before redirecting execution to the target address:
 
 - all peripherals are disabled, or initialized to reset state if enabled on reset (e.g. watchdogs)
-- external GPIOs are configured to reset state 
+- external GPIOs are configured to reset state
 - the oscillators, PLLs, clock selects and divisors are configured to their reset state
 - all nesting levels in `teic_irq_msk` are enabled
 - `teic_irq_vect` is set to the target entry point, right before the jump happens
@@ -821,7 +821,7 @@ code (and duplicate of it in `SystemInit()`), which is a result of assuming the 
 NOTE: bootloaders placed at application entry area (at `TEIC_ENTRY_VECT_BASE`)
 can be entered by setting a certain pattern in backup register and then executing system reset.
 
-NOTE: Some devices switch between bootloader and application modes by performing 
+NOTE: Some devices switch between bootloader and application modes by performing
 whole system reset after modifying certain configuration registers (remap of executable area
 at `TEIC_ENTRY_VECT_BASE`)
 
@@ -830,11 +830,11 @@ at `TEIC_ENTRY_VECT_BASE`)
 The interrupt controller supports only level triggered interrupts.
 // polarity??
 
-The irq number is the position in vector table 
+The irq number is the position in vector table
 
 NOTE: there is no irq offseting like in NVIC
 
-Stack pointer is not realigned, if stack is not 8 byte aligned 
+Stack pointer is not realigned, if stack is not 8 byte aligned
 the behaviour is implementation specified
 
 NOTE: typical HW won't care about 4 byte stack, some dual issuers or hardened cores
@@ -916,7 +916,7 @@ pop preemption which further complicate entry/exit procedures
 ===== handler dispatch
 
 During the handler dispatch the hardware will evaluate all pending irq requests
-and select the one with highest configured sub-priority, ties are resolved by 
+and select the one with highest configured sub-priority, ties are resolved by
 highest irq number.
 
 // not a separate par ?
@@ -934,7 +934,7 @@ During the interrupt exit the hardware will:
 - unstack configured register range
 - increment `sp` according to configured register range
 - clear `in_nestx` bit in `teic_irq_status` register
-- jumps to the target address of `jalr` instruction 
+- jumps to the target address of `jalr` instruction
 
 NOTE: The bogus `jalr` target address issue remains as per unprivileged spec.
 Therefore conforming software shall not set the lsb in `jalr` immediate used for function returns
@@ -958,7 +958,7 @@ Entry/exit procedure is similar to regular IRQs with the following excepions:
 unrecoverable NMI handler is entered whenever:
 
 - any of the `*_unrec` requests is raised in `teic_nmi_cause`
-- synchronous exception is raised during active NMI handler 
+- synchronous exception is raised during active NMI handler
 - any of the synchronous exception flag (`*_exc` in `teic_nmi_cause`) is not cleared before performing
 interrupt exit from NMI handler
 - `*_async` that was escalated to unrecoverable nmi request (`escalated_async_unrec` in `teic_nmi_cause`)
@@ -972,17 +972,17 @@ Entry procedure is similar to regular NMIs with the following excepions:
 
 The hart enters the NMI lockup state whenever
 
-- code attempts to return from `Unrecoverable_NMI` handler 
-- synchronous or imprecise exception is raised within `Unrecoverable_NMI` handler 
+- code attempts to return from `Unrecoverable_NMI` handler
+- synchronous or imprecise exception is raised within `Unrecoverable_NMI` handler
 
 NMI lockup state halts any further code execution, except debug mode one.
 
 NOTE: it is necessary to allow debuggers to read out state of registers/memory
 after experiencing lockup state.
 
-NOTE: experiencing exceptions within (or return from) unrecoverable handler means a 
-serious issue with control flow, where further attempts to execute code would do 
-more harm than halting until watchdog performs system reset.  
+NOTE: experiencing exceptions within (or return from) unrecoverable handler means a
+serious issue with control flow, where further attempts to execute code would do
+more harm than halting until watchdog performs system reset.
 
 NOTE: lack of tripple fault lockout can also lead to security vulnerabilities <<nvidiamtveccve>>
 
@@ -1005,8 +1005,8 @@ NOTE: lack of tripple fault lockout can also lead to security vulnerabilities <<
 									be frozen at this point and no further action can or need to
 									be performed.
 | 5 | NMI | MemoryViolation_NMI | Bus or memory access fault
-| 6 | NMI | InstructionViolation_NMI | Illegal instruction exception 
-| 7 | NMI | Unrecoverable_NMI | Any nested nmi, unknown, other or a state that cannot be easily 
+| 6 | NMI | InstructionViolation_NMI | Illegal instruction exception
+| 7 | NMI | Unrecoverable_NMI | Any nested nmi, unknown, other or a state that cannot be easily
 								recovered to.
 | 8 | IRQ | Deffered0_IRQ | software deffered interrupt, can be used for context switch.
 | 9 | IRQ | | reserved/ecall???
@@ -1021,7 +1021,7 @@ systems. It's up to the implementer to provide them.
 
 === recycled volume II CSRs
 
-To reduce disruption some of the "privileged" csr have been recycled 
+To reduce disruption some of the "privileged" csr have been recycled
 according to "privileged" specification.
 
 [cols="1,1,1,2,3",options=header]
@@ -1065,8 +1065,8 @@ Encoding (RV32, RV64)::
 ....
 
 
-NOTE: In addition, the `wfi` instruction is allowed to optionally stack certain 
-registers ahead of the interrupts, to reduce their latency. In this case, `sp` 
+NOTE: In addition, the `wfi` instruction is allowed to optionally stack certain
+registers ahead of the interrupts, to reduce their latency. In this case, `sp`
 is not changed until interrupt arrives.
 
 // wfi with a nesting prio mask??
@@ -1075,7 +1075,7 @@ is not changed until interrupt arrives.
 
 [cols="1,2,1,4",options=header]
 |====
-| number | name | privilege | description 
+| number | name | privilege | description
 | 0xbc0 | `teic_irq_vect` | MRW | interrupt vector table
 | 0xbc1 | `teic_estate` | MRW | irq saved state
 | 0xbc2 | `teic_irq_msk` | MRW (U?) | interrupt mask
@@ -1089,9 +1089,9 @@ is not changed until interrupt arrives.
 
 [cols="1,2,1,2,6",options=header]
 |====
-| bit | name | type | reset value | description 
-| [31:5] | `vect_offset` | WLRL | `TEIC_ENTRY_VECT_BASE>>5` | must be aligned to 64 bytes or rounded up 
-											to next power of 2, of the number of entries multiplied by 
+| bit | name | type | reset value | description
+| [31:5] | `vect_offset` | WLRL | `TEIC_ENTRY_VECT_BASE>>5` | must be aligned to 64 bytes or rounded up
+											to next power of 2, of the number of entries multiplied by
 											the entry size, whichever is greater
 | [4:0] | reserved | WLRL | 0 | reserved
 |====
@@ -1114,10 +1114,10 @@ NOTE: `vect_offset` can also be implemented as a read only constant pointing to 
 
 [cols="1,2,1,2,6",options=header]
 |====
-| bit | name | type | reset value | description 
+| bit | name | type | reset value | description
 | [31:0] | `estate_nl` | WLRL | undefined | implementation specified pattern
-used to recover execution state upon interrupt return. Covers certain csr registers: 
-(`fcsr`, `vcsr`, `vstart` etc.), and (optionally) multi cycle instruction progress. The content read as 
+used to recover execution state upon interrupt return. Covers certain csr registers:
+(`fcsr`, `vcsr`, `vstart` etc.), and (optionally) multi cycle instruction progress. The content read as
 well as the write to this register is valid only at the lowest implemented nesting level.
 Otherwise read and write operations on this register are undefined.
 |====
@@ -1142,7 +1142,7 @@ to not push previous state onto stack, that would increase interrupt latency.
 
 [cols="1,2,1,2,6",options=header]
 |====
-| bit | name | type | reset value | description 
+| bit | name | type | reset value | description
 | [31:4] | reserved | WPRI | 0 | reserved
 | 3 | `nest4` | rw | 0 | enable fourth nesting level when cleared
 | 2 | `nest3` | WARL | 0 | enable third nesting level when cleared
@@ -1162,7 +1162,7 @@ NOTE: only `nest2` and `nest4` are mandatory to implemrnt
 
 [cols="1,2,1,2,6",options=header]
 |====
-| bit | name | type | reset value | description 
+| bit | name | type | reset value | description
 | [31:10] | reserved | ro | 0 | reserved
 | 10 | `in_nmi_lockup` | ro | 0 | NMI lockup state active,
 								  can be cleared only by hart/system reset
@@ -1185,7 +1185,7 @@ NOTE: `in_nmi_lockup` bit is defacto readable only by debugger
 
 [cols="1,2,1,2,6",options=header]
 |====
-| bit | name | type | reset value | description 
+| bit | name | type | reset value | description
 | 31 | reserved | ro | 0 |
 | 30 | `irqretnest0_unrec` | ro | 0 | irq return without active irq/nmi
 | 29 | `irqentryexit_unrec` | ro | 0 | fault during irq entry/exit (stack alignment,
@@ -1216,18 +1216,18 @@ The `*_async` nmi requests have to be cleared within the source peripheral.
 
 [cols="1,2,1,2,6",options=header]
 |====
-| bit | name | type | reset value | description 
+| bit | name | type | reset value | description
 | [31:6] | reserved | WLRL | 0 | reserved
 | 5 | reserved | WARL | 0 |
 | 4 | reserved | WARL | 0 |
 | 3 | reserved | WARL | 0 |
-| 2 | `escalate_async_nmi` | WARL | 0 | (optional) if `*_async` nmi request is raised during 
-										active nmi, it will be escalated to unrecoverable nmi 
+| 2 | `escalate_async_nmi` | WARL | 0 | (optional) if `*_async` nmi request is raised during
+										active nmi, it will be escalated to unrecoverable nmi
 										request (i.e. raises `escalated_async_unrec` nmi request)
 | 1 | `sleeponexit` | WARL | 0 | (optional)
 | 0 | `zero_jitter` | WARL | 0 | (optional)
 Ensure that the highest nesting priority interrupt is always
-entered within the same number of cycles regardless of the 
+entered within the same number of cycles regardless of the
 interrupted execution (or sleep) state.
 
 Doesn't affect tailchaining of handlers within the highest nesting priority,
@@ -1254,7 +1254,7 @@ private to the hart
 |====
 
 
-==== `teic_??` 
+==== `teic_??`
 
 ==== `teic_reset_req??`
 
@@ -1275,7 +1275,7 @@ private to the hart
 
 [cols="1,2,1,2,6",options=header]
 |====
-| bit | name | type | reset value | description 
+| bit | name | type | reset value | description
 | [31:1] | `deffered{i}_pending` | rw1c | 0 | (optional) pending status of deffered1-deffered31 irq requests
 | [0] | `deffered0_pending` | rw1c | 0 | pending status of deffered0 irq request
 |====
@@ -1284,22 +1284,22 @@ private to the hart
 
 [cols="1,2,1,2,6",options=header]
 |====
-| bit | name | type | reset value | description 
+| bit | name | type | reset value | description
 | [31:1] | `deffered{i}_req` | w1s | undefined | (optional) write 1 to send deffered1-deffered31 irq requests
 | [0] | `deffered0_req` | w1s | undefined | write 1 to send deffered0 irq request
 |====
 
 ==== `teic_irq_pending[8]`
 
-For each implemented irq vector, there is corresponding pending bit in pending register at 
+For each implemented irq vector, there is corresponding pending bit in pending register at
 `teic_irq_pending[IRQn/32]` position.
 
 First 8 bit entries (corresponding to NMIs) are reserved.
 
 [cols="1,2,1,2,6",options=header]
 |====
-| bit | name | type | reset value | description 
-| [31:0] | `pending{i}_irq` | ro | 0 | signals pending status of `IRQn % 32` interrupt 
+| bit | name | type | reset value | description
+| [31:0] | `pending{i}_irq` | ro | 0 | signals pending status of `IRQn % 32` interrupt
 |====
 
 ==== `teic_prio_cfg[1023]`
@@ -1307,7 +1307,7 @@ First 8 bit entries (corresponding to NMIs) are reserved.
 Consists of 1023 entries, 1 byte each.
 First 8 entries (corresponding to NMIs) are reserved.
 
-For each implemented irq vector, there is corresponding priority confg register at 
+For each implemented irq vector, there is corresponding priority confg register at
 `teic_prio_cfg[IRQn]` position.
 
 priority encoding::
@@ -1337,7 +1337,7 @@ NOTE: multi hart or when peripheral interrupt lines are shared across multiple m
 
 ==== XteicTinyIrqTable
 
-Makes each address entry in irq vector table take only 2 byte in size. 
+Makes each address entry in irq vector table take only 2 byte in size.
 (`TEIC_IRQ_VECT_ENTRY_SIZE == 2`)
 
 The effective addres is constructed by concatenation of the 2 bytes of the
@@ -1347,7 +1347,7 @@ The `TEIC_ENTRY_VECT_BASE` must be 64KiB aligned.
 
 The entry encoding with the least significant bit set, is reserved.
 
-NOTE: Extension designated for smallest devices where a vector table size has a 
+NOTE: Extension designated for smallest devices where a vector table size has a
 significant code size impact.
 
 NOTE: SRAM can be used for enplacing handlers if mapped within the same 64KiB block
@@ -1356,7 +1356,7 @@ NOTE: SRAM can be used for enplacing handlers if mapped within the same 64KiB bl
 
 Implies XteicTinyIrqTable extension.
 
-If the fetched vector entry has the lowest bit set, then 
+If the fetched vector entry has the lowest bit set, then
 the effective addres is constructed by concatenation of the 2 bytes of the
 vector entry content and top 16 bits of `TEIC_EXEC_SRAM_BASE` implementation constant.
 
@@ -1411,7 +1411,7 @@ Encoding (RV32, RV64)::
 
 ==== teic.fence.icsrsync
 
-Ensures that the following instructions are executed after the architectural state change 
+Ensures that the following instructions are executed after the architectural state change
 by a preceding CSR instructions (or equivalent) takes effect.
 Encoded in bit 1 of `fence.i` immediate
 
@@ -1446,7 +1446,7 @@ Implemented similarly to Zicsr with `uimm=0` mapped into -1 constant.
 
 NOTE: `csrrsi`/`csrrci` with `uimm=0` still doesn't write and cause write side effects.
 
-NOTE: This extensions allows to sync `csrrwi` instruction, with some other extensions 
+NOTE: This extensions allows to sync `csrrwi` instruction, with some other extensions
 <<XTightlyCoupledIO>>, as to not cause additional immediate formats.
 
 NOTE: `csrrw rd, csr, x0` can still be used to write a zero into csr.
@@ -1459,7 +1459,7 @@ None of the CSR access shall raise an exception.
 - access to unimplemented CSRs as well as higher privilege ones shall cause no side
 effects, read a `0` value and have its write ignored
 
-NOTE: `UNIMP` instruction maps to write into `cycle` csr register, so it can 
+NOTE: `UNIMP` instruction maps to write into `cycle` csr register, so it can
 no longer be used. `c.unimp` remains available which is encoded as all zero.
 
 NOTE: Extension designated for reduction of silicon use, reflects behaviour of
@@ -1470,7 +1470,7 @@ certain privileged csr registers (e.g. `misa`, `mvendorid` etc.) when unimplemen
 //u stack lim?
 
 throws exception
-when `sp` (x1) register is written with value samller than 
+when `sp` (x1) register is written with value samller than
 
 NOTE: local arrays can be created on stack and then accessed by pointer passed in working register.
 Therefore stacklimit comparison must happen on write to `sp` register
@@ -1514,13 +1514,13 @@ will it tell you if there is Zbb, Zmmul or Zcmt implemented? - no
 On embedded targets, HW information about implemented extensions and ability
 to enable/disable them, has a rather low value.
 
-=== stacking of floating point and vector registers 
+=== stacking of floating point and vector registers
 
 currently ???
 
 Zfinx ???
 
-Those can still be handled by IPRA anyway. 
+Those can still be handled by IPRA anyway.
 FP push/pop instruction might be usefull in such case.
 
 === undefined initial state of architectural registers
@@ -1531,7 +1531,7 @@ Just like developing and debugging code at -O0.
 
 This kind of use of uninitailized variables is UB in C/C++ and easily detectable by compilers.
 Languages like Rust or Ada are supposed to be free from this UB, so there is no need to spend transistors
-or code memory for zeroing those. 
+or code memory for zeroing those.
 
 NOTE: V extension uses all ones for `tail agnostic` filling just to prevent software relying on
 uarch dependent zeroing.
@@ -1546,8 +1546,8 @@ Why would you want to have big endian loads/stores? +
 Probably for handling tasks that compute "network byte order" data which uses big endian representation.
 
 Nice.
-So, lets add a big-endian mode (making it configurable at runtime of course), and enjoy 
-mandatory endian neutral loads/stores (<<cryptogamsaesneutralloads>>) used by networking 
+So, lets add a big-endian mode (making it configurable at runtime of course), and enjoy
+mandatory endian neutral loads/stores (<<cryptogamsaesneutralloads>>) used by networking
 libraries, because one cannot be sure on which endianess the code will be run.
 
 Just use `rev8` for "network order" data. It's much better than doing endian neutral access.
@@ -1605,7 +1605,7 @@ Designated for triggering unallocated (or unused peripheral) vectors, by writing
 the special `NVIC->STIR` register.
 Which is of course redundant to the use of `NVIC->ISPRx` registers.
 
-However it's rarely used and only "implemented" vectors can be triggered in such 
+However it's rarely used and only "implemented" vectors can be triggered in such
 way. Officially it is supposed to be 32 entry granularity in ARM case, but it's not even
 obvious wether you can use unimplemented vectors at all. <<customsoftirqcm3>>
 
@@ -1613,7 +1613,7 @@ NOTE: Even the PendSV is done by setting `ICSR->PENDSVET` bit instead of executi
 
 NOTE: TEIC provides dedicated "peripheral" for handling software (deffered) interrupts
 
-All of this causes a lot of redundancy to allow handling peripheral interrupts and "software" 
+All of this causes a lot of redundancy to allow handling peripheral interrupts and "software"
 triggered ones by the same handler. The ARM implementation also depends on level triggered
 irq mechanism, which is also ommited by xteic.
 
@@ -1624,8 +1624,8 @@ irq mechanism, which is also ommited by xteic.
 This is just a waste of hardware. The ABI should mandate the alignment instead.
 If not followed then the microarchitecture should be allowed to trap.
 
-NOTE: some architectures, due to legacy codebases, require explicit stack alignment 
-instructions which also contribute to interrupt latency/jitter and impact code density. 
+NOTE: some architectures, due to legacy codebases, require explicit stack alignment
+instructions which also contribute to interrupt latency/jitter and impact code density.
 
 === "zero jitter" only in highest nesting level interrupts
 
@@ -1638,11 +1638,11 @@ be considered as a rare fault/error condition.
 
 === only level triggered interrupts
 
-Peripherals usually implement level triggered interrupts. (ie. require clearing trigger source 
+Peripherals usually implement level triggered interrupts. (ie. require clearing trigger source
 by performing certain actions like reading FIFO registers or clearing the status flags)
 
-Therefore it's wastefull to spend additional resources (e.g. latch for pending status and related 
-clear on irq entry) on the edge triggered mechanism which is made redundant on 
+Therefore it's wastefull to spend additional resources (e.g. latch for pending status and related
+clear on irq entry) on the edge triggered mechanism which is made redundant on
 every irq line (see <<no "software interrupts">>)
 
 NOTE: Sampling edges on GPIO is usually done by a separate peripheral that turns those into an
@@ -1656,7 +1656,7 @@ Due to the lack of MMU, the memory access exceptions are considered fatal errors
 
 The faulting address can still be recovered in a more complex way of decompilation of faulting instr.
 
-=== no (default) "legacy" interrupt modes 
+=== no (default) "legacy" interrupt modes
 
 Having our cores to boot with "legacy" interrupt modes
 
@@ -1666,11 +1666,11 @@ up `mtvec` and thus were routed to reset handler entry.
 
 NOTE: There was even an CVE related to uninitialized `mtvec`: <<nvidiamtveccve>>
 
-This also allows us to use vector address with zeroed two lowest bits. 
+This also allows us to use vector address with zeroed two lowest bits.
 Which, in some scenarios, allows setup of vector table address with a single `lui` instruction
 
 In cores designated to work in vectored mode, the `mtvec` has the bottom address lines hardwired to 0.
-Which leads to large alignment granularity of the unvectored handler (in ch32v003 it's 1KiB). 
+Which leads to large alignment granularity of the unvectored handler (in ch32v003 it's 1KiB).
 Making the unvectored mode handler share entry with startup code or require large alignment.
 
 === no sub-priority reflected in any status registers
