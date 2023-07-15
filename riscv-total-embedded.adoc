@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.15
+:appversion: 0.17.16
 :toc:
 :toclevels: 5
 :sectnums:
@@ -580,8 +580,8 @@ as a defacto calller saved one (aka create custom calling convention)
 - registers must be be sorted (integer, floating point, vector, custom, then by lowest numbered)
 - CSRs must be put after the architectural regfiles, those don't have to be sorted
 - must not collide with `\\__attribute__\((interrupt))` as to support "legacy" handler return mechanisms
-- for interop with <<IPRA - Inter procedural register allocation, IPRA>>, unnammed custom CSRs 
-also have to be covered. e.g. `csr:0x801` or `csr:0x803-0x811` for a range
+- for interop with <<IPRA - Inter procedural register allocation, IPRA>>, custom CSRs 
+also have to be covered.
 
 psABI caller saved:
 
@@ -634,7 +634,7 @@ to a more efficiet code.
 requirements and improvements needed for efficient IPRA:
 
 - this mechanism must cover the CSRs as well as the registers (e.g. `fcsr`, `vtype`, `vl` etc.)
-- custom registers and CSRs should also be covered (e.g. HW loops)
+- custom registers and CSRs should also be covered (e.g. HW loops) (unnamed?)
 - compilers need to avoid using more registers than necessary (currently no reason)
 - registers from compressible range should be allocated only when it will benefit
 code density (currently no reason)
@@ -653,14 +653,14 @@ NOTE: This is also non IPRA optimization (-Oz kind)
 
 [NOTE]
 --
-Automatic detection is not an option due to self constructed instructions (from <<XTightlyCoupledIO>>):
+Automatic detection is not an option due to self constructed instructions (e.g. from <<XTightlyCoupledIO>>):
 [source, asm]
 ```
 .word (0b0000000<<25)|(8<<20)|(0<<15)|(0b001<<12)|(10<<7)|0x43 
 .insn i CUSTOM_1, 0x0, 1, a0, 0x123 
 //equivalent to:
 //tio.add0.xy a0, y0, s0
-//tio.addi0.yx y1, a0, 0x123 
+//tio.addi0.yx y1, a0, 0x123
 ```
 --
 
