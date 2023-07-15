@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.14
+:appversion: 0.17.15
 :toc:
 :toclevels: 5
 :sectnums:
@@ -20,8 +20,8 @@ This document is released under a Creative Commons Attribution 4.0 International
 [colophon]
 == preface
 
-This document uses semantic versioning with respect to potential hardware designs. 
-Assembly syntax change is a minor increment. Version 1.0.0 will be the first somewhat complete.
+This document uses semantic versioning with respect to potential hardware designs.
+Assembly syntax change is a minor increment. Version 1.0.0 will be the first somewhat useable.
 Changes in prior versions are not versioned properly and not tracked in revision history.
 The number in a major revision doesn't hold the freeze or ratification status.
 
