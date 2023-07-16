@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.17
+:appversion: 0.17.18
 :toc:
 :toclevels: 5
 :sectnums:
@@ -66,7 +66,7 @@ All used registers must be saved in software, trampoline handlers need to save a
 Preemption is handled in software by special CSR mechanism, that requires extra boilerplate
 code in every interrupt handler. Even in "inline" handlers.
 
-Highest priority inline handlers should possible to be made similar to legacy ones.
+Highest priority inline handlers should be possible to be made similar to legacy ones.
 
 Introduces unavoidable jitter due to:
 
@@ -1285,8 +1285,8 @@ private to the hart
 [cols="1,2,1,2,6",options=header]
 |====
 | bit | name | type | reset value | description
-| [31:1] | `deffered{i}_req` | w1s | undefined | (optional) write 1 to send deffered1-deffered31 irq requests
-| [0] | `deffered0_req` | w1s | undefined | write 1 to send deffered0 irq request
+| [31:1] | `deffered{i}_req` | w1s | undefined | (optional) write 1 to set deffered1-deffered31 irq requests
+| [0] | `deffered0_req` | w1s | undefined | write 1 to set deffered0 irq request
 |====
 
 ==== `teic_irq_pending[8]`
