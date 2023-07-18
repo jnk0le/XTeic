@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.18
+:appversion: 0.17.19
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1231,7 +1231,7 @@ entered within the same number of cycles regardless of the
 interrupted execution (or sleep) state.
 
 Doesn't affect tailchaining of handlers within the highest nesting priority,
-as well as irq return procedure.
+as well as irq return procedure. Deep sleep state is also an exception.
 
 It shall be assumed that highest level interrupt code and stack resides in zero
 waitstated memories and no HW measures will be implemented to adjust for a different scenario.
@@ -1421,7 +1421,7 @@ as regular pipeline flush.
 NOTE: necessary to sync e.g irq vector table updates wrt following (peripheral) MMIO access
 
 NOTE: <<cv32e40s>> do require fencing after update of `jvt` and `mtvec` 
-(even though `jvt` falls into "program order" category)
+(even though `jvt` falls into "program order" category).
 
 Mnemonic::
 ```
