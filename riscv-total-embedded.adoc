@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.19
+:appversion: 0.17.20
 :toc:
 :toclevels: 5
 :sectnums:
@@ -137,6 +137,9 @@ running typical unix OS. Not suitable for microcontrolers.
 claim/complete architecture
 
 handlers stay very similar to generic case.
+
+AIA adds another set of CSR registers available only through indirect access 
+mechanism (by `miselect` and `mireg` CSRs).
 
 ==== CH32 PFIC
 
