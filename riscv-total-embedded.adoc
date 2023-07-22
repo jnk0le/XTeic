@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.21
+:appversion: 0.17.22
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1012,9 +1012,9 @@ NOTE: lack of tripple fault lockout can also lead to security vulnerabilities <<
 | 7 | NMI | Unrecoverable_NMI | Any nested nmi, unknown, other or a state that cannot be easily
 								recovered to.
 | 8 | IRQ | Deffered0_IRQ | software deffered interrupt, can be used for context switch.
-| 9 | IRQ | | reserved/ecall???
+| 9 | IRQ | Deffered1_IRQ | (optional) instead of ecall??? when u mode implemented
 | 10 | IRQ | | reserved/systick???
-| 11..1022 | IRQ | *_IRQ | device specific interrupts (optional)
+| 11..1022 | IRQ | *_IRQ | (optional) device specific interrupts 
 |============================================================================================
 
 Unimplemented optional NMIs can be recycled for custom NMIs other than the ones provided in table above.
