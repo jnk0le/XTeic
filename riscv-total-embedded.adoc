@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.22
+:appversion: 0.17.23
 :toc:
 :toclevels: 5
 :sectnums:
@@ -998,7 +998,7 @@ NOTE: lack of tripple fault lockout can also lead to security vulnerabilities <<
 | 1 | NMI | PermissionViolation_NMI | (optional) unallowed access to protected area or attempt to
 										execute instructions from (execute) protected area
 | 2 | NMI | IntegrityViolation_NMI | (optional) ECC, parity, lockstep or other integrity
-									  error on core, memory or buses. Can be triggered imprecisely.
+									  error on core, memory or buses.
 | 3 | NMI | ClockViolation_NMI | (optional) Lost clock or other anomaly. It shall be assumed
 								 that the core/system clock has been switched to a different one
 								 at this point.
@@ -1009,7 +1009,7 @@ NOTE: lack of tripple fault lockout can also lead to security vulnerabilities <<
 									be performed.
 | 5 | NMI | MemoryViolation_NMI | Bus or memory access fault
 | 6 | NMI | InstructionViolation_NMI | Illegal instruction exception
-| 7 | NMI | Unrecoverable_NMI | Any nested nmi, unknown, other or a state that cannot be easily
+| 7 | NMI | Unrecoverable_NMI | Nested nmi, unknown or a state that cannot be easily
 								recovered to.
 | 8 | IRQ | Deffered0_IRQ | software deffered interrupt, can be used for context switch.
 | 9 | IRQ | Deffered1_IRQ | (optional) instead of ecall??? when u mode implemented
