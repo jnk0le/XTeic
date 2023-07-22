@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.20
+:appversion: 0.17.21
 :toc:
 :toclevels: 5
 :sectnums:
@@ -641,7 +641,7 @@ requirements and improvements needed for efficient IPRA:
 - compilers need to avoid using more registers than necessary (currently no reason)
 - registers from compressible range should be allocated only when it will benefit
 code density (currently no reason)
-- to avoid regression, compilers need some kind of heuristic to detect when stacking
+- to avoid regressions, compilers need some kind of heuristic to detect when stacking
 certain (compressible) callee saved registers would yield better code density than using
 more temporaries from non compressible ranges
 
