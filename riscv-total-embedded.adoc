@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.23
+:appversion: 0.17.24
 :toc:
 :toclevels: 5
 :sectnums:
@@ -145,6 +145,18 @@ mechanism (by `miselect` and `mireg` CSRs).
 
 Proprietary design by WCH build on top of generic riscv privileged <<qingkev2>>, <<qingkev3>>, <<qingkev4>>.
 
+Introduces HW stacking and single cycle register shadowing (aka HPE).
+It is of course necessary to use custom toolchain that implement a "proprietary" attribute:
+`\\__attribute__\((interrupt("WCH-Interrupt-fast")))`
+
+NOTE: without <<prestacked annotation>> there will be no portable way of doing this without compilers build
+on custom patches. Naked handler + mret trick doesn't work in llvm, it should break in gcc anyway due to
+eventual use of callee saved registers and stack.
+
+Another feature is "vector table free" interrupt mechanism that allows to skip
+fetching from vector table and jump to handler directly. It provides significant improvement
+only when all registers are "stacked" by shadow regfile. (or not satcked at all)
+
 The descriptions of a lot of functional behaviour feel like a copy-paste of risc-v privileged.
 Highly under/undocumented. +
 e.g. There is nothing about what happens to `mepc`, `mcause` or `mstatus` during nesting (especially on "V2" core). +
@@ -154,14 +166,6 @@ those functions the same way as the regular ABI ones with `mret` based return. +
 Inline with average chinese documentation standards.
 
 The vendor provided headers, of course, contain 46 instances of "NVIC" string and just 5 for "PFIC"
-
-Introduces HW stacking or single cycle register shadowing (aka HPE).
-It is of course necessary to use custom tuoolchain that implement a "proprietary" attribute:
-`\\__attribute__\((interrupt("WCH-Interrupt-fast")))`
-
-NOTE: without <<prestacked annotation>> there will be no portable way of doing this without compilers build
-on custom patches. Naked handler + mret trick doesn't work in llvm, it should break in gcc anyway due to
-eventual use of callee saved registers and stack.
 
 There is also under/undocumented "EABI enable" bit in `INTSYSCR` on "V2" core.
 Most probably it reduces number of HW stacked registers to match the official EABI proposal <<riscveabi>>.
