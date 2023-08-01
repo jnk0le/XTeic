@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.25
+:appversion: 0.17.26
 :toc:
 :toclevels: 5
 :sectnums:
@@ -235,7 +235,7 @@ initialization of `.data`/`.bss` sections.
 
 Such startup code is also inefficient as it will have to obey the ABI (spill `ra` to stack) and
 compilers can't optimize out link time symbols anyway. (even though some can be assumed to
-always be at certain offsets from 0x00000000 or each other)
+always be at certain addresses or offset from each other)
 
 Of course I often find that there is a competition on who will make
 the worst startup code in assembly.
@@ -368,7 +368,7 @@ instructions is already taken.
 Very often claimed, yet those claims rarely meet with reality.
 
 NOTE: There are also many non-architectural sources of jitter like caches, waitstated
-flash or accessing peripherals in different clock domains (usually divided from sysclk),
+flash, accessing peripherals in different clock domains (usually divided from sysclk),
 DMA contention, or just the code masking out the interrupts.
 
 Cortex-m0 offers a "zero jitter" by optional IP configuration that adjusts the best case 
@@ -403,7 +403,7 @@ Just to run the OS itself.
 One of the the most blatant example is NOMMU linux on stm32f429 with
 memory mapped to SDRAM that is not even cached by cpu. If the XIP image doesn't fit
 in 2MiB internal flash, it has to land in external parallel NOR flash, which is of course
-not cached by cpu. +
+not cached by cpu and shares bus with SDRAM. +
 Any attempt to touch internal SRAM regions will defeat the remaining 
 "universality/portability of linux apps" arguments.
 
@@ -1482,11 +1482,6 @@ when `sp` (x1) register is written with value samller than
 NOTE: local arrays can be created on stack and then accessed by pointer passed in working register.
 Therefore stacklimit comparison must happen on write to `sp` register
 
-=== XTinyZcmtTable
-
-=== XTinyZcmtTableExt
-
-
 
 [appendix]
 == context switch on tiny profile
@@ -1497,6 +1492,17 @@ Therefore stacklimit comparison must happen on write to `sp` register
 
 no single bit interrupt enable
 use csrrs/c on a mask then restore
+
+[appendix]
+== vendor software support packages
+
+what headers, definitions, names etc. shall be provided.
+
+// xteic.h
+// xteic_device.h // it often happens that a lot of peripherals are recycled in many chip families
+
+// ?.h
+// ?.svd // for peripheral views in debug
 
 [appendix]
 == design decisions in tiny profile
