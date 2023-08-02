@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.26
+:appversion: 0.17.27
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1122,7 +1122,7 @@ NOTE: `vect_offset` can also be implemented as a read only constant pointing to 
 [cols="1,2,1,2,6",options=header]
 |====
 | bit | name | type | reset value | description
-| [31:0] | `estate_nl` | WLRL | undefined | implementation specified pattern
+| [31:0] | `estate_nl` | WPRI | undefined | implementation specified pattern
 used to recover execution state upon interrupt return. Covers certain csr registers:
 (`fcsr`, `vcsr`, `vstart` etc.), and (optionally) multi cycle instruction progress. The content read as
 well as the write to this register is valid only at the lowest implemented nesting level.
