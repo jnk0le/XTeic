@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.27
+:appversion: 0.17.28
 :toc:
 :toclevels: 5
 :sectnums:
@@ -308,8 +308,9 @@ of RVI ABI like trading off argument registers for temporary/saved ones.
 
 Having one universal solution for all possible scenarios
 brings a lot of inefficiency to all of them. Due to mandatory
-support for a lot of useless functionality, or just the need
-to keep compatibility with useless legacy.
+support for a lot of rarely used functionality, keeping the compatibility
+with unused legacy, or having to be a subset of a bigger architecture
+optimized for a different use cases.
 
 ==== special handler return pattern
 
