@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.28
+:appversion: 0.17.29
 :toc:
 :toclevels: 5
 :sectnums:
@@ -836,7 +836,7 @@ at `TEIC_ENTRY_VECT_BASE`)
 === interrupts
 
 The interrupt controller supports only level triggered interrupts.
-// polarity??
+The logical high is used to assert pending interrupt request lines.
 
 The irq number is the position in vector table
 
