@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.30
+:appversion: 0.17.31
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1256,8 +1256,8 @@ private to the hart
 | 0x4 | 4 | `teic_reset_req??` | no |
 | 0x8 | 4 | `teic_Deffered_pending` | no |
 | 0xC | 4 | `teic_Deffered_request` | no |
-| 0x20 | 4 | `teic_irq_pending[8]` | no |
-| 0x40 | 4 | `teicMP_irq_enable[8]` | no | added with <<XteicMP>>
+| 0x20 | 4 | `teic_irq_pending[32]` | no |
+| 0x40 | 4 | `teicMP_irq_enable[32]` | no | added with <<XteicMP>>
 | 0x400 | 1 | `teic_prio_cfg[1023]` | yes |
 |====
 
@@ -1297,7 +1297,7 @@ private to the hart
 | [0] | `deffered0_req` | w1s | undefined | write 1 to set deffered0 irq request
 |====
 
-==== `teic_irq_pending[8]`
+==== `teic_irq_pending[32]`
 
 For each implemented irq vector, there is corresponding pending bit in pending register at
 `teic_irq_pending[IRQn/32]` position.
@@ -1341,7 +1341,7 @@ private to the hart
 NOTE: multi hart or when peripheral interrupt lines are shared across multiple master units
 (e.g. FIFO empty irq signal shared with DMA)
 
-===== `teicMP_irq_enable[8]`
+===== `teicMP_irq_enable[32]`
 
 ==== XteicTinyIrqTable
 
