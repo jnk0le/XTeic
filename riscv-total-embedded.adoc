@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.29
+:appversion: 0.17.30
 :toc:
 :toclevels: 5
 :sectnums:
@@ -764,7 +764,7 @@ machine mode only
 
 RV32 only
 
-2 or 4 interrupt levels
+2 or 4 interrupt nesting levels
 
 little endian only
 software shall assume little endian
