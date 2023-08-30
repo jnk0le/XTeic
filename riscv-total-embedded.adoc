@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.31
+:appversion: 0.17.32
 :toc:
 :toclevels: 5
 :sectnums:
@@ -572,7 +572,7 @@ to selected ABI by `-mabi=` command line parameter, still uses mret
 - Or just a plain C function that requires prestacking of all caller saved registers, reuses standard
 return mechanism to exit interrupt context
 
-Even worse there are already hardware stackers designed for ilp32e and ilp32. When the new and better
+Even worse, there are already hardware stackers designed for ilp32e and ilp32. When the new and better
 ABI will be introduced, it will be impossible to use with pre-existing HW stackers. The same applies
 to creating HW stackers that stack less registers to optimize interrupt latency.
 
@@ -589,7 +589,7 @@ as a defacto calller saved one (aka create custom calling convention)
 - CSRs must be put after the architectural regfiles, those don't have to be sorted
 - must not collide with `\\__attribute__\((interrupt))` as to support "legacy" handler return mechanisms
 - for interop with <<IPRA - Inter procedural register allocation, IPRA>>, custom CSRs
-also have to be covered.
+also have to be somehow covered.
 
 psABI caller saved:
 
@@ -627,6 +627,9 @@ e.g. `\\__attribute__\((noreturn, prestacked("x1,x4-x31,f0-f31,fcsr")))`
 
 NOTE: addition of `noreturn_nobacktrace_noexcept` attribute is very unlikely, optimizing
 regular `noreturn` attribute is even less.
+
+NOTE: `\\__attribute__\((naked))` won't work as it will remove the stack allocation, that is
+part of the prologue and consequently underflow the stack.
 
 ==== IPRA - Inter procedural register allocation
 
