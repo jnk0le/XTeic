@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.33
+:appversion: 0.17.34
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1569,9 +1569,11 @@ Probably for handling tasks that compute "network byte order" data which uses bi
 Nice.
 So, lets add a big-endian mode (making it configurable at runtime of course), and enjoy
 mandatory endian neutral loads/stores (<<cryptogamsaesneutralloads>>) used by networking
-libraries, because one cannot be sure on which endianess the code will be run.
+libraries, because one cannot be sure which endianess the code will be run on.
 
 Just use `rev8` for "network order" data. It's much better than doing endian neutral access.
+
+Big endianess is inefficient to handle in vector extension.
 
 === `TEIC_MMIO_CTRL_BASE` address selection
 
