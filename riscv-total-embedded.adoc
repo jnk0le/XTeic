@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.32
+:appversion: 0.17.33
 :toc:
 :toclevels: 5
 :sectnums:
@@ -628,8 +628,11 @@ e.g. `\\__attribute__\((noreturn, prestacked("x1,x4-x31,f0-f31,fcsr")))`
 NOTE: addition of `noreturn_nobacktrace_noexcept` attribute is very unlikely, optimizing
 regular `noreturn` attribute is even less.
 
-NOTE: `\\__attribute__\((naked))` won't work as it will remove the stack allocation, that is
-part of the prologue and consequently underflow the stack.
+NOTE: `\\__attribute__\((naked))` won't work, as it will remove the stack allocation
+and consequently underflow the stack.
+
+===== functions with custom ABI
+
 
 ==== IPRA - Inter procedural register allocation
 
@@ -797,6 +800,7 @@ software shall assume little endian
 === startup behaviour
 
 Upon hart reset:
+
 - all of the architectural registers are initialized to their reset state.
 - The MMIO control block registers are also initialized to their reset state.
 - The pc is set to the `TEIC_ENTRY_VECT_BASE`.
