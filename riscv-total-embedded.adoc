@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.35
+:appversion: 0.17.36
 :toc:
 :toclevels: 5
 :sectnums:
@@ -62,6 +62,9 @@ Development took long enough to achieve pre-freeze implementations by some chine
 Attempts to be an unix capable interrupt controller with horizontal nesting of U, S, H (so far only proposed) and M mode.
 
 All used registers must be saved in software, trampoline handlers need to save all ABI registers.
+If interrupts can be taken at multiple privilege modes, then each handler at higher privilege
+have to swap stack pointer (and interrupt level ??) by 2 additional CSR instructions per handler.
+during vertical nesting those instructions just copy `rs1` operand.
 
 Preemption is handled in software by special CSR mechanism, that requires extra boilerplate
 code in every interrupt handler. Even in "inline" handlers.
@@ -312,6 +315,10 @@ support for a lot of rarely used functionality, keeping the compatibility
 with unused legacy, or having to be a subset of a bigger architecture
 optimized for a different use cases.
 
+Even if that "flexibility" is made completely optional and non intrusive
+the vendors will implement it anyway for the sake of having the
+longest "flexibility" bar.
+
 ==== special handler return pattern
 
 aka "HANDLER_RETURN" on emb-riscv and "EXC_RETURN" on ARM
@@ -325,7 +332,7 @@ stacking, allows the interrupt handlers to be a regular C functions.
 
 The downside is that the `ra` and `pc` both have to be pushed onto stack
 and in some specifc cases, it could add extra stall cycles after the tail due
-to the waitstates/cache miss caused by delayed prefetch.
+to the waitstates or cache miss caused by delayed prefetch.
 
 Alternatively we can just stack the `ra` and put there current `pc` with lowest bit set
 to trigger handler return operation. One less register counted towards interrupt latency.
@@ -340,7 +347,7 @@ immediate, effectively making both useless.
 
 It's simply inefficient in truly vectored scenario.
 The vector entries will have to be populated with jump instructions anyway.
-Those have to take the second round of waitstates/cache miss without amortization by register stacking.
+Those have to take the second round of waitstates or cache miss without amortization by register stacking.
 
 And if the code is far away from vector table (e.g. in SRAM for more deterministic execution),
 compiler will have to emit a jump island, aka "veener", that will perform yet another unamortized jump.
@@ -372,14 +379,14 @@ NOTE: There are also many non-architectural sources of jitter like caches, waits
 flash, accessing peripherals in different clock domains (usually divided from sysclk),
 DMA contention, or just the code masking out the interrupts.
 
-Cortex-m0 offers a "zero jitter" by optional IP configuration that adjusts the best case 
+Cortex-m0 offers a "zero jitter" by optional IP (RTL for ASICs) configuration that adjusts the best case 
 of interrupt latency by extra cycle to acommodate random stall from bus contention.
 
 Cortex-m3/4 offer up to 6 cycles of jitter due to "late arrival" and "pop pre-emption".
 Regular handler entry is dominated by stacking registers, giving some headroom for extra
 vector/instruction fetch latency.
 
-Cortex-cm7 of course suffers from Proprietary&Confidential syndrome.
+Cortex-m7 of course suffers from Proprietary&Confidential syndrome.
 Most probably it's similar to cm3/4.
 
 In case of C2000 CLA, TI claims <<spracs0a>>,<<ticladocs>>,<<ticladevguide>> that their task driven machine
