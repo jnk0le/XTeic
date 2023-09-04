@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.36
+:appversion: 0.17.37
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1166,19 +1166,21 @@ to not push previous state onto stack, that would increase interrupt latency.
 |====
 | bit | name | type | reset value | description
 | [31:4] | reserved | WPRI | 0 | reserved
-| 3 | `nest4` | rw | 0 | enable fourth nesting level when cleared
-| 2 | `nest3` | WARL | 0 | enable third nesting level when cleared
-						   If unimplemented it always read 0.
-| 1 | `nest2` | rw | 0 | enable second nesting level when cleared
-| 0 | `nest1` | WARL | 0 | enable first nesting level when cleared
-						   If unimplemented it always read 0.
+| 3 | `nest4` | rw | 0 | Fourth nesting level +
+						1: disabled +
+						0: enabled
+| 2 | `nest3` | WARL | 0 | Third nesting level +
+						1: disabled +
+						0: enabled
+| 1 | `nest2` | rw | 0 | Second nesting level +
+						1: disabled +
+						0: enabled
+| 0 | `nest1` | WARL | 0 | First nesting level +
+						1: disabled +
+						0: enabled
 |====
 
 NOTE: only `nest2` and `nest4` are mandatory to implemrnt
-
-//??
-//binary numbering - requires special logic to do increase only
-//nesting + sub-priority???
 
 ==== `teic_irq_status`
 
@@ -1191,14 +1193,30 @@ NOTE: only `nest2` and `nest4` are mandatory to implemrnt
 | 9 | `in_nmi_unrecoverable` | ro | 0 | unrecoverable NMI handler is active
 										can be cleared only by hart/system reset
 | 8 | `in_nmi` | ro | 0 | returnable NMI handler is active
-| 7 | `in_nest4` | ro | 0 | irq handler at 4th nesting priority is active
-| 6 | `in_nest3` | ro | 0 | irq handler at 3rd nesting priority is active
-| 5 | `in_nest2` | ro | 0 | irq handler at 2nd nesting priority is active
-| 4 | `in_nest1` | ro | 0 | irq handler at 1st nesting priority is active
-| 3 | `pending_nest4` | ro | 0 | irq handler at 4th nesting priority is pending
-| 2 | `pending_nest3` | ro | 0 | irq handler at 3rd nesting priority is pending
-| 1 | `pending_nest2` | ro | 0 | irq handler at 2nd nesting priority is pending
-| 0 | `pending_nest1` | ro | 0 | irq handler at 1st nesting priority is pending
+| 7 | `in_nest4` | ro | 0 | irq handler at 4th nesting priority
+							1: active
+							0: inactive
+| 6 | `in_nest3` | ro | 0 | irq handler at 3rd nesting priority
+							1: active
+							0: inactive
+| 5 | `in_nest2` | ro | 0 | irq handler at 2nd nesting priority
+							1: active
+							0: inactive
+| 4 | `in_nest1` | ro | 0 | irq handler at 1st nesting priority
+							1: active
+							0: inactive
+| 3 | `pending_nest4` | ro | 0 | pending status at 4th nesting priority
+								1: active
+								0: inactive
+| 2 | `pending_nest3` | ro | 0 | pending status at 3rd nesting priority
+								1: active
+								0: inactive
+| 1 | `pending_nest2` | ro | 0 | pending status at 2nd nesting priority
+								1: active
+								0: inactive
+| 0 | `pending_nest1` | ro | 0 | pending status at 1st nesting priority
+								1: active
+								0: inactive
 |====
 
 NOTE: `in_nmi_lockup` bit is defacto readable only by debugger
