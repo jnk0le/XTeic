@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.37
+:appversion: 0.17.38
 :toc:
 :toclevels: 5
 :sectnums:
@@ -975,6 +975,8 @@ Entry/exit procedure is similar to regular IRQs with the following excepions:
 - stacks only range 0 registers
 - adjusts `sp` by range 0 area
 
+Before returning from NMI handler all requests in `teic_nmi_cause` CSR must be acknowledged (cleared).
+
 ===== NMI unrecoverable state
 
 unrecoverable NMI handler is entered whenever:
@@ -1188,34 +1190,40 @@ NOTE: only `nest2` and `nest4` are mandatory to implemrnt
 |====
 | bit | name | type | reset value | description
 | [31:10] | reserved | ro | 0 | reserved
-| 10 | `in_nmi_lockup` | ro | 0 | NMI lockup state active,
-								  can be cleared only by hart/system reset
-| 9 | `in_nmi_unrecoverable` | ro | 0 | unrecoverable NMI handler is active
-										can be cleared only by hart/system reset
-| 8 | `in_nmi` | ro | 0 | returnable NMI handler is active
-| 7 | `in_nest4` | ro | 0 | irq handler at 4th nesting priority
-							1: active
+| 10 | `in_nmi_lockup` | ro | 0 | NMI lockup state, can be cleared only by 
+								  hart/system reset +
+								  1: active +
+								  0: inactive
+| 9 | `in_nmi_unrecoverable` | ro | 0 | unrecoverable NMI handler state, can be
+										cleared only by hart/system reset +
+										1: active +
+										0: inactive
+| 8 | `in_nmi` | ro | 0 | returnable NMI handler state +
+						  1: active +
+						  0: inactive
+| 7 | `in_nest4` | ro | 0 | irq handler at 4th nesting priority state +
+							1: active +
 							0: inactive
-| 6 | `in_nest3` | ro | 0 | irq handler at 3rd nesting priority
-							1: active
+| 6 | `in_nest3` | ro | 0 | irq handler at 3rd nesting priority state +
+							1: active +
 							0: inactive
-| 5 | `in_nest2` | ro | 0 | irq handler at 2nd nesting priority
-							1: active
+| 5 | `in_nest2` | ro | 0 | irq handler at 2nd nesting priority state +
+							1: active +
 							0: inactive
-| 4 | `in_nest1` | ro | 0 | irq handler at 1st nesting priority
-							1: active
+| 4 | `in_nest1` | ro | 0 | irq handler at 1st nesting priority state +
+							1: active +
 							0: inactive
-| 3 | `pending_nest4` | ro | 0 | pending status at 4th nesting priority
-								1: active
+| 3 | `pending_nest4` | ro | 0 | pending status at 4th nesting priority +
+								1: active +
 								0: inactive
-| 2 | `pending_nest3` | ro | 0 | pending status at 3rd nesting priority
-								1: active
+| 2 | `pending_nest3` | ro | 0 | pending status at 3rd nesting priority +
+								1: active +
 								0: inactive
-| 1 | `pending_nest2` | ro | 0 | pending status at 2nd nesting priority
-								1: active
+| 1 | `pending_nest2` | ro | 0 | pending status at 2nd nesting priority +
+								1: active +
 								0: inactive
-| 0 | `pending_nest1` | ro | 0 | pending status at 1st nesting priority
-								1: active
+| 0 | `pending_nest1` | ro | 0 | pending status at 1st nesting priority +
+								1: active +
 								0: inactive
 |====
 
@@ -1263,8 +1271,12 @@ The `*_async` nmi requests have to be cleared within the source peripheral.
 | 3 | reserved | WARL | 0 |
 | 2 | `escalate_async_nmi` | WARL | 0 | (optional) if `*_async` nmi request is raised during
 										active nmi, it will be escalated to unrecoverable nmi
-										request (i.e. raises `escalated_async_unrec` nmi request)
-| 1 | `sleeponexit` | WARL | 0 | (optional)
+										request (i.e. raises `escalated_async_unrec` nmi request) +
+										1: enabled +
+										0: disabled
+| 1 | `sleeponexit` | WARL | 0 | (optional) +
+								1: enabled +
+								0: disabled
 | 0 | `zero_jitter` | WARL | 0 | (optional)
 Ensure that the highest nesting priority interrupt is always
 entered within the same number of cycles regardless of the
@@ -1274,7 +1286,9 @@ Doesn't affect tailchaining of handlers within the highest nesting priority,
 as well as irq return procedure. Deep sleep state is also an exception.
 
 It shall be assumed that highest level interrupt code and stack resides in zero
-waitstated memories and no HW measures will be implemented to adjust for a different scenario.
+waitstated memories and no HW measures will be implemented to adjust for a different scenario. +
+1: enabled +
+0: disabled
 |====
 
 === MMIO TEIC registers
@@ -1545,6 +1559,8 @@ what headers, definitions, names etc. shall be provided.
 The cause code can be implied from hardcoded vector table position.
 Therefore it's redundant. The other issue is that
 it has to be somehow preserved during nesting.
+
+NMIs are handled through `teic_nmi_cause` CSR.
 
 === no single bit interrupt enable
 
