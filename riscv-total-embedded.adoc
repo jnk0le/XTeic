@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.17.38
+:appversion: 0.18.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -875,6 +875,10 @@ NOTE: Zcmp similarly doesn't specify the required alignment.
 | 3 | "x16,x17,x28-x31" | XLEN * 6 | no | yes
 |====
 
+NOTE: implementations are free to not provide the configurability of stacking ranges
+and hardcode the stacking ranges. Range 0+1 gives similar amount of usable registers as 
+NVIC
+
 stack frame pseudocode::
 [source, asm]
 ```
@@ -908,13 +912,8 @@ sw x31, -72(sp)
 addi sp, sp, -72
 ```
 
-NOTE: unlike Zcmp registers are pushed starting from highest stack position due to configurable ranges
-
 ranges lower than configured can be excluded from stacking only when their registers are preserved in a different
 manner (e.g. shadow registers)
-
-// sp trim only global
-// HW internally track what is stacked at each nesting??
 
 ==== interrupt entry
 
@@ -924,8 +923,8 @@ the interrupt entry procedure is triggered.
 
 During the interrupt entry the hardware will:
 
-- stacks configured register ranges
-- decrement `sp` according to configured register range
+- stacks configured register ranges at given nesting level (`n123_stacking` or `n4_stacking`)
+- decrement `sp` according to configured register ranges in `n123_stacking`
 - put content of interrupted `pc` into `ra` register with lowest bit set
 - set `in_nestx` bit in `teic_irq_status` register
 - fetches target address from vector table pointed by `teic_irq_vect`.
@@ -953,8 +952,8 @@ If no interrupt is currently active then `irqretnest0_unrec` nmi request is set.
 
 During the interrupt exit the hardware will:
 
-- unstack configured register range
-- increment `sp` according to configured register range
+- unstack configured register ranges at given nesting level (`n123_stacking` or `n4_stacking`)
+- increment `sp` according to configured register ranges in `n123_stacking`
 - clear `in_nestx` bit in `teic_irq_status` register
 - jumps to the target address of `jalr` instruction
 
@@ -1189,7 +1188,15 @@ NOTE: only `nest2` and `nest4` are mandatory to implemrnt
 [cols="1,2,1,2,6",options=header]
 |====
 | bit | name | type | reset value | description
-| [31:10] | reserved | ro | 0 | reserved
+| [31:12] | reserved | ro | 0 | reserved
+| 11 | `n4_stacked` | ro | 0 | (optional) signals that currently stacked registers cover only ranges
+								configured for nest4 level. It is used only when ranges configured by 
+								`n123_stacking` differs from `n4_stacking`. +
+								If the interrupt handler is tailchained to lower nesting level then
+								the core must stack the remaining ranges. Similarly the core can 
+								enter nest4 with n123 ranges stacked as well. +
+								1: only nest4 ranges were stacked +
+								0: all ranges stacked as per `n123_stacking`
 | 10 | `in_nmi_lockup` | ro | 0 | NMI lockup state, can be cleared only by 
 								  hart/system reset +
 								  1: active +
@@ -1246,10 +1253,10 @@ NOTE: `in_nmi_lockup` bit is defacto readable only by debugger
 | 9 | `clock_async` | ro | 0 | (optional)
 | 8 | `watchdog_async` | ro | 0 | (optional)
 | 7 | `permission_async` | ro | 0 | (optional) asynchronous permission error not related to
-										the architectural control flow (e.g. DMA accessing protected area)
+									the architectural control flow (e.g. DMA accessing protected area)
 | 6 | `integrity_async` | ro | 0 | (optional) asynchronous integrity error not related to
-										the architectural control flow (e.g. unrecoverable ECC
-										error triggered by scrubber or speculative prefetch)
+									the architectural control flow (e.g. unrecoverable ECC
+									error triggered by scrubber or speculative prefetch)
 | 5 | reserved | rw1c | 0 | reserved
 | 4 | `permission_exc` | rw1c | 0 | (optional)
 | 3 | `integrity_exc` | rw1c | 0 | (optional)
@@ -1265,7 +1272,23 @@ The `*_async` nmi requests have to be cleared within the source peripheral.
 [cols="1,2,1,2,6",options=header]
 |====
 | bit | name | type | reset value | description
-| [31:6] | reserved | WLRL | 0 | reserved
+| [31:10] | reserved | WLRL | 0 | reserved
+| [9:8] | `n123_stacking` | WARL | 0 | (optional) stacking ranges and stack adjustment at 1st ,2nd and 
+							3rd nesting levels. +
+							Must not be changed within interrupt handler, otherwise 
+							behaviour is undefined. +
+							0b00: range 0, 1 +
+							0b01: range 0, 1, 2 +
+							0b10: reserved +
+							0b11: range 0, 1, 2, 3 +
+| [7:6] | `n4_stacking` | WARL | 0 | (optional) stacking ranges at 4th nesting level. +
+							Must be equal or lesser than in `n123_stacking`. +
+							Must not be changed within interrupt handler, otherwise 
+							behaviour is undefined. +
+							0b00: range 0 +
+							0b01: range 0, 1 +
+							0b10: reserved +
+							0b11: range 0, 1, 2
 | 5 | reserved | WARL | 0 |
 | 4 | reserved | WARL | 0 |
 | 3 | reserved | WARL | 0 |
@@ -1280,12 +1303,12 @@ The `*_async` nmi requests have to be cleared within the source peripheral.
 | 0 | `zero_jitter` | WARL | 0 | (optional)
 Ensure that the highest nesting priority interrupt is always
 entered within the same number of cycles regardless of the
-interrupted execution (or sleep) state.
+interrupted execution state.
 
 Doesn't affect tailchaining of handlers within the highest nesting priority,
-as well as irq return procedure. Deep sleep state is also an exception.
+as well as irq return procedure. Various deep sleep states are also an exception.
 
-It shall be assumed that highest level interrupt code and stack resides in zero
+It shall be assumed that irq vector table, highest level interrupt code and stack resides in zero
 waitstated memories and no HW measures will be implemented to adjust for a different scenario. +
 1: enabled +
 0: disabled
