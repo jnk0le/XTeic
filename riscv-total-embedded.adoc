@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.18.1
+:appversion: 0.19.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -797,7 +797,7 @@ software shall assume little endian
 													designated for interrupt handlers. aka "ITCM". Usually
 													it will be the main memoy address)
 | `TEIC_MMIO_CTRL_BASE` | 0xFFFE0000 | Base address of Xteic MMIO control block
-| `TEIC_IRQ_NESTING_BITS` | {1,2} | Number of implemented interrupt nesting priority bits
+| `TEIC_IRQ_NESTING_BITS` | {0,1,2} | Number of implemented interrupt nesting priority bits
 | `TEIC_IRQ_PRIORITY_BITS` | {1,2,3,4} | Number of implemented interrupt sub-priority bits
 | `TEIC_IRQ_VECT_ENTRIES` | {9..1023} | Number of allocated interrupt entries including skipped ones and NMIs
 | `TEIC_IRQ_VECT_ENTRY_SIZE` | {2,4} | Size in bytes of the single entry in vector table.
@@ -875,7 +875,7 @@ NOTE: Zcmp similarly doesn't specify the required alignment.
 | 3 | "x16,x17,x28-x31" | XLEN * 6 | no | yes
 |====
 
-NOTE: implementations are free to not provide the configurability of stacking ranges
+NOTE: Implementations are free to not provide the configurability of stacking ranges
 and hardcode the stacking ranges. Range 0+1 gives similar amount of usable registers as 
 NVIC
 
@@ -1173,7 +1173,7 @@ to not push previous state onto stack, that would increase interrupt latency.
 | 2 | `nest3` | WARL | 0 | Third nesting level +
 						1: disabled +
 						0: enabled
-| 1 | `nest2` | rw | 0 | Second nesting level +
+| 1 | `nest2` | WARL | 0 | Second nesting level +
 						1: disabled +
 						0: enabled
 | 0 | `nest1` | WARL | 0 | First nesting level +
@@ -1181,7 +1181,7 @@ to not push previous state onto stack, that would increase interrupt latency.
 						0: enabled
 |====
 
-NOTE: only `nest2` and `nest4` are mandatory to implemrnt
+NOTE: only `nest4` level is mandatory to implemrnt
 
 ==== `teic_irq_status`
 
@@ -1397,7 +1397,7 @@ priority encoding::
 | [(8 - (`TEIC_IRQ_NESTING_BITS` + `TEIC_IRQ_PRIORITY_BITS`)):0] | reserved | rw | 0 | reserved
 |====
 
-Unimplemented nesting bits are treated as if they were hardwired to 1.
+Unimplemented bottom nesting bits are treated as if they were hardwired to 1.
 If only 1 bit is implemented then only `nest2` and `nest4` levels are possible.
 
 === additional optional subextensions
