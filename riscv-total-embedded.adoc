@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.18.0
+:appversion: 0.18.1
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1188,10 +1188,11 @@ NOTE: only `nest2` and `nest4` are mandatory to implemrnt
 [cols="1,2,1,2,6",options=header]
 |====
 | bit | name | type | reset value | description
-| [31:12] | reserved | ro | 0 | reserved
+| [31:12] | reserved | WPRI | 0 | reserved
 | 11 | `n4_stacked` | ro | 0 | (optional) signals that currently stacked registers cover only ranges
-								configured for nest4 level. It is used only when ranges configured by 
-								`n123_stacking` differs from `n4_stacking`. +
+								configured for nest4 level. +
+								It is used only when ranges configured by `n123_stacking` differs
+								from `n4_stacking`. +
 								If the interrupt handler is tailchained to lower nesting level then
 								the core must stack the remaining ranges. Similarly the core can 
 								enter nest4 with n123 ranges stacked as well. +
