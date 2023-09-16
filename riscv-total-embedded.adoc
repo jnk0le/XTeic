@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.20.0
+:appversion: 0.20.1
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1567,11 +1567,11 @@ additional csr register
 |====
 
 [appendix]
-== context switch on tiny profile
+== context switch
 
 
 [appendix]
-== atomic block on tiny profile
+== atomic block
 
 no single bit interrupt enable
 use csrrs/c on a mask then restore
@@ -1588,7 +1588,7 @@ what headers, definitions, names etc. must be provided.
 // ?.svd // for peripheral views in debug
 
 [appendix]
-== design decisions in tiny profile
+== design decisions
 
 === no cause code
 
