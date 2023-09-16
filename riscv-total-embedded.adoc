@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.19.0
+:appversion: 0.20.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1105,6 +1105,7 @@ is not changed until interrupt arrives.
 | 0xbc3 | `teic_irq_status` | MRO? | current interrupt status
 | 0xbc4 | `teic_nmi_cause` | MRW | coarse mask of NMI causes
 | 0xbc5 | `teic_cfg` | MRW | config register
+| 0xbc6 | `teic_spmlimit` | MRW | added with <<XteicStackLimit>>
 |====
 
 
@@ -1113,7 +1114,8 @@ is not changed until interrupt arrives.
 [cols="1,2,1,2,6",options=header]
 |====
 | bit | name | type | reset value | description
-| [31:5] | `vect_offset` | WLRL | `TEIC_ENTRY_VECT_BASE>>5` | must be aligned to 64 bytes or rounded up
+| [31:5] | `vect_offset` | WLRL | `TEIC_ENTRY_VECT_BASE>>5` | top bits of vector table offset. +
+											Must be aligned to 64 bytes or rounded up
 											to next power of 2, of the number of entries multiplied by
 											the entry size, whichever is greater
 | [4:0] | reserved | WLRL | 0 | reserved
@@ -1543,16 +1545,26 @@ no longer be used. `c.unimp` remains available which is encoded as all zero.
 NOTE: Extension designated for reduction of silicon use, reflects behaviour of
 certain privileged csr registers (e.g. `misa`, `mvendorid` etc.) when unimplemented
 
-=== Xmstacklimit
+=== XteicStackLimit
 
 //u stack lim?
 
-throws exception
-when `sp` (x1) register is written with value samller than
+Throws (???) exception precisely(?), when `sp` (`x1`) register is written with value lower than
+the one specified in `teic_spmlimit` register.
 
 NOTE: local arrays can be created on stack and then accessed by pointer passed in working register.
 Therefore stacklimit comparison must happen on write to `sp` register
 
+==== `teic_spmlimit`
+
+additional csr register
+
+[cols="1,2,1,2,6",options=header]
+|====
+| bit | name | type | reset value | description
+| [31:3] | `spm_limit` | WLRL | 0 | top bits of bottom stack threshold
+| [2:0] | reserved | WLRL | 0 | reserved
+|====
 
 [appendix]
 == context switch on tiny profile
@@ -1567,7 +1579,7 @@ use csrrs/c on a mask then restore
 [appendix]
 == vendor software support packages
 
-what headers, definitions, names etc. shall be provided.
+what headers, definitions, names etc. must be provided.
 
 // xteic.h
 // xteic_device.h // it often happens that a lot of peripherals are recycled in many chip families
