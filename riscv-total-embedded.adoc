@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.20.1
+:appversion: 0.20.2
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1682,9 +1682,9 @@ This is also more than enough for any microcontroller.
 
 === no per irq pending/enable in base extension
 
-It is simply redundant to the peripherals as well as the core interrupt enables.
+It is simply redundant to the peripherals as well as the `nestx` interrupt enables.
 
-Has use case only when the same interrupts are routed to multiple cores.
+Has use case only when the same interrupts are routed to multiple harts.
 
 === no nmi/exception nesting
 
@@ -1711,13 +1711,13 @@ obvious wether you can use unimplemented vectors at all. <<customsoftirqcm3>>
 
 NOTE: Even the PendSV is done by setting `ICSR->PENDSVET` bit instead of executing this mechanism.
 
-NOTE: TEIC provides dedicated "peripheral" for handling software (deffered) interrupts
+NOTE: TEIC instead provides dedicated "peripheral" for handling software (deffered) interrupts
 
 All of this causes a lot of redundancy to allow handling peripheral interrupts and "software"
-triggered ones by the same handler. The ARM implementation also depends on level triggered
-irq mechanism, which is also ommited by xteic.
+triggered ones by the same handler. The ARM implementation also depends on edge triggered
+irq mechanism, which is also ommitted by xteic.
 
-// move nvic descr to prior section ???
+// move nvic descr to nvic section ???
 
 === no stack realignment upon interrupt entry/exit
 
@@ -1770,7 +1770,7 @@ This also allows us to use vector address with zeroed two lowest bits.
 Which, in some scenarios, allows setup of vector table address with a single `lui` instruction
 
 In cores designated to work in vectored mode, the `mtvec` has the bottom address lines hardwired to 0.
-Which leads to large alignment granularity of the unvectored handler (in ch32v003 it's 1KiB).
+Which leads to large alignment granularity of the unvectored handler (e.g. in ch32v003 it's 1KiB).
 Making the unvectored mode handler share entry with startup code or require large alignment.
 
 === no sub-priority reflected in any status registers
