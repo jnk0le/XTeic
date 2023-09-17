@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.20.2
+:appversion: 0.21.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1009,16 +1009,17 @@ more harm than halting until watchdog performs system reset.
 
 NOTE: lack of tripple fault lockout can also lead to security vulnerabilities <<nvidiamtveccve>>
 
+NOTE: microarchitectures can provide external output for signaling NMI lockup state as 
+to allow immediate shutdown of certain peripherals (pwm timers etc.)
+
 ==== vector table allocation
 
 [cols="3,2,7,12",options=header]
 |============================================================================================
 | irq num | type | name | notes
 | 0 | - | reserved | reserved for startup code (typically jump instruction)
-| 1 | NMI | PermissionViolation_NMI | (optional) unallowed access to protected area or attempt to
-										execute instructions from (execute) protected area
-| 2 | NMI | IntegrityViolation_NMI | (optional) ECC, parity, lockstep or other integrity
-									  error on core, memory or buses.
+| 1 | NMI | | reserved
+| 2 | NMI | IntegrityViolation_NMI | (optional) software and hardware integrity violations
 | 3 | NMI | ClockViolation_NMI | (optional) Lost clock or other anomaly. It shall be assumed
 								 that the core/system clock has been switched to a different one
 								 at this point.
@@ -1032,9 +1033,9 @@ NOTE: lack of tripple fault lockout can also lead to security vulnerabilities <<
 | 7 | NMI | Unrecoverable_NMI | Nested nmi, unknown or a state that cannot be easily
 								recovered to.
 | 8 | IRQ | Deffered0_IRQ | software deffered interrupt, can be used for context switch.
-| 9 | IRQ | Deffered1_IRQ | (optional) instead of ecall??? when u mode implemented
+| 9 | IRQ | Deffered1_IRQ | (optional) instead of ecall??? when u mode implemented ??
 | 10 | IRQ | | reserved/systick???
-| 11..1022 | IRQ | *_IRQ | (optional) device specific interrupts 
+| 11..1022 | IRQ | *_IRQ | (optional) device specific interrupts
 |============================================================================================
 
 Unimplemented optional NMIs can be recycled for custom NMIs other than the ones provided in table above.
@@ -1200,7 +1201,7 @@ NOTE: only `nest4` level is mandatory to implemrnt
 								enter nest4 with n123 ranges stacked as well. +
 								1: only nest4 ranges were stacked +
 								0: all ranges stacked as per `n123_stacking`
-| 10 | `in_nmi_lockup` | ro | 0 | NMI lockup state, can be cleared only by 
+| 10 | `nmi_lockup` | ro | 0 | NMI lockup state, can be cleared only by 
 								  hart/system reset +
 								  1: active +
 								  0: inactive
@@ -1237,7 +1238,7 @@ NOTE: only `nest4` level is mandatory to implemrnt
 								0: inactive
 |====
 
-NOTE: `in_nmi_lockup` bit is defacto readable only by debugger
+NOTE: `nmi_lockup` bit is defacto readable only by debugger
 
 ==== `teic_nmi_cause`
 
@@ -1249,20 +1250,23 @@ NOTE: `in_nmi_lockup` bit is defacto readable only by debugger
 | 29 | `irqentryexit_unrec` | ro | 0 | fault during irq entry/exit (stack alignment,
 										memory faults etc.)
 | 28 | `bus_fault_imprecise_unrec` | ro | 0 | (optional) imprecise bus faults
-| 27 | `integrity_imprecise_unrec` | ro | 0 | (optional) imprecise integrity error
+| 27 | `hw_integrity_imprecise_unrec` | ro | 0 | (optional) imprecise integrity error
 | 26 | `nested_exc_unrec` | ro | 0 | synchronous exception raised during execution of nmi handler
 | 26 | `escalated_async_unrec` | ro | 0 | (optional) escalated `*_async` requests
 | [24:10] | reserved | rw1c | 0 | reserved
 | 9 | `clock_async` | ro | 0 | (optional)
 | 8 | `watchdog_async` | ro | 0 | (optional)
-| 7 | `permission_async` | ro | 0 | (optional) asynchronous permission error not related to
-									the architectural control flow (e.g. DMA accessing protected area)
-| 6 | `integrity_async` | ro | 0 | (optional) asynchronous integrity error not related to
+| 7 | `reserved | ro | 0 | reserved
+| 6 | `hw_integrity_async` | ro | 0 | (optional) asynchronous integrity error not related to
 									the architectural control flow (e.g. unrecoverable ECC
 									error triggered by scrubber or speculative prefetch)
 | 5 | reserved | rw1c | 0 | reserved
-| 4 | `permission_exc` | rw1c | 0 | (optional)
-| 3 | `integrity_exc` | rw1c | 0 | (optional)
+| 4 | `sw_integrity_exc` | rw1c | 0 | (optional) software related integrity exceptions +
+										e.g. pmp, stacklimit or other control flow violations caused
+										by the software.
+| 3 | `hw_integrity_exc` | rw1c | 0 | (optional) hardware related integrity exceptions +
+										e.g. ECC, parity, lockstep or other integrity 
+										error on core, memory or buses.
 | 2 | `misaligned_address_exc` | rw1c | 0 | (optional) misaligned load/store address
 | 1 | `bus_fault_exc` | rw1c | 0 |
 | 0 | `illegal_instruction_exc` | rw1c | 0 | Illegal instruction exception and misaligned instr
@@ -1549,8 +1553,10 @@ certain privileged csr registers (e.g. `misa`, `mvendorid` etc.) when unimplemen
 
 //u stack lim?
 
-Throws (???) exception precisely(?), when `sp` (`x1`) register is written with value lower than
+Throws `sw_integrity_exc` exception precisely, when `sp` (`x1`) register is written with value lower than
 the one specified in `teic_spmlimit` register.
+
+// sp not guaranted to not be overflown ??
 
 NOTE: local arrays can be created on stack and then accessed by pointer passed in working register.
 Therefore stacklimit comparison must happen on write to `sp` register
