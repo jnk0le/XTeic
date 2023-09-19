@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.21.0
+:appversion: 0.21.1
 :toc:
 :toclevels: 5
 :sectnums:
@@ -563,7 +563,7 @@ Low pin count devices (8-32) need a denser debug interface as the JTAG uses too 
 
 There are industry proven 2 wire interfaces like cJTAG or ARM SWD. +
 It would be best to have 1 wire solution like avr8 debugWIRE/updi
-or the WCH "SDI" aka "SWD" <<qingkev2debug>>
+or the WCH "SDI" (aka "SWD") <<qingkev2debug>>
 
 === tooling issues to solve
 
