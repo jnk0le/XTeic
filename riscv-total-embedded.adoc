@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.21.1
+:appversion: 0.21.2
 :toc:
 :toclevels: 5
 :sectnums:
@@ -476,7 +476,7 @@ all code adheres to the standard ABI
 ====
 
 Major ilp32e issue is that the `addi16sp` instruction works on 16 byte stack increment.
-Once the `c.addi` range (-32..+31) is exausted compilers have to chose beetwen
+Once the `c.addi` range (-32..+31) is exhausted compilers have to chose beetwen
 denser code and more efficient use of stack.
 
 Zcmp extension was also designed for 16 byte aligned stack. There is Zcmpe extension 
