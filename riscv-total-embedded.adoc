@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.21.3
+:appversion: 0.21.4
 :toc:
 :toclevels: 5
 :sectnums:
@@ -224,8 +224,6 @@ further increase the worst case jitter and latencies.
 
 In this case interrupts must always push all caller saved registers to be able to use functions without
 `\\__attribute__\((interrupt*))` annotation. Leading to <<ABIs with less caller saved registers>>
-
-NOTE: those are usually wrapped with `extern "C"` anyway
 
 It also requires preinitialized table with pointer to startup code, `sp`, `gp`, and of course
 any other addition like Zcmt `JVT` csr.
