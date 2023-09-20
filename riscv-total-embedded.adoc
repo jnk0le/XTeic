@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.21.2
+:appversion: 0.21.3
 :toc:
 :toclevels: 5
 :sectnums:
@@ -419,7 +419,7 @@ Of course there are still actual reasons <<emblinux>> to use linux in embedded.
 
 ===== RTLinux and hard-realtime
 
-Whenever those rt patches are measured, both the interrupt latency and 
+Whenever those rt patches are measured, both the interrupt latency and
 jitter is always given in tens or hundreds of microseconds, not cycles
 <<linuxrt1>>,<<linuxrt2>>,<<linuxrt3>>,<<linuxrt4>>.
 
@@ -434,6 +434,8 @@ touch floating point registers.
 
 The main issue is that all of the caller saved FP registers are saved (execution stalls during push)
 onto stack whenever FP instruction is executed even though only a few of the registers are used.
+
+Requires additional CSR to hold address of reserved space in stack frame.
 
 ==== 64bit microcontrollers
 
