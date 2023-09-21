@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.21.4
+:appversion: 0.21.5
 :toc:
 :toclevels: 5
 :sectnums:
@@ -337,8 +337,8 @@ to trigger handler return operation. One less register counted towards interrupt
 
 NOTE: normally the `jalr` instruction just ignores the LSB bit of resulting address.
 LSB in register and immediate will lead to "bogus" jump over 2 extra bytes.
-Even though this behaviour simplifies hardware, it was oversighted in ABI design
-by allowing "auxiliary information" in pointers as well as `jalr`
+Even though this behaviour simplifies hardware, existing ABIs are
+allowing "auxiliary information" in pointers as well as `jalr`
 immediate, effectively making both useless.
 
 ==== vector tables that are jumped to
