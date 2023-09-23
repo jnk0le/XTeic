@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.21.6
+:appversion: 0.22.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1247,13 +1247,14 @@ NOTE: `nmi_lockup` bit is defacto readable only by debugger
 | bit | name | type | reset value | description
 | 31 | reserved | ro | 0 |
 | 30 | `irqretnest0_unrec` | ro | 0 | irq return without active irq/nmi
-| 29 | `irqentryexit_unrec` | ro | 0 | fault during irq entry/exit (stack alignment,
+| 29 | `irqentryexit_unrec` | ro | 0 | any fault during irq entry/exit (stack alignment,
 										memory faults etc.)
 | 28 | `bus_fault_imprecise_unrec` | ro | 0 | (optional) imprecise bus faults
-| 27 | `hw_integrity_imprecise_unrec` | ro | 0 | (optional) imprecise integrity error
-| 26 | `nested_exc_unrec` | ro | 0 | synchronous exception raised during execution of nmi handler
-| 25 | `escalated_async_unrec` | ro | 0 | (optional) escalated `*_async` requests
-| [24:10] | reserved | rw1c | 0 | reserved
+| 27 | `hw_integrity_imprecise_unrec` | ro | 0 | (optional) imprecise hw integrity error
+| 26 | `sw_integrity_imprecise_unrec` | ro | 0 | (optional) imprecise sw integrity error
+| 25 | `nested_exc_unrec` | ro | 0 | synchronous exception raised during execution of nmi handler
+| 24 | `escalated_async_unrec` | ro | 0 | (optional) escalated `*_async` requests
+| [23:10] | reserved | rw1c | 0 | reserved
 | 9 | `clock_async` | ro | 0 | (optional)
 | 8 | `watchdog_async` | ro | 0 | (optional)
 | 7 | `reserved | ro | 0 | reserved
@@ -1262,13 +1263,13 @@ NOTE: `nmi_lockup` bit is defacto readable only by debugger
 									error triggered by scrubber or speculative prefetch)
 | 5 | reserved | rw1c | 0 | reserved
 | 4 | `sw_integrity_exc` | rw1c | 0 | (optional) software related integrity exceptions +
-										e.g. pmp, stacklimit or other control flow violations caused
-										by the software.
+										e.g. pmp, stacklimit or other control flow violations related
+										to the the software.
 | 3 | `hw_integrity_exc` | rw1c | 0 | (optional) hardware related integrity exceptions +
 										e.g. ECC, parity, lockstep or other integrity 
 										error on core, memory or buses.
 | 2 | `misaligned_address_exc` | rw1c | 0 | (optional) misaligned load/store address
-| 1 | `bus_fault_exc` | rw1c | 0 |
+| 1 | `bus_fault_exc` | rw1c | 0 | memory access faults
 | 0 | `illegal_instruction_exc` | rw1c | 0 | Illegal instruction exception and misaligned instr
 |====
 
