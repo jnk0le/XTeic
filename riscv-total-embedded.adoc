@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.21.5
+:appversion: 0.21.6
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1252,7 +1252,7 @@ NOTE: `nmi_lockup` bit is defacto readable only by debugger
 | 28 | `bus_fault_imprecise_unrec` | ro | 0 | (optional) imprecise bus faults
 | 27 | `hw_integrity_imprecise_unrec` | ro | 0 | (optional) imprecise integrity error
 | 26 | `nested_exc_unrec` | ro | 0 | synchronous exception raised during execution of nmi handler
-| 26 | `escalated_async_unrec` | ro | 0 | (optional) escalated `*_async` requests
+| 25 | `escalated_async_unrec` | ro | 0 | (optional) escalated `*_async` requests
 | [24:10] | reserved | rw1c | 0 | reserved
 | 9 | `clock_async` | ro | 0 | (optional)
 | 8 | `watchdog_async` | ro | 0 | (optional)
