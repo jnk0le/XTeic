@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.22.1
+:appversion: 0.22.2
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1090,7 +1090,7 @@ Encoding (RV32, RV64)::
 
 Description::
 Execution of the `wfi` instruction stalls the execution and allows
-the core to enter various low power states. Until the interrupt is taken or
+the core to enter various low power states until the interrupt is taken or
 any nesting level becomes pending +
 It is allowed to terminte spontaneously or even be implemented as a nop.
 +
@@ -1234,16 +1234,16 @@ NOTE: only `nest4` level is mandatory to implemrnt
 | 4 | `in_nest1` | ro | 0 | irq handler at 1st nesting priority state +
 							1: active +
 							0: inactive
-| 3 | `pending_nest4` | ro | 0 | pending status at 4th nesting priority +
+| 3 | `pending_nest4` | ro | 0 | pending status of 4th nesting priority +
 								1: active +
 								0: inactive
-| 2 | `pending_nest3` | ro | 0 | pending status at 3rd nesting priority +
+| 2 | `pending_nest3` | ro | 0 | pending status of 3rd nesting priority +
 								1: active +
 								0: inactive
-| 1 | `pending_nest2` | ro | 0 | pending status at 2nd nesting priority +
+| 1 | `pending_nest2` | ro | 0 | pending status of 2nd nesting priority +
 								1: active +
 								0: inactive
-| 0 | `pending_nest1` | ro | 0 | pending status at 1st nesting priority +
+| 0 | `pending_nest1` | ro | 0 | pending status of 1st nesting priority +
 								1: active +
 								0: inactive
 |====
