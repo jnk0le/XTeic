@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.22.2
+:appversion: 0.22.3
 :toc:
 :toclevels: 5
 :sectnums:
@@ -590,13 +590,13 @@ as a defacto calller saved one (aka create custom calling convention)
 - no whitespaces in string parameter
 - register range cover all registers between and including specified (`x4-x6` is equivalent to `x4,x5,x6`)
 - registers/ranges are separated by comma
+- calee saved registers have to be properly turned into temporary when included in the list
 - CSRs taking part in calling conventions are also subject to this mechanism
 - must use raw names instead of ABI mnemonics as to make it ABI agnostic (more portable)
 - registers must be be sorted (integer, floating point, vector, custom, then by lowest numbered)
 - CSRs must be put after the architectural regfiles, those don't have to be sorted
 - must not collide with `\\__attribute__\((interrupt))` as to support "legacy" handler return mechanisms
-- for interop with <<IPRA - Inter procedural register allocation, IPRA>>, custom CSRs
-also have to be somehow covered.
+- custom CSRs would also have to be somehow covered. (hw loops etc.)
 
 psABI caller saved:
 
