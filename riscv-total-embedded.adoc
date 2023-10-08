@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.22.0
+:appversion: 0.22.1
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1031,7 +1031,7 @@ to allow immediate shutdown of certain peripherals (pwm timers etc.)
 | 5 | NMI | MemoryViolation_NMI | Bus or memory access fault
 | 6 | NMI | InstructionViolation_NMI | Illegal instruction exception
 | 7 | NMI | Unrecoverable_NMI | Nested nmi, unknown or a state that cannot be easily
-								recovered to.
+								recovered from.
 | 8 | IRQ | Deffered0_IRQ | software deffered interrupt, can be used for context switch.
 | 9 | IRQ | Deffered1_IRQ | (optional) instead of ecall??? when u mode implemented ??
 | 10 | IRQ | | reserved/systick???
@@ -1067,9 +1067,9 @@ according to "privileged" specification.
 // debug?
 // counters/hpmcounters?
 
-=== recycled volume II instructions
+=== added instructions
 
-==== wfi
+==== wfi (Wait for interrupt)
 
 Mnemonic::
 ```
@@ -1080,7 +1080,7 @@ Encoding (RV32, RV64)::
 [wavedrom, , svg]
 ....
 {reg:[
- { bits: 7, name: 0x73, attr: ['MISC-MEM'] },
+ { bits: 7, name: 0x73, attr: ['SYSTEM'] },
  { bits: 5, name: 0x0, attr: ['rd'] },
  { bits: 3, name: 0x0, attr: ['PRIV'] },
  { bits: 5, name: 0x0, attr: ['rs1'] },
@@ -1088,12 +1088,22 @@ Encoding (RV32, RV64)::
 ]}
 ....
 
-
-NOTE: In addition, the `wfi` instruction is allowed to optionally stack certain
+Description::
+Execution of the `wfi` instruction stalls the execution and allows
+the core to enter various low power states. Until the interrupt is taken or
+any nesting level becomes pending +
+It is allowed to terminte spontaneously or even be implemented as a nop.
++
+In addition, the `wfi` instruction is allowed to optionally stack out certain
 registers ahead of the interrupts, to reduce their latency. In this case, `sp`
 is not changed until interrupt arrives.
 
-// wfi with a nesting prio mask??
+NOTE: `wfi` can be executed when interrupts are disabled. Which is a very common
+use case that avoids introduction of non deterministic delays to event respose time.
+(irq arriving right before `wfi`)
+
+NOTE: It is basically the same thing as priviliged `wfi` but without the
+configuration bits in privileged CSR's
 
 === TEIC CSR map
 
@@ -1678,6 +1688,8 @@ expected to run rtos less
 Unlike the big unix machines, the RTOS context can be statically
 addressed by `lui` + `addi` sequence.
 
+// thread/main stack swaps differently???
+
 === 1023 vector entries
 
 One entry less than full 1024 due to 2s complement jump immediate.
@@ -1786,7 +1798,7 @@ Sub-priority is used only during irq handler dispatch.
 Current priority field would consume additional circuitry to latch in sub-priority
 of the current handler.
 
-Additionaly the current sub-priority field would have to be somehow preserved duing nesting.
+Additionaly the current sub-priority field would have to be somehow preserved during nesting.
 
 [bibliography]
 == Bibliography
