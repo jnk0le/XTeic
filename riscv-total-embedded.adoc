@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.22.5
+:appversion: 0.22.6
 :toc:
 :toclevels: 5
 :sectnums:
@@ -596,6 +596,7 @@ as a defacto calller saved one (aka create custom calling convention)
 - registers must be be sorted (integer, floating point, vector, custom, then by lowest numbered)
 - CSRs must be put after the architectural regfiles, those don't have to be sorted
 - must not collide with `\\__attribute__\((interrupt))` as to support "legacy" handler return mechanisms
+- must not imply `\\__attribute__\((interrupt)) as well
 - custom CSRs would also have to be somehow covered. (hw loops etc.)
 
 psABI caller saved:
