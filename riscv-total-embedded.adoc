@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.22.3
+:appversion: 0.22.4
 :toc:
 :toclevels: 5
 :sectnums:
@@ -602,13 +602,16 @@ psABI caller saved:
 
 `\\__attribute__\((prestacked("x5-x7,x10-x17,x28-x31")))`
 
-Simplified range (e.g. shadow register file):
-
-`\\__attribute__\((prestacked("x8-x15")))`
-
 psABI with floating point, caller saved:
 
 `\\__attribute__\((prestacked("x5-x7,x10-x17,x28-x31,f0-f7,f10-f17,f28-f31,fcsr")))`
+
+Simplified ranges (e.g. shadow register file):
+
+`\\__attribute__\((prestacked("x8-x15")))`
+
+TEIC range0 + shadow regs of half regfile (where bit 2 is set, covers range1+2)
+`\\__attribute__\((prestacked("x4-x7,x10,x11,x12-x15,x20-x23,x28-x31")))`
 
 ch32v003 irq (ilp32e + PFIC HW stacker, assuming `ra` doesn't have some undocumented use)
 
