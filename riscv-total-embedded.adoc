@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.22.9
+:appversion: 0.22.10
 :toc:
 :toclevels: 5
 :sectnums:
@@ -643,7 +643,7 @@ regular `noreturn` attribute is even less.
 NOTE: `\\__attribute__\((naked))` won't work, as it will remove the stack allocation
 and consequently underflow the stack.
 
-===== functions with custom ABI
+===== functions with partially custom calling conventions
 
 
 ==== IPRA - Inter procedural register allocation
