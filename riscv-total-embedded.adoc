@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.22.6
+:appversion: 0.22.8
 :toc:
 :toclevels: 5
 :sectnums:
@@ -574,8 +574,8 @@ can be freely used without stacking them.
 
 - `\\__attribute__\((interrupt))` makes all registers callee saved and uses mret to return.
 - `\\__attribute__\((interrupt("SiFive-CLIC-preemptible")))` extends regular interrupt by CLIC preemption
-- `\\__attribute__\((interrupt("WCH-Interrupt-fast")))` requires custom build toolchain and is bound
-to selected ABI by `-mabi=` command line parameter, still uses mret
+- `\\__attribute__\((interrupt("WCH-Interrupt-fast")))` requires custom build toolchain,
+no floating point regs (even on the cores with F extension), still uses mret
 - Or just a plain C function that requires prestacking of all caller saved registers, reuses standard
 return mechanism to exit interrupt context
 
@@ -592,8 +592,8 @@ as a defacto calller saved one (aka create custom calling convention)
 - registers/ranges are separated by comma
 - calee saved registers have to be properly turned into temporary when included in the list
 - CSRs taking part in calling conventions are also subject to this mechanism
-- must use raw names instead of ABI mnemonics as to make it ABI agnostic (more portable)
-- registers must be be sorted (integer, floating point, vector, custom, then by lowest numbered)
+- should use raw names instead of ABI mnemonics as to make it ABI agnostic (more portable)
+- registers must be sorted (integer, floating point, vector, custom, then by lowest numbered)
 - CSRs must be put after the architectural regfiles, those don't have to be sorted
 - must not collide with `\\__attribute__\((interrupt))` as to support "legacy" handler return mechanisms
 - must not imply `\\__attribute__\((interrupt)) as well
@@ -611,7 +611,7 @@ Simplified ranges (e.g. shadow register file):
 
 `\\__attribute__\((prestacked("x8-x15")))`
 
-TEIC range0 + shadow regs of half regfile (where bit 2 is set, covers range1+2):
+TEIC irq, range0 + shadow regs of half regfile (where bit 2 is set, covers range1+2):
 
 `\\__attribute__\((prestacked("x4-x7,x10,x11,x12-x15,x20-x23,x28-x31")))`
 
