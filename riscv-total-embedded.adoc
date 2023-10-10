@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.22.8
+:appversion: 0.22.9
 :toc:
 :toclevels: 5
 :sectnums:
@@ -761,16 +761,6 @@ The other option is to use inline asm clobbers to make call to such funcions
 - requires the `call` pseudoinstruction that expands to a proper sequence.
 Otherwise we get errors when calling too far or missing optimization when short call can be made.
 - works in existing compilers (at least in gcc and llvm)
-
-==== automatic selection of regpush on isr entry config
-
-//per nestig level
-//per vector
-
-manually selecting prestacking might be inefficient
-
-saving too little or too many
-
 
 // == programmers model
 
