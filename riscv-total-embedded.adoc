@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.22.10
+:appversion: 0.22.11
 :toc:
 :toclevels: 5
 :sectnums:
@@ -645,6 +645,10 @@ and consequently underflow the stack.
 
 ===== functions with partially custom calling conventions
 
+can be
+for IPRA
+
+
 
 ==== IPRA - Inter procedural register allocation
 
@@ -939,7 +943,7 @@ highest irq number.
 
 ==== interrupt exit
 
-when `jalr` instruction is executed and the lowest bit in the source register is
+When `jalr` or `cm.popret` instruction is executed and the lowest bit in the source register is
 set, the interrupt exit procedure is triggered. +
 If no interrupt is currently active then `irqretnest0_unrec` nmi request is set.
 
@@ -950,10 +954,13 @@ During the interrupt exit the hardware will:
 - unstack configured register ranges at given nesting level (`n123_stacking` or `n4_stacking`)
 - increment `sp` according to configured register ranges in `n123_stacking`
 - clear `in_nestx` bit in `teic_irq_status` register
-- jumps to the target address of `jalr` instruction
+- jumps to the target address of `jalr` or `cm.popret` instruction
 
 NOTE: The bogus `jalr` target address issue remains as per unprivileged spec.
 Therefore conforming software shall not set the lsb in `jalr` immediate used for function returns
+
+NOTE: only the lsb in source register is checked, not the computed target
+address of `jalr` instruction. It allows detection of irq ret condition earlier in the pipeline.
 
 NOTE: optimized microarchitectures will implement late arrival, tail chaining and
 pop preemption which further complicate entry/exit procedures
