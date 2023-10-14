@@ -608,7 +608,7 @@ psABI with floating point, caller saved::
 Simplified ranges (e.g. shadow register file)::
 `\\__attribute__\((prestacked("x8-x15")))`
 
-TEIC irq, range0 + shadow regs of half integer regfile (where bit 2 of operand is set, covers range1+2)
+TEIC irq, range0 + shadow regs of half integer regfile (where bit 2 of operand is set, covers range1+2) +
 and F + P extensions::
 `\\__attribute__\((prestacked("x4-x7,x10,x11,x12-x15,x20-x23,x28-x31,fcsr,vxsat")))`
 
