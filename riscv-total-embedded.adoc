@@ -599,25 +599,20 @@ as a defacto calller saved one (aka create custom calling convention)
 - must not imply `\\__attribute__\((interrupt)) as well
 - custom CSRs would also have to be somehow covered. (hw loops etc.)
 
-psABI caller saved:
-
+psABI caller saved::
 `\\__attribute__\((prestacked("x5-x7,x10-x17,x28-x31")))`
 
-psABI with floating point, caller saved:
-
+psABI with floating point, caller saved::
 `\\__attribute__\((prestacked("x5-x7,x10-x17,x28-x31,f0-f7,f10-f17,f28-f31,fcsr")))`
 
-Simplified ranges (e.g. shadow register file):
-
+Simplified ranges (e.g. shadow register file)::
 `\\__attribute__\((prestacked("x8-x15")))`
 
 TEIC irq, range0 + shadow regs of half integer regfile (where bit 2 of operand is set, covers range1+2)
-and F + P extensions:
-
+and F + P extensions::
 `\\__attribute__\((prestacked("x4-x7,x10,x11,x12-x15,x20-x23,x28-x31,fcsr,vxsat")))`
 
-ch32v003 irq (ilp32e + PFIC HW stacker, assuming `ra` doesn't have some undocumented use)
-
+ch32v003 irq (ilp32e + PFIC HW stacker, assuming `ra` doesn't have some undocumented use)::
 `\\__attribute__\((interrupt, prestacked("x1,x5-x7,x10-x15")))`
 
 NOTE: unannotated `ra` is assumed as a valid return address, otherwise a special return mechanism must be
