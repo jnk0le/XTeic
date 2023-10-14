@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.22.12
+:appversion: 0.22.13
 :toc:
 :toclevels: 5
 :sectnums:
@@ -654,7 +654,7 @@ It can be additionally abused to:
 - dynamic linked functions with a subset of clobbers. 
 e.g. functions like `memcpy()`,`strcmp()` etc.  don't need to clobber all caller saved registers 
 so only common clobbers for straightforward, unrolled (?) and vectorized implementations need to be 
-applied. Requires standardization of cannoical clobbers. (quite unrealistic)
+applied. Requires standardization of cannoical clobbers for each offending function. (quite unrealistic)
 
 ==== IPRA - Inter procedural register allocation
 
