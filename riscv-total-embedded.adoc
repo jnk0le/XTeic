@@ -740,12 +740,9 @@ allocators/optimizers are not going to straight out ignore <<prestacked annotati
 
 ===== applying IPRA to assembly functions
 
-First option as proposed by original author of llvm IPRA iplementation, was the
-special attribute to annotate function declaration in header associated with assembly code
-
-e.g. `\\__attribute__\((regmask("clobbered list here")))`
-
-- It Wasn't implemented upstream.
+Special attribute to annotate function declaration in header associated with assembly code
+(e.g. `\\__attribute__\((regmask("clobbered list here")))`) was proposed <<llvmregmaskattr>>,
+but it wasn't implemented upstream.
 
 The other option is to use inline asm clobbers to make call to such funcions
 
@@ -1860,3 +1857,4 @@ Additionaly the current sub-priority field would have to be somehow preserved du
 * [[[qingkev2debug, 46]]] https://github.com/openwch/ch32v003/blob/main/RISC-V%20QingKeV2%20Microprocessor%20Debug%20Manual.pdf
 * [[[DUI0553A, 47]]] https://developer.arm.com/documentation/dui0553/a/
 * [[[customsoftirqcm3, 48]]] https://stackoverflow.com/questions/72523639/arm-cortex-m3-add-a-new-interrupt-to-the-end-of-the-vector-table
+* [[[llvmregmaskattr, 49]]] https://lists.llvm.org/pipermail/cfe-dev/2016-July/050022.html
