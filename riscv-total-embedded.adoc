@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.22.13
+:appversion: 0.22.14
 :toc:
 :toclevels: 5
 :sectnums:
@@ -513,6 +513,8 @@ microarchitectures capable of stacking 2 registers per cycle
 | x16-x31 | - | - | reserved for custom use
 |====================================================================================
 
+// fp ?
+
 NOTE: ilp32e with `tp` turned into temporary, number of saved registers still needs to be adjusted
 wrt. <<IPRA - Inter procedural register allocation, IPRA>> as there are only 2 of them.
 
@@ -537,6 +539,8 @@ wrt. <<IPRA - Inter procedural register allocation, IPRA>> as there are only 2 o
 | x18-x27 | s2-s11 | callee | saved
 | x28-x31 | t4-t7 | caller | temporary
 |====================================================================================
+
+// fp?
 
 === debug
 
@@ -654,7 +658,7 @@ It can be additionally abused to:
 - dynamic linked functions with a subset of clobbers. 
 e.g. functions like `memcpy()`,`strcmp()` etc.  don't need to clobber all caller saved registers 
 so only common clobbers for straightforward, unrolled (?) and vectorized implementations need to be 
-applied. Requires standardization of cannoical clobbers for each offending function. (quite unrealistic)
+applied. Requires standardization of canonical clobbers for each offending function. (quite unrealistic)
 
 ==== IPRA - Inter procedural register allocation
 
