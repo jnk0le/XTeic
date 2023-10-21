@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.22.15
+:appversion: 0.22.16
 :toc:
 :toclevels: 5
 :sectnums:
@@ -349,7 +349,7 @@ Those have to take the second round of waitstates or cache miss without amortiza
 
 And if the code is far away from vector table (e.g. in SRAM for more deterministic execution),
 compiler will have to emit a jump island, aka "veener", that will perform yet another unamortized jump.
-allocating 8 bytes per entry and enforcing `lui` + `jalr` sequence will severly trump the
+allocating 8 bytes per entry Enforcing `lui` + `jalr` sequence will severly trump the
 code density and performance in typical use scenarios.
 
 NOTE: 8051 allocated 8 bytes per entry, but it was able to sometimes fit entire handler or
