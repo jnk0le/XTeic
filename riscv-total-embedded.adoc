@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.22.16
+:appversion: 0.23.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1360,20 +1360,28 @@ private to the hart
 
 ==== `teic_??`
 
-==== `teic_reset_req??`
-
-
-// key+req of hart/sys reset
-// deep sleep?
-
-// not byte addressable
-
-// reset cause ??
 // deepsleep ??
 
+==== `teic_reset_req`
 
+[cols="1,2,1,2,6",options=header]
+|====
+| bit | name | type | reset value | description
+| [31:15] | reserved | rw | 0 | reserved
+| [14:11] | `last_reset_cause` | ro | dependent | 0b0000: power on reset +
+												0b0001: software reset +
+												0b0010: watchdog reset +
+												0b0011: external reset (master core, RST input pin etc.) +
+												other: reserved
+| [10:3] | `reset_key` | wo | 0 | write of `0xC5` to this field performs system reset
+| [2:1] | reserved | wo | 0 |
+| [0] | `hart_only` | wo | implementation specific | (optional) write 1 together with `reset_key` to reset
+													only hart. If implementation allows only a hart reset,
+													this field reads always 1, 0 otherwise
+|====
 
-
+NOTE: <<riscvdebug>> provides sysreset with excluded debug subsystem, in case of custom debug
+spec, it should at least provide its own config to exclude itself from reset
 
 ==== `teic_Deffered_pending`
 
