@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.23.0
+:appversion: 0.23.1
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1348,17 +1348,17 @@ private to the hart
 [cols="2,1,3,1,2",options=header]
 |====
 | offset from `TEIC_MMIO_CTRL_BASE` | entry size | name | non-native access | description
-| 0x0 | 4 | `teic_??` | no |
-| 0x4 | 4 | `teic_reset_req??` | no |
+| 0x0 | 4 | `teic_extra_cfg` | no |
+| 0x4 | 4 | `teic_reset_req` | no |
 | 0x8 | 4 | `teic_Deffered_pending` | no |
-| 0xC | 4 | `teic_Deffered_request` | no |
+| 0x10 | 4 | `teic_Deffered_request` | no |
 | 0x20 | 4 | `teic_irq_pending[32]` | no |
 | 0x40 | 4 | `teicMP_irq_enable[32]` | no | added with <<XteicMP>>
 | 0x400 | 1 | `teic_prio_cfg[1023]` | yes |
 |====
 
 
-==== `teic_??`
+==== `teic_extra_cfg`
 
 // deepsleep ??
 
