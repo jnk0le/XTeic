@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.23.2
+:appversion: 0.23.3
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1037,8 +1037,8 @@ to allow immediate shutdown of certain peripherals (pwm timers etc.)
 | 1 | NMI | | reserved
 | 2 | NMI | IntegrityViolation_NMI | (optional) software and hardware integrity violations
 | 3 | NMI | ClockViolation_NMI | (optional) Lost clock or other anomaly. It shall be assumed
-								 that the core/system clock has been switched to a different one
-								 at this point.
+								 that the core/system clock could have been switched
+								 to a different one at this point.
 | 4 | NMI | WatchdogViolation_NMI | (optional) Entered right before any of the watchdogs trips
 									and performs a (device) reset. Designated for safety measures
 									and error logging. It shall be assumed that execution could
