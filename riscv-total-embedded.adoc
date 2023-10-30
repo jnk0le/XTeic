@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.23.4
+:appversion: 0.23.5
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1608,8 +1608,16 @@ additional csr register
 |====
 
 [appendix]
-== context switch
+== RTOS context switch
 
+// by deffered0
+
+[appendix]
+== RTOS syscalls
+
+// through regs - sync with deffered handler problematic
+// through illegal nmi then defer to deffered1
+// through mem
 
 [appendix]
 == atomic block
