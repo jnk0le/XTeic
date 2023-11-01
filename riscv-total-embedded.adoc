@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.23.5
+:appversion: 0.23.6
 :toc:
 :toclevels: 5
 :sectnums:
@@ -940,12 +940,12 @@ The vector entry is selected by handler dispatch process.
 NOTE: optimized microarchitectures will implement late arrival, tail chaining and
 pop preemption which further complicate entry/exit procedures
 
-If irq request is spuriously deasserted during the interrupt entry (or tail chaining), the core
-must either; enter the offending handler or immediately return (or tail chain to yet another handler).
+If irq request is spuriously deasserted during the interrupt entry (or e.g. tail chaining), the core
+must either; enter the offending handler or immediately return (or e.g. tail chain to yet another handler).
 
 NOTE: Sometimes it takes a few cycles to deassert irq request signal, after e.g. clearing
 status flag. Instead of populating errata, the vendors may opt to implement immediate return
-on delayed (spurious) irq deassert. 
+on delayed (spurious) irq deassert. Behaviour shall be at least deterministic.
 
 ===== handler dispatch
 
