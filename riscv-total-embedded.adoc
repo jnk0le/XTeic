@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.23.7
+:appversion: 0.23.8
 :toc:
 :toclevels: 5
 :sectnums:
