@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.23.6
+:appversion: 0.23.7
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1307,7 +1307,8 @@ The `*_async` nmi requests have to be cleared within the source peripheral.
 |====
 | bit | name | type | reset value | description
 | [31:10] | reserved | WLRL | 0 | reserved
-| [9:8] | `n123_stacking` | WARL | 0 | (optional) stacking ranges and stack adjustment at 1st ,2nd and 
+| [9:8] | `n123_stacking` | WARL | implementation specific | (optional)
+							stacking ranges and stack adjustment at 1st ,2nd and 
 							3rd nesting levels. +
 							Must not be changed within interrupt handler, otherwise 
 							behaviour is undefined. +
@@ -1315,7 +1316,7 @@ The `*_async` nmi requests have to be cleared within the source peripheral.
 							0b01: range 0, 1, 2 +
 							0b10: reserved +
 							0b11: range 0, 1, 2, 3 +
-| [7:6] | `n4_stacking` | WARL | 0 | (optional) stacking ranges at 4th nesting level. +
+| [7:6] | `n4_stacking` | WARL | implementation specific | (optional) stacking ranges at 4th nesting level. +
 							Must be equal or lesser than in `n123_stacking`. +
 							Must not be changed within interrupt handler, otherwise 
 							behaviour is undefined. +
