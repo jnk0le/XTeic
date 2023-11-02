@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.23.8
+:appversion: 0.23.9
 :toc:
 :toclevels: 5
 :sectnums:
@@ -84,8 +84,8 @@ assuming 1 cycle per instruction, 10.2 and 11.1 listings from clic spec <<clic>>
 - `entry + 7 + 16` cycles of jitter from "C-ABI" trampoline entry
 - `4 + exit` or `abs(entry - 7)` cycles of jitter from  "C-ABI" trampoline epilogue
 
-NOTE: the trampoline doesn't need to stack all of the 16 caller saved registers before enabling
-interrupts, but this exact code is about to be pushed down your throat anyway.
+NOTE: trampoline jitter can be reduced by 16 cycles of register stacking at
+the cost of late arrival handling
 
 NOTE: according to <<clicentrycycles>>, handler entry time is 6 cycles on sifive E2 and
 10 cycles in E3/5
