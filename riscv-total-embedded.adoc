@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.23.9
+:appversion: 0.23.10
 :toc:
 :toclevels: 5
 :sectnums:
@@ -607,7 +607,7 @@ ilp32 caller saved:
 
 `\\__attribute__\((prestacked("x5-x7,x10-x17,x28-x31")))`
 
-ilp32 with floating point, caller saved:
+ilp32f, caller saved:
 
 `\\__attribute__\((prestacked("x5-x7,x10-x17,x28-x31,f0-f7,f10-f17,f28-f31,fcsr")))`
 
