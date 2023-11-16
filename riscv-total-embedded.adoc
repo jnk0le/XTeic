@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.23.10
+:appversion: 0.23.11
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1375,15 +1375,18 @@ private to the hart
 [cols="1,2,1,2,6",options=header]
 |====
 | bit | name | type | reset value | description
-| [31:15] | reserved | rw | 0 | reserved
+| [31:16] | reserved | rw | 0 | reserved
+| [15] | `nmi_lockup_onreset` | ro | dependent | 1: `nmi_lockup` was active prior to reset
+												 0: no `nmi_lockup` prior to reset
+											   
 | [14:11] | `last_reset_cause` | ro | dependent | 0b0000: power on reset +
 												0b0001: software reset +
 												0b0010: watchdog reset +
 												0b0011: external reset (master core, RST input pin etc.) +
 												other: reserved
 | [10:3] | `reset_key` | wo | 0 | write of `0xC5` to this field performs system reset
-| [2:1] | reserved | wo | 0 |
-| [0] | `hart_only` | wo | implementation specific | (optional) write 1 together with `reset_key` to reset
+| [2:1] | reserved | rw | 0 |
+| [0] | `hart_only` | rw | implementation specific | (optional) write 1 together with `reset_key` to reset
 													only hart. If implementation allows only a hart reset,
 													this field reads always 1, 0 otherwise
 |====
