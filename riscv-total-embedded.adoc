@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.23.12
+:appversion: 0.23.13
 :toc:
 :toclevels: 5
 :sectnums:
@@ -57,7 +57,6 @@ Anyone complaining about risc-v likes and wants the NVIC.
 ==== CLIC
 
 CLIC <<clic>> is a designated goto for interrupt handling to fulfill everyone needs.
-Development took long enough to achieve pre-freeze implementations by some chinese vendors.
 
 Attempts to be an unix capable interrupt controller with horizontal nesting of U, S, H (so far only proposed) and M mode.
 
@@ -70,6 +69,9 @@ Preemption is handled in software by special CSR mechanism, that requires extra 
 code in every interrupt handler. Even in "inline" handlers.
 
 Highest priority inline handlers should be possible to be made similar to legacy ones.
+
+Trampoline handlers mimic the late arrival and tail chaining optimizations.
+Currently trampoline handlers cannot be used alongside inline handlers <<clichwswvectoring>>.
 
 Introduces unavoidable jitter due to:
 
@@ -1891,3 +1893,4 @@ Additionaly the current sub-priority field would have to be somehow preserved du
 * [[[DUI0553A, 47]]] https://developer.arm.com/documentation/dui0553/a/
 * [[[customsoftirqcm3, 48]]] https://stackoverflow.com/questions/72523639/arm-cortex-m3-add-a-new-interrupt-to-the-end-of-the-vector-table
 * [[[llvmregmaskattr, 49]]] https://lists.llvm.org/pipermail/cfe-dev/2016-July/050022.html
+* [[[clichwswvectoring, 50]]] https://github.com/riscv/riscv-fast-interrupt/issues/314
