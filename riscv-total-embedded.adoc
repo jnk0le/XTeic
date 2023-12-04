@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.23.13
+:appversion: 0.23.14
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1040,12 +1040,12 @@ to allow immediate shutdown of certain peripherals (pwm timers etc.)
 | 0 | - | reserved | reserved for startup code (typically jump instruction)
 | 1 | NMI | | reserved
 | 2 | NMI | IntegrityViolation_NMI | (optional) software and hardware integrity violations
-| 3 | NMI | ClockViolation_NMI | (optional) Lost clock or other anomaly. It shall be assumed
+| 3 | NMI | ClockViolation_NMI | (optional) Lost clock or other anomaly. It should be assumed
 								 that the core/system clock could have been switched
 								 to a different one at this point.
 | 4 | NMI | WatchdogViolation_NMI | (optional) Entered right before any of the watchdogs trips
 									and performs a (device) reset. Designated for safety measures
-									and error logging. It shall be assumed that execution could
+									and error logging. It should be assumed that execution could
 									be frozen at this point and no further action can or need to
 									be performed.
 | 5 | NMI | MemoryViolation_NMI | Bus or memory access fault
@@ -1434,7 +1434,7 @@ First 8 bit entries (corresponding to NMIs) are reserved.
 Consists of 1023 entries, 1 byte each.
 First 8 entries (corresponding to NMIs) are reserved.
 
-For each implemented irq vector, there is corresponding priority confg register at
+For each implemented irq vector, there is corresponding priority config register at
 `teic_prio_cfg[IRQn]` position.
 
 priority encoding::
@@ -1457,10 +1457,24 @@ additional per vector entry interrupt enable
 
 private to the hart
 
-NOTE: multi hart or when peripheral interrupt lines are shared across multiple master units
-(e.g. FIFO empty irq signal shared with DMA)
+NOTE: This is separate extension as enablemnet of interrupts is redundant to in-peripheral
+enables. Usefull only in case of multi hart or when peripheral interrupt lines are shared across
+multiple master units (e.g. FIFO empty irq signal shared with DMA)
 
 ===== `teicMP_irq_enable[32]`
+
+For each implemented irq vector, there is corresponding enable bit in "enable" register at
+`teicMP_irq_enable[IRQn/32]` position.
+
+First 8 bit entries (corresponding to NMIs) are reserved.
+
+[cols="1,2,1,2,6",options=header]
+|====
+| bit | name | type | reset value | description
+| [31:0] | `enable{i}_irq` | rw | 0 | enable control of `IRQn % 32` interrupt +
+									0: disabled +
+									1: enabled
+|====
 
 ==== XteicTinyIrqTable
 
@@ -1712,16 +1726,6 @@ Big endianess is inefficient to handle in vector registers.
 === `TEIC_MMIO_CTRL_BASE` address selection
 
 addressable through `c.lui` + offset
-
-=== no separate process stack
-
-???
-
-only 4 levels of nesting + one returnable nmi
-
-smallest size uc
-
-expected to run rtos less
 
 === no csr scratch registers
 
