@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.23.14
+:appversion: 0.23.15
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1457,10 +1457,6 @@ additional per vector entry interrupt enable
 
 private to the hart
 
-NOTE: This is separate extension as enablemnet of interrupts is redundant to in-peripheral
-enables. Usefull only in case of multi hart or when peripheral interrupt lines are shared across
-multiple master units (e.g. FIFO empty irq signal shared with DMA)
-
 ===== `teicMP_irq_enable[32]`
 
 For each implemented irq vector, there is corresponding enable bit in "enable" register at
@@ -1667,12 +1663,12 @@ The cause code can be implied from hardcoded vector table position.
 Therefore it's redundant. The other issue is that
 it has to be somehow preserved during nesting.
 
-NMIs are handled through `teic_nmi_cause` CSR.
+NOTE: NMIs are handled through `teic_nmi_cause` CSR.
 
 === no single bit interrupt enable
 
-It would be redundant to the 2/4 bit `irq_msk` nest enables.
-Which can be similarly manageed by `csrsi`, `csrci` instructions.
+It would be redundant to the `irq_msk` nest enables.
+Which can be similarly managed by `csrsi`, `csrci` instructions.
 
 === no `misa` register
 
@@ -1702,8 +1698,8 @@ This kind of use of uninitailized variables is UB in C/C++ and easily detectable
 Languages like Rust or Ada are supposed to be free from this UB, so there is no need to spend transistors
 or code memory for zeroing those.
 
-NOTE: V extension uses all ones for `tail agnostic` filling just to prevent software relying on
-uarch dependent zeroing.
+NOTE: V extension uses all ones for `tail agnostic` filling just to prevent software
+from relying on uarch dependent zeroing.
 
 However, certain hardened cores may need to have all registers initialized to consistent state, as to
 avoid integrity faults when stacking out yet unused registers.
@@ -1721,7 +1717,7 @@ libraries, because one cannot be sure which endianess the code will be run on.
 
 Just use `rev8` for "network order" data. It's much better than doing endian neutral access.
 
-Big endianess is inefficient to handle in vector registers.
+Big endianess is also inefficient to handle in vector registers.
 
 === `TEIC_MMIO_CTRL_BASE` address selection
 
@@ -1745,9 +1741,10 @@ This is also more than enough for any microcontroller.
 
 === no per irq pending/enable in base extension
 
-It is simply redundant to the peripherals as well as the `nestx` interrupt enables.
+It is simply redundant to in-peripherals enablees, as well as the `nestx` interrupt enables.
 
-Has use case only when the same interrupts are routed to multiple harts.
+Has use case only when the same interrupts are routed to multiple harts or when peripheral
+interrupt lines are shared across multiple master units (e.g. FIFO empty irq signal shared with DMA)
 
 === no nmi/exception nesting
 
@@ -1823,7 +1820,9 @@ The faulting address can still be recovered in a more complex way of decompilati
 
 Having our cores to boot with "legacy" interrupt modes
 
-- is a waste of silicon
+- is a waste of transistors
+- it would reqire sync with the CLIC `mode`/`submode` encodings (or be incompatible with CLIC which is
+of course unwanted when lengthening the "flexibility" bar)
 - causes interrupt hole or additional boilerplate code to handle exceptions/NMIs that arrived before setting
 up `mtvec` and thus were routed to reset handler entry.
 
@@ -1832,8 +1831,8 @@ NOTE: There was even an CVE related to uninitialized `mtvec`: <<nvidiamtveccve>>
 This also allows us to use vector address with zeroed two lowest bits.
 Which, in some scenarios, allows setup of vector table address with a single `lui` instruction
 
-In cores designated to work in vectored mode, the `mtvec` has the bottom address lines hardwired to 0.
-Which leads to large alignment granularity of the unvectored handler (e.g. in ch32v003 it's 1KiB).
+Also, in cores designated to work in vectored mode, the `mtvec` has the bottom address lines hardwired to 0.
+Which leads to large alignment granularity of the unvectored handler (e.g. on ch32v003 it's 1KiB).
 Making the unvectored mode handler share entry with startup code or require large alignment.
 
 === no sub-priority reflected in any status registers
