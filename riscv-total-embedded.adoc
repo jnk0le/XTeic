@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.23.15
+:appversion: 0.23.16
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1593,7 +1593,8 @@ NOTE: `csrrw rd, csr, x0` can still be used to write a zero into csr.
 None of the CSR access shall raise an exception.
 
 - Writes to read only CSRs shall be ignored.
-- access to unimplemented CSRs as well as higher privilege ones shall cause no side
+- in machine mode access to unimplemented CSRs is undefined
+- in thread mode access to unimplemented CSRs as well as higher privilege ones shall cause no side
 effects, read a `0` value and have its write ignored
 
 NOTE: `UNIMP` instruction maps to write into `cycle` csr register, so it can
