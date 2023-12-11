@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.25.2
+:appversion: 0.25.3
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1055,7 +1055,8 @@ to allow immediate shutdown of certain peripherals (pwm timers etc.)
 | 7 | NMI | Unrecoverable_NMI | Nested nmi, unknown or a state that cannot be easily
 								recovered from.
 | 8 | IRQ | Deffered0_IRQ | software deffered interrupt, can be used for context switch.
-| 9 | IRQ | Deffered1_IRQ | (optional) instead of ecall??? when u mode implemented ??
+| 9 | IRQ | Deffered1_IRQ | (optional, mandatory with <<XteicRTOS>>) software deffered interrupt,
+							can be used for servicing syscalls.
 | 10 | IRQ | | reserved/systick???
 | 11..1022 | IRQ | *_IRQ | (optional) device specific interrupts
 |============================================================================================
