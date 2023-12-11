@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.25.0
+:appversion: 0.25.1
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1336,9 +1336,7 @@ The `*_async` nmi requests have to be cleared within the source peripheral.
 							0b11: range 0, 1, 2
 | 5 | reserved | WARL | 0 |
 | 4 | reserved | WARL | 0 |
-| 3 | `thread_enter` | WARL | 0 | added with <<XteicRTOS>> +
-								Must not be changed within interrupt handler, otherwise 
-								behaviour is undefined.
+| 3 | `thread_enter` | WARL | 0 | added with <<XteicRTOS>>
 | 2 | `escalate_async_nmi` | WARL | 0 | (optional) if `*_async` nmi request is raised during
 										active nmi, it will be escalated to unrecoverable nmi
 										request (i.e. raises `escalated_async_unrec` nmi request) +
