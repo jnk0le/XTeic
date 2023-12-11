@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.23.16
+:appversion: 0.24.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -884,7 +884,7 @@ NOTE: Zcmp similarly doesn't specify the required alignment.
 |====
 
 NOTE: Implementations are free to not provide the configurability of stacking ranges
-and hardcode the stacking ranges. Range 0+1 gives similar amount of usable registers as 
+and hardcode them. Range 0+1 gives similar amount of usable registers as 
 NVIC
 
 stack frame pseudocode::
@@ -895,7 +895,7 @@ stack frame pseudocode::
 sw x1, -4(sp)
 sw x10, -8(sp)
 sw x11, -12(sp)
-sw reserved, -16(sp) // normally omitted
+sw reserved, -16(sp)
 
 // range 1
 sw x12, -20(sp)
@@ -922,6 +922,8 @@ addi sp, sp, -72
 
 ranges lower than configured can be excluded from stacking only when their registers are preserved in a different
 manner (e.g. shadow registers)
+
+NOTE: reserved position in range0 window can be optionally used for preserving `estate` during nesting
 
 ==== interrupt entry
 
@@ -1132,11 +1134,13 @@ configuration bits in privileged CSR's
 | number | name | privilege | description
 | 0xbc0 | `teic_irq_vect` | MRW | interrupt vector table
 | 0xbc1 | `teic_estate` | MRW | irq saved state
-| 0xbc2 | `teic_irq_msk` | MRW (U?) | interrupt mask
-| 0xbc3 | `teic_irq_status` | MRO? | current interrupt status
+| 0x800 | `teic_irq_msk` | URW | interrupt mask
+| 0x801 | `teic_irq_status` | URO | current interrupt status
 | 0xbc4 | `teic_nmi_cause` | MRW | coarse mask of NMI causes
 | 0xbc5 | `teic_cfg` | MRW | config register
 | 0xbc6 | `teic_spmlimit` | MRW | added with <<XteicStackLimit>>
+| 0xbc7 | `teic_sptlimit` | MRW | added with <<XteicStackLimit>>&&<<XteicRTOS>>
+| 0xbc7 | `teic_swpspm` | MRW | added with <<XteicRTOS>>
 |====
 
 
@@ -1330,7 +1334,9 @@ The `*_async` nmi requests have to be cleared within the source peripheral.
 							0b11: range 0, 1, 2
 | 5 | reserved | WARL | 0 |
 | 4 | reserved | WARL | 0 |
-| 3 | reserved | WARL | 0 |
+| 3 | `thread_enter` | WARL | 0 | added with <<XteicRTOS>> +
+								Must not be changed within interrupt handler, otherwise 
+								behaviour is undefined.
 | 2 | `escalate_async_nmi` | WARL | 0 | (optional) if `*_async` nmi request is raised during
 										active nmi, it will be escalated to unrecoverable nmi
 										request (i.e. raises `escalated_async_unrec` nmi request) +
@@ -1472,6 +1478,37 @@ First 8 bit entries (corresponding to NMIs) are reserved.
 									1: enabled
 |====
 
+==== XteicRTOS
+
+Adds additional RTOS specific features
+
+After thread mode (aka "user" or "unprivileged") is activated by `thread_enter` bit:
+
+- Current `sp` becomes a thread stack
+- On irq entry from thread, current `sp` is swapped with the context of 
+`teic_swpspm` register which happens after stacking (registers are pushed to thread stack)
+- Thread mode protects only CSR registers, memory regions should be protected by additional PMP unit.
+- Interrups are always executing in machine mode.
+
+===== `thread_enter`
+
+bit in `teic_cfg` CSR
+
+Setting this bit will make the hart to enter thread mode (aka user mode in privileged nomenclature).
+Once set it cannot be cleared.
+
+Must not be set within interrupt handler, otherwise behaviour is undefined.
+
+NOTE: It is expected that startup code will turn itself into an idle thread after
+configuring everything in machine mode.
+
+===== `teic_swpspm`
+
+holds the stack pointer to be swapped with `sp` when entering interrupt context
+
+NOTE: Separate interrupt stack allows thread stacks to allocate only the area for context switch
+storage in addition to its own usage (which can be statically analysed)
+
 ==== XteicTinyIrqTable
 
 Makes each address entry in irq vector table take only 2 byte in size.
@@ -1605,19 +1642,17 @@ certain privileged csr registers (e.g. `misa`, `mvendorid` etc.) when unimplemen
 
 === XteicStackLimit
 
-//u stack lim?
-
 Throws `sw_integrity_exc` exception precisely, when `sp` (`x1`) register is written with value lower than
-the one specified in `teic_spmlimit` register.
+the one specified in `teic_sp*limit` register.
 
-// sp not guaranted to not be overflown ??
+Provides additional CSR register with stack address thresholds.
 
 NOTE: local arrays can be created on stack and then accessed by pointer passed in working register.
 Therefore stacklimit comparison must happen on write to `sp` register
 
 ==== `teic_spmlimit`
 
-additional csr register
+Used for limiting `sp` when hart is in machine mode.
 
 [cols="1,2,1,2,6",options=header]
 |====
@@ -1626,10 +1661,23 @@ additional csr register
 | [2:0] | reserved | WLRL | 0 | reserved
 |====
 
+==== `teic_sptlimit`
+
+available only with <<XteicRTOS>>
+
+Used for limiting `sp` when hart is in thread mode.
+
+[cols="1,2,1,2,6",options=header]
+|====
+| bit | name | type | reset value | description
+| [31:3] | `spt_limit` | WLRL | 0 | top bits of bottom stack threshold
+| [2:0] | reserved | WLRL | 0 | reserved
+|====
+
 [appendix]
 == RTOS context switch
 
-// by deffered0
+// by deffered0 after deffered from systick
 
 [appendix]
 == RTOS syscalls
@@ -1660,7 +1708,8 @@ what headers, definitions, names etc. must be provided.
 
 === no cause code
 
-The cause code can be implied from hardcoded vector table position.
+The cause code can be implied from hardcoded vector table position or
+periphereals state if handler is shared.
 Therefore it's redundant. The other issue is that
 it has to be somehow preserved during nesting.
 
@@ -1729,7 +1778,8 @@ addressable through `c.lui` + offset
 Unlike the big unix machines, the RTOS context can be statically
 addressed by `lui` + `addi` sequence.
 
-// thread/main stack swaps differently???
+With hardware stacking there is no need to free up additional registers
+to perform context sitching tasks.
 
 === 1023 vector entries
 
