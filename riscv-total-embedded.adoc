@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.25.1
+:appversion: 0.25.2
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1140,7 +1140,7 @@ configuration bits in privileged CSR's
 | 0xbc5 | `teic_cfg` | MRW | config register
 | 0xbc6 | `teic_spmlimit` | MRW | added with <<XteicStackLimit>>
 | 0xbc7 | `teic_sptlimit` | MRW | added with <<XteicStackLimit>>&&<<XteicRTOS>>
-| 0xbc7 | `teic_swpspm` | MRW | added with <<XteicRTOS>>
+| 0xbc8 | `teic_swpspm` | MRW | added with <<XteicRTOS>>
 |====
 
 
@@ -1484,7 +1484,7 @@ Adds additional RTOS specific features
 
 After thread mode (aka "user" or "unprivileged") is activated by `thread_enter` bit:
 
-- Current `sp` becomes a thread stack
+- Current `sp` becomes a defacto thread stack
 - On irq entry from thread, current `sp` is swapped with the context of 
 `teic_swpspm` register which happens after stacking (registers are pushed to thread stack)
 - Thread mode protects only CSR registers, memory regions should be protected by additional PMP unit.
