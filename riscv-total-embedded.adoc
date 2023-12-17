@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.26.0
+:appversion: 0.26.1
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1728,7 +1728,6 @@ case 12:     stack_adj = [56|64|72|80|88|96|104|112]
 case 13..15: reserved
 ----
 
-
 register stacking order::
 currently same as in Zcmp
 
@@ -1758,9 +1757,6 @@ Encoding::
 ],config:{bits:16}}
 ....
 
-Description::
-
-
 ==== teic.cm.pop
 
 Synopsis::
@@ -1787,13 +1783,10 @@ Encoding::
 ],config:{bits:16}}
 ....
 
-Description::
-
 ==== teic.cm.popret
 
 Synopsis::
-Deallocates stack frame, loads registers selected by `rlist` and returns. +
-The `ra` register may not be populated.
+Deallocates stack frame, loads registers selected by `rlist` and returns.
 
 Mnemonic::
 ----
@@ -1817,12 +1810,12 @@ Encoding::
 ....
 
 Description::
+The `ra` register may not be populated.
 
 ==== teic.cm.popretz
 
 Synopsis::
-Deallocates stack frame, loads registers selected by `rlist`, writes zero to `a0` and returns. +
-The `ra` register may not be populated.
+Deallocates stack frame, loads registers selected by `rlist`, writes zero to `a0` and returns.
 
 Mnemonic::
 ----
@@ -1846,6 +1839,8 @@ Encoding::
 ....
 
 Description::
+The `ra` register may not be populated.
+Unlike in Zcmp the load to a0 is non atomic.
 
 ==== todo: mva/mvs
 
