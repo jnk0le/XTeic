@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.25.4
+:appversion: 0.26.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1673,6 +1673,183 @@ no longer be used. `c.unimp` remains available which is encoded as all zero.
 
 NOTE: Extension designated for reduction of silicon use, reflects behaviour of
 certain privileged csr registers (e.g. `misa`, `mvendorid` etc.) when unimplemented
+
+=== Xzcmpt
+
+Implemented similarly to Zcmp but with additional immediate bit to accomodate
+8 byte aligned stacks, and following changes.
+
+NOTE: addi8sp is not required as push instruction can prepare initial
+allocation with 8byte granularity.
+
+`rlist` encoding::
+----
+RV32E:
+case 0: {reg_list="ra"; xreg_list="x1";}
+case 1: {reg_list="ra, s0"; xreg_list="x1, x8";}
+case 2: {reg_list="ra, s0-s1"; xreg_list="x1, x8-x9";}
+case 3-15: reserved
+RV32I:
+case 0: {reg_list="ra"; xreg_list="x1";}
+case 1: {reg_list="ra, s0"; xreg_list="x1, x8";}
+case 2: {reg_list="ra, s0-s1"; xreg_list="x1, x8-x9";}
+case 3: {reg_list="ra, s0-s2"; xreg_list="x1, x8-x9, x18";}
+case 4: {reg_list="ra, s0-s3"; xreg_list="x1, x8-x9, x18-x19";}
+case 5: {reg_list="ra, s0-s4"; xreg_list="x1, x8-x9, x18-x20";}
+case 6: {reg_list="ra, s0-s5"; xreg_list="x1, x8-x9, x18-x21";}
+case 7: {reg_list="ra, s0-s6"; xreg_list="x1, x8-x9, x18-x22";}
+case 8: {reg_list="ra, s0-s7"; xreg_list="x1, x8-x9, x18-x23";}
+case 9: {reg_list="ra, s0-s8"; xreg_list="x1, x8-x9, x18-x24";}
+case 10: {reg_list="ra, s0-s9"; xreg_list="x1, x8-x9, x18-x25";}
+case 11: {reg_list="ra, s0-s10"; xreg_list="x1, x8-x9, x18-x26";}
+case 12: {reg_list="ra, s0-s11"; xreg_list="x1, x8-x9, x18-x27";}
+case 13-15: reserved
+----
+
+`stack_adj_base` derivation from `rlist`::
+----
+case 0..1:   stack_adj_base = 8
+case 2..3:   stack_adj_base = 16
+case 4..5:   stack_adj_base = 24
+case 6..7:   stack_adj_base = 32
+case 8..9:   stack_adj_base = 40
+case 10..11: stack_adj_base = 48
+case 12:     stack_adj_base = 56
+case 13..15: reserved
+
+Valid values:
+case 0..1:   stack_adj = [ 8|16|24|32|40|48|56|64]
+case 2..3:   stack_adj = [16|24|32|40|48|56|64|72]
+case 4..5:   stack_adj = [24|32|40|48|56|64|72|80]
+case 6..7:   stack_adj = [32|40|48|56|64|72|80|88]
+case 8..9:   stack_adj = [40|48|56|64|72|80|88|96]
+case 10..11: stack_adj = [48|56|64|72|80|88|96|104]
+case 12:     stack_adj = [56|64|72|80|88|96|104|112]
+case 13..15: reserved
+----
+
+
+register stacking order::
+currently same as in Zcmp
+
+==== teic.cm.push
+
+Synopsis::
+Allocates stack frame and saves registers selected by `rlist`.
+
+Mnemonic::
+----
+teic.cm.push {reg_list}, -stack_adj
+----
+
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+ { bits:  2, name: 0x2, attr: ['C2'] },
+ { bits:  1, name: 'spimm[5]' },
+ { bits:  2, name: 'rlist[1:0]' },
+ { bits:  2, name: 'spimm[4:3]' },
+ { bits:  2, name: 'rlist[3:2]' },
+ { bits:  1, name: 0 },
+ { bits:  2, name: 0x0 },
+ { bits:  1, name: 0 },
+ { bits:  3, name: 0x5, attr: ['C.FSDSP'] },
+],config:{bits:16}}
+....
+
+Description::
+
+
+==== teic.cm.pop
+
+Synopsis::
+Deallocates stack frame and loads registers selected by `rlist`.
+
+Mnemonic::
+----
+teic.cm.pop {reg_list}, stack_adj
+----
+
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+ { bits:  2, name: 0x2, attr: ['C2'] },
+ { bits:  1, name: 'spimm[5]' },
+ { bits:  2, name: 'rlist[1:0]' },
+ { bits:  2, name: 'spimm[4:3]' },
+ { bits:  2, name: 'rlist[3:2]' },
+ { bits:  1, name: 1 },
+ { bits:  2, name: 0x0 },
+ { bits:  1, name: 0 },
+ { bits:  3, name: 0x5, attr: ['C.FSDSP'] },
+],config:{bits:16}}
+....
+
+Description::
+
+==== teic.cm.popret
+
+Synopsis::
+Deallocates stack frame, loads registers selected by `rlist` and returns. +
+The `ra` register may not be populated.
+
+Mnemonic::
+----
+teic.cm.popret {reg_list}, stack_adj
+----
+
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+ { bits:  2, name: 0x2, attr: ['C2'] },
+ { bits:  1, name: 'spimm[5]' },
+ { bits:  2, name: 'rlist[1:0]' },
+ { bits:  2, name: 'spimm[4:3]' },
+ { bits:  2, name: 'rlist[3:2]' },
+ { bits:  1, name: 1 },
+ { bits:  2, name: 0x0 },
+ { bits:  1, name: 1 },
+ { bits:  3, name: 0x5, attr: ['C.FSDSP'] },
+],config:{bits:16}}
+....
+
+Description::
+
+==== teic.cm.popretz
+
+Synopsis::
+Deallocates stack frame, loads registers selected by `rlist`, writes zero to `a0` and returns. +
+The `ra` register may not be populated.
+
+Mnemonic::
+----
+teic.cm.popretz {reg_list}, stack_adj
+----
+
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+ { bits:  2, name: 0x2, attr: ['C2'] },
+ { bits:  1, name: 'spimm[5]' },
+ { bits:  2, name: 'rlist[1:0]' },
+ { bits:  2, name: 'spimm[4:3]' },
+ { bits:  2, name: 'rlist[3:2]' },
+ { bits:  1, name: 0 },
+ { bits:  2, name: 0x0 },
+ { bits:  1, name: 1 },
+ { bits:  3, name: 0x5, attr: ['C.FSDSP'] },
+],config:{bits:16}}
+....
+
+Description::
+
+==== todo: mva/mvs
+
+those are quite annoying on rve
 
 [appendix]
 == RTOS context switch
