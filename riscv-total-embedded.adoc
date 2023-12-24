@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.26.1
+:appversion: 0.26.2
 :toc:
 :toclevels: 5
 :sectnums:
@@ -404,18 +404,22 @@ The Linux cargo cult. +
 Because a simplest tasks suitable for bunch of 555&74s or a simple microcontroler with a
 few KiB of flash and RAM must be done under linux so it will work somehow "better".
 
-To be able to properly run linux you need quite beefy cpu (usually with MMU), 2-4MiB of flash,
+To be able to properly run linux you need quite beefy unit (usually with MMU), 2-4MiB of flash,
 4-8MiB of RAM (usually external DRAM), long boot time and a bad power consumption in idle. +
 Just to run the OS itself.
 
 One of the the most blatant example is NOMMU linux on stm32f429 with
-memory mapped to SDRAM that is not even cached by cpu. If the XIP image doesn't fit
+memory mapped SDRAM that is not even cached by cpu. If the XIP image doesn't fit
 in 2MiB internal flash, it has to land in external parallel NOR flash, which is of course
 not cached by cpu and shares bus with SDRAM. +
 Any attempt to touch internal SRAM regions will defeat the remaining 
-"universality/portability of linux apps" arguments.
+"universality/portability of linux apps" arguments. +
+Not to mention much hgher unit price than typical 200+Mhz cotex A5/7 SOCs. 
 
-Of course there are still actual reasons <<emblinux>> to use linux in embedded.
+Of course there are still actual reasons to use linux in non-realtime embedded,
+consisting of different developmnet practices, higher portability 
+or access to the raw performance (at much better perf/price ratio)
+not available in typical microcontrollers <<emblinux>>.
 
 ===== RTLinux and hard-realtime
 
@@ -517,8 +521,7 @@ microarchitectures capable of stacking 2 registers per cycle
 
 // fp ?
 
-NOTE: ilp32e with `tp` turned into temporary, number of saved registers still needs to be adjusted
-wrt. <<IPRA - Inter procedural register allocation, IPRA>> as there are only 2 of them.
+NOTE: ilp32e with `tp` turned into temporary.
 
 ==== RVI
 
@@ -543,6 +546,8 @@ wrt. <<IPRA - Inter procedural register allocation, IPRA>> as there are only 2 o
 |====================================================================================
 
 // fp?
+
+NOTE: ilp32 with `tp` turned into temporary.
 
 === debug
 
