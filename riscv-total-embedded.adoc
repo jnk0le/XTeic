@@ -1,7 +1,7 @@
 
 = riscv-total-embedded
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.26.2
+:appversion: 0.27.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1341,7 +1341,14 @@ The `*_async` nmi requests have to be cleared within the source peripheral.
 							0b10: reserved +
 							0b11: range 0, 1, 2
 | 5 | reserved | WARL | 0 |
-| 4 | reserved | WARL | 0 |
+| 4 | `access_thread_regs_n1` | WARL | 0 | (optional) 
+Switches current (part of) register file (except stack pointer) 
+to thread one if applicable. +
+It has effect only in interrupts at lowest implemented nesting priority. +
+Designated to allow context switching of threads in case of automatic irq
+shadow registers. +
+1: thread context remapped + 
+0: no context remap
 | 3 | `thread_enter` | WARL | 0 | added with <<XteicRTOS>>
 | 2 | `escalate_async_nmi` | WARL | 0 | (optional) if `*_async` nmi request is raised during
 										active nmi, it will be escalated to unrecoverable nmi
