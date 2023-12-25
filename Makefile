@@ -1,5 +1,5 @@
-HEADER_SOURCE := riscv-total-embedded.adoc
-PDF_RESULT := riscv-total-embedded.pdf
+HEADER_SOURCE := XTeic.adoc
+PDF_RESULT := XTeic.pdf
 
 SOURCES := $(HEADER_SOURCE)
 

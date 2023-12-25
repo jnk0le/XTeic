@@ -1,7 +1,7 @@
 
-= riscv-total-embedded
+= XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.27.0
+:appversion: 0.28.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -189,7 +189,7 @@ Achieved by providing additional set of CSR registers as well as interrupt retur
 Original author of the PicoRV found the riscv-privileged to be too heavy for minimal core,
 and provided own <<picorvint>> interrupt scheme.
 
-NOTE: FPGA minimum cores, is a non goal for Xteic
+NOTE: FPGA minimum cores, is a non goal for XTeic
 
 ==== ti c2000 (main core)
 
@@ -782,7 +782,7 @@ Otherwise we get errors when calling too far or missing optimization when short 
 
 // == programmers model
 
-== Xteic (aka Total Embedded Interrupt Controller)
+== XTeic (aka Total Embedded Interrupt Controller)
 
 smallest profile?
 
@@ -809,12 +809,12 @@ software shall assume little endian
 													(Some devices implement a special memory area
 													designated for interrupt handlers. aka "ITCM". Usually
 													it will be the main memoy address)
-| `TEIC_MMIO_CTRL_BASE` | 0xFFFE0000 | Base address of Xteic MMIO control block
+| `TEIC_MMIO_CTRL_BASE` | 0xFFFE0000 | Base address of XTeic MMIO control block
 | `TEIC_IRQ_NESTING_BITS` | {0,1,2} | Number of implemented interrupt nesting priority bits
 | `TEIC_IRQ_PRIORITY_BITS` | {1,2,3,4} | Number of implemented interrupt sub-priority bits
 | `TEIC_IRQ_VECT_ENTRIES` | {9..1023} | Number of allocated interrupt entries including skipped ones and NMIs
 | `TEIC_IRQ_VECT_ENTRY_SIZE` | {2,4} | Size in bytes of the single entry in vector table.
-									By default it's 4. 2 if <<XteicTinyIrqTable>> subextension is implemented.
+									By default it's 4. 2 if <<XTeicTinyIrqTable>> subextension is implemented.
 |====
 
 === startup behaviour
@@ -827,7 +827,7 @@ Upon hart reset:
 
 Performing the system reset will additionally initialize the state of the peripheral registers to their reset state.
 
-The hart reset is always equivalent to a system reset until XteicMP extension is implemented.
+The hart reset is always equivalent to a system reset until XTeicMP extension is implemented.
 
 ==== reset state of registers
 
@@ -1060,7 +1060,7 @@ to allow immediate shutdown of certain peripherals (pwm timers etc.)
 | 7 | NMI | Unrecoverable_NMI | Nested nmi, unknown or a state that cannot be easily
 								recovered from.
 | 8 | IRQ | Deffered0_IRQ | software deffered interrupt, can be used for context switch.
-| 9 | IRQ | Deffered1_IRQ | (optional, mandatory with <<XteicRTOS>>) software deffered interrupt,
+| 9 | IRQ | Deffered1_IRQ | (optional, mandatory with <<XTeicRTOS>>) software deffered interrupt,
 							can be used for servicing syscalls.
 | 10 | IRQ | | reserved/systick???
 | 11..1022 | IRQ | *_IRQ | (optional) device specific interrupts
@@ -1068,7 +1068,7 @@ to allow immediate shutdown of certain peripherals (pwm timers etc.)
 
 Unimplemented optional NMIs can be recycled for custom NMIs other than the ones provided in table above.
 
-NOTE: Xteic doesn't provide any  peripheral API for optional watchdog, clock and integrity protection
+NOTE: XTeic doesn't provide any  peripheral API for optional watchdog, clock and integrity protection
 systems. It's up to the implementer to provide them.
 
 === recycled volume II CSRs
@@ -1144,9 +1144,9 @@ configuration bits in privileged CSR's
 | 0x801 | `teic_irq_status` | URO | current interrupt status
 | 0xbc4 | `teic_nmi_cause` | MRW | coarse mask of NMI causes
 | 0xbc5 | `teic_cfg` | MRW | config register
-| 0xbc6 | `teic_spmlimit` | MRW | added with <<XteicStackLimit>>
-| 0xbc7 | `teic_sptlimit` | MRW | added with <<XteicStackLimit>>&&<<XteicRTOS>>
-| 0xbc8 | `teic_swpspm` | MRW | added with <<XteicRTOS>>
+| 0xbc6 | `teic_spmlimit` | MRW | added with <<XTeicStackLimit>>
+| 0xbc7 | `teic_sptlimit` | MRW | added with <<XTeicStackLimit>>&&<<XTeicRTOS>>
+| 0xbc8 | `teic_swpspm` | MRW | added with <<XTeicRTOS>>
 |====
 
 
@@ -1349,7 +1349,7 @@ Designated to allow context switching of threads in case of automatic irq
 shadow registers. +
 1: thread context remapped + 
 0: no context remap
-| 3 | `thread_enter` | WARL | 0 | added with <<XteicRTOS>>
+| 3 | `thread_enter` | WARL | 0 | added with <<XTeicRTOS>>
 | 2 | `escalate_async_nmi` | WARL | 0 | (optional) if `*_async` nmi request is raised during
 										active nmi, it will be escalated to unrecoverable nmi
 										request (i.e. raises `escalated_async_unrec` nmi request) +
@@ -1384,7 +1384,7 @@ private to the hart
 | 0x8 | 4 | `teic_Deffered_pending` | no |
 | 0x10 | 4 | `teic_Deffered_request` | no |
 | 0x20 | 4 | `teic_irq_pending[32]` | no |
-| 0x40 | 4 | `teicMP_irq_enable[32]` | no | added with <<XteicMP>>
+| 0x40 | 4 | `teicMP_irq_enable[32]` | no | added with <<XTeicMP>>
 | 0x400 | 1 | `teic_prio_cfg[1023]` | yes |
 |====
 
@@ -1470,7 +1470,7 @@ If only 1 bit is implemented then only `nest2` and `nest4` levels are possible.
 
 === additional optional subextensions
 
-==== XteicMP
+==== XTeicMP
 
 additional per vector entry interrupt enable
 
@@ -1491,7 +1491,7 @@ First 8 bit entries (corresponding to NMIs) are reserved.
 									1: enabled
 |====
 
-==== XteicRTOS
+==== XTeicRTOS
 
 Adds additional RTOS specific features
 
@@ -1522,7 +1522,7 @@ holds the stack pointer to be swapped with `sp` when entering interrupt context
 NOTE: Separate interrupt stack allows thread stacks to allocate only the area for context switch
 storage in addition to its own usage (which can be statically analysed)
 
-==== XteicTinyIrqTable
+==== XTeicTinyIrqTable
 
 Makes each address entry in irq vector table take only 2 byte in size.
 (`TEIC_IRQ_VECT_ENTRY_SIZE == 2`)
@@ -1539,9 +1539,9 @@ significant code size impact.
 
 NOTE: SRAM can be used for enplacing handlers if mapped within the same 64KiB block
 
-==== XteicTinyIrqTableExt
+==== XTeicTinyIrqTableExt
 
-Implies XteicTinyIrqTable extension.
+Implies XTeicTinyIrqTable extension.
 
 If the fetched vector entry has the lowest bit set, then
 the effective addres is constructed by concatenation of the 2 bytes of the
@@ -1553,7 +1553,7 @@ NOTE: It is possible to implement this on devices with large flash memories
 and resort to compiler tricks, to keep handlers within 64KiB range.
 But the gains will be relatively low.
 
-=== XteicStackLimit
+=== XTeicStackLimit
 
 Throws `sw_integrity_exc` exception precisely, when `sp` (`x1`) register is written with value lower than
 the one specified in `teic_sp*limit` register.
@@ -1576,7 +1576,7 @@ Used for limiting `sp` when hart is in machine mode.
 
 ==== `teic_sptlimit`
 
-available only with <<XteicRTOS>>
+available only with <<XTeicRTOS>>
 
 Used for limiting `sp` when hart is in thread mode.
 
@@ -1589,7 +1589,7 @@ Used for limiting `sp` when hart is in thread mode.
 
 == auxiliary extensions
 
-Additional extensions that are usefull addition to xteic
+Additional extensions that are usefull addition to XTeic
 
 === Xfenceiext
 
@@ -1881,8 +1881,8 @@ use csrrs/c on a mask then restore
 
 what headers, definitions, names etc. must be provided.
 
-// xteic.h
-// xteic_device.h // it often happens that a lot of peripherals are recycled in many chip families
+// XTeic.h
+// XTeic_device.h // it often happens that a lot of peripherals are recycled in many chip families
 
 // ?.h
 // ?.svd // for peripheral views in debug
@@ -1970,7 +1970,7 @@ to perform context sitching tasks.
 One entry less than full 1024 due to 2s complement jump immediate.
 
 This is the biggest capacity that can be escaped by single `c.j` instruction
-from a first entry in case of `TEIC_IRQ_VECT_ENTRY_SIZE == 2` (<<XteicTinyIrqTable>>)
+from a first entry in case of `TEIC_IRQ_VECT_ENTRY_SIZE == 2` (<<XTeicTinyIrqTable>>)
 
 This is also more than enough for any microcontroller.
 
@@ -2010,7 +2010,7 @@ NOTE: TEIC instead provides dedicated "peripheral" for handling software (deffer
 
 All of this causes a lot of redundancy to allow handling peripheral interrupts and "software"
 triggered ones by the same handler. The ARM implementation also depends on edge triggered
-irq mechanism, which is also ommitted by xteic.
+irq mechanism, which is also ommitted by XTeic.
 
 // move nvic descr to nvic section ???
 
