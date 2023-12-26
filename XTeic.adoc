@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.28.1
+:appversion: 0.28.2
 :toc:
 :toclevels: 5
 :sectnums:
@@ -429,7 +429,7 @@ jitter is always given in tens or hundreds of microseconds, not cycles
 
 In some scenarios those numbers are unacceptable. +
 As an example, industry standard, FOC current loops close within 5-10us <<brianchavens>>
-and in some cases it achieves sub 1us latency <<swpy031>>. On a <200 Mhz controllers.
+and in some cases it achieves sub 1us latency <<swpy031>>. On a <200 Mhz core clock.
 
 ==== lazy stacking
 
