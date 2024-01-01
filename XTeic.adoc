@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.28.4
+:appversion: 0.28.5
 :toc:
 :toclevels: 5
 :sectnums:
@@ -237,7 +237,8 @@ motor FOC current loop.
 
 CLA tasks are uninterruptible. TI claims <<spracs0a>>,<<ticladocs>>,<<ticladevguide>>
 that their task driven machine "reduces interrupt latency and jitter" compared to classic CPU
-even though it does exactly the opposite (including presented scenarions <<spracs0a>>)
+even though it does exactly the opposite when there is more than one
+(async) interrupt to handle (which happens in <<spracs0a>> example)
 
 === overwiew/discussion of some concepts/features
 
