@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.28.3
+:appversion: 0.28.4
 :toc:
 :toclevels: 5
 :sectnums:
@@ -219,6 +219,25 @@ and takes arbitrary numbers of cycles to execute.
 NOTE: ISR entry latency is 10 cycles due to 8 stage pipeline and automatically stacking 13 registers.
 <<c2000workshop>> suggests that the latency is 14 cycles for internal signals. Which would
 further increase the worst case jitter and latencies.
+
+==== ti c2000 CLA
+
+CLA <<spruge6b>> is a separate coprocessor designated to offload
+main core from control loop tasks "freeing it to handle other tasks such as 
+handling communication stacks" +
+Exactly those workloads that are general purpose tasks
+for which "c2000 architecture was not optimized for"
+
+Offers less registers/instrucrtiions and lacks TMU so it's
+not always faster than the main core.
+
+Can be used as a true coprocesor for delegation of certain tasks to it.
+According to <<spracw5a>> this mode of operation brings just 12% improvement in
+motor FOC current loop.
+
+CLA tasks are uninterruptible. TI claims <<spracs0a>>,<<ticladocs>>,<<ticladevguide>>
+that their task driven machine "reduces interrupt latency and jitter" compared to classic CPU
+even though it does exactly the opposite (including presented scenarions <<spracs0a>>)
 
 === overwiew/discussion of some concepts/features
 
@@ -1226,7 +1245,7 @@ to not push previous state onto stack, that would increase interrupt latency.
 
 bits related to unimplemented nesting levels are hardwired to zero.
 
-NOTE: only `nest4` level is mandatory to implemrnt
+NOTE: only `nest4` level is mandatory to implement
 
 ==== `teic_irq_status`
 
@@ -2132,3 +2151,5 @@ Additionaly the current sub-priority field would have to be somehow preserved du
 * [[[customsoftirqcm3, 48]]] https://stackoverflow.com/questions/72523639/arm-cortex-m3-add-a-new-interrupt-to-the-end-of-the-vector-table
 * [[[llvmregmaskattr, 49]]] https://lists.llvm.org/pipermail/cfe-dev/2016-July/050022.html
 * [[[clichwswvectoring, 50]]] https://github.com/riscv/riscv-fast-interrupt/issues/314
+* [[[spruge6b, 51]]] https://e2echina.ti.com/cfs-file/__key/communityserver-discussions-components-files/56/5504.2803x-CLA-_2800_1_2900_.pdf
+* [[[spracw5a, 52]]] https://www.ti.com/lit/an/spracw5a/spracw5a.pdf
