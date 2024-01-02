@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.28.5
+:appversion: 0.28.6
 :toc:
 :toclevels: 5
 :sectnums:
@@ -2097,6 +2097,14 @@ Current priority field would consume additional circuitry to latch in sub-priori
 of the current handler.
 
 Additionaly the current sub-priority field would have to be somehow preserved during nesting.
+
+=== only 4 irq nesting levels
+
+It's enough for a great majority of use cases, not to mention that a lot of applications
+would be fine with just 1 nesting level.
+
+Adding more nesting levels will diminish the gains from tail chaining.
+
 
 [bibliography]
 == Bibliography
