@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.28.6
+:appversion: 0.28.7
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1247,6 +1247,8 @@ to not push previous state onto stack, that would increase interrupt latency.
 bits related to unimplemented nesting levels are hardwired to zero.
 
 NOTE: only `nest4` level is mandatory to implement
+
+NOTE: `TEIC_IRQ_NESTING_BITS == 1` implements `nest2` and `nest4` only
 
 ==== `teic_irq_status`
 
