@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.28.7
+:appversion: 0.29.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1164,8 +1164,8 @@ configuration bits in privileged CSR's
 | 0x801 | `teic_irq_status` | URO | current interrupt status
 | 0xbc4 | `teic_nmi_cause` | MRW | coarse mask of NMI causes
 | 0xbc5 | `teic_cfg` | MRW | config register
-| 0xbc6 | `teic_spmlimit` | MRW | added with <<XTeicStackLimit>>
-| 0xbc7 | `teic_sptlimit` | MRW | added with <<XTeicStackLimit>>&&<<XTeicRTOS>>
+| 0xbc6 | `teic_sptlimit` | MRW | added with <<XTeicStackLimit>>
+| 0xbc7 | `teic_spmlimit` | MRW | added with <<XTeicStackLimit>>&&<<XTeicRTOS>>
 | 0xbc8 | `teic_swpspm` | MRW | added with <<XTeicRTOS>>
 |====
 
@@ -1194,7 +1194,6 @@ as to reduce necessary state to implement.
 NOTE: Implementations may impose additional alignment requirement
 
 NOTE: `vect_offset` can also be implemented as a read only constant pointing to beggining of the flash memory
-
 
 ==== `teic_estate`
 
@@ -1580,32 +1579,32 @@ But the gains will be relatively low.
 Throws `sw_integrity_exc` exception precisely, when `sp` (`x1`) register is written with value lower than
 the one specified in `teic_sp*limit` register.
 
-Provides additional CSR register with stack address thresholds.
+Provides additional CSR registers with stack address thresholds.
 
 NOTE: local arrays can be created on stack and then accessed by pointer passed in working register.
 Therefore stacklimit comparison must happen on write to `sp` register
 
-==== `teic_spmlimit`
+==== `teic_sptlimit`
 
-Used for limiting `sp` when hart is in machine mode.
+Used for limiting `sp` when hart is in thread mode or `thread_enter == 0`.
 
 [cols="1,2,1,2,6",options=header]
 |====
 | bit | name | type | reset value | description
-| [31:3] | `spm_limit` | WLRL | 0 | top bits of bottom stack threshold
+| [31:3] | `spt_limit` | WLRL | 0 | top bits of bottom stack threshold, unsigned
 | [2:0] | reserved | WLRL | 0 | reserved
 |====
 
-==== `teic_sptlimit`
+==== `teic_spmlimit`
 
 available only with <<XTeicRTOS>>
 
-Used for limiting `sp` when hart is in thread mode.
+Used for limiting `sp` when hart is in interrupt (machine) mode (`thread_enter == 1`).
 
 [cols="1,2,1,2,6",options=header]
 |====
 | bit | name | type | reset value | description
-| [31:3] | `spt_limit` | WLRL | 0 | top bits of bottom stack threshold
+| [31:3] | `spm_limit` | WLRL | 0 | top bits of bottom stack threshold, unsigned
 | [2:0] | reserved | WLRL | 0 | reserved
 |====
 
