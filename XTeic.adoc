@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.29.0
+:appversion: 0.29.1
 :toc:
 :toclevels: 5
 :sectnums:
@@ -987,7 +987,7 @@ highest irq number.
 ==== interrupt exit
 
 When `jalr` or `cm.popret` instruction is executed and the lowest bit in the source register is
-set, the interrupt exit procedure is triggered. +
+set (before calculating final target address), the interrupt exit procedure is triggered. +
 If no interrupt is currently active then `irqretnest0_unrec` nmi request is set.
 
 // limit it only to `ra` ???
