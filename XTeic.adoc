@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.29.1
+:appversion: 0.30.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1148,10 +1148,47 @@ is not changed until interrupt arrives.
 
 NOTE: `wfi` can be executed when interrupts are disabled. Which is a very common
 use case that avoids introduction of non deterministic delays to event respose time.
-(irq arriving right before `wfi`)
+(i.e. irq arriving right before `wfi`)
 
 NOTE: It is basically the same thing as priviliged `wfi` but without the
 configuration bits in privileged CSR's
+
+==== teic.wfi.n4ign
+
+Mnemonic::
+```
+teic.wfi.n4ign
+```
+
+Encoding (RV32, RV64)::
+[wavedrom, , svg]
+....
+{reg:[
+ { bits: 7, name: 0x73, attr: ['SYSTEM'] },
+ { bits: 5, name: 0x0, attr: ['rd'] },
+ { bits: 3, name: 0x0, attr: ['PRIV'] },
+ { bits: 5, name: 0x0, attr: ['rs1'] },
+ { bits: 12, name: 0x115, attr: ['WFI'] },
+]}
+....
+
+Description::
+Similar to `wfi` instruction, but doesn't have to terminate after
+executing interrupts at 4th nesting priority only. 
+
+If only single nesting priority is implemented
+(`TEIC_IRQ_NESTING_BITS == 0`) then this instruction 
+behaves like a standard `wfi`.
+
+NOTE: Designated to reduce wakeups caused by high frequency control
+loop interrupts that don't need attention from rest of the application.
+
+NOTE: Typicall implementation would require additional hidden state
+to track if interrupt of lower nesting priority was entered.
+(tail chained then pop preemptend back into n4).
+
+NOTE: similarly to standard `wfi` it can terminate spontanousely
+so the additional functionality is optional
 
 === TEIC CSR map
 
