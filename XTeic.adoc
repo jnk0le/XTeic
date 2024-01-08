@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.30.0
+:appversion: 0.30.1
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1174,7 +1174,9 @@ Encoding (RV32, RV64)::
 
 Description::
 Similar to `wfi` instruction, but doesn't have to terminate after
-executing interrupts at 4th nesting priority only. 
+executing interrupts at 4th nesting priority only. Shall terminate
+if any other nesting level was entered before returning from n4 irq.
+(i.e. tail chained to n3, then pop preempted back into n4)
 
 If only single nesting priority is implemented
 (`TEIC_IRQ_NESTING_BITS == 0`) then this instruction 
@@ -1185,7 +1187,6 @@ loop interrupts that don't need attention from rest of the application.
 
 NOTE: Typicall implementation would require additional hidden state
 to track if interrupt of lower nesting priority was entered.
-(tail chained then pop preemptend back into n4).
 
 NOTE: similarly to standard `wfi` it can terminate spontanousely
 so the additional functionality is optional
