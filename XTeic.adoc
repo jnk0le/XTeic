@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.30.1
+:appversion: 0.30.2
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1614,10 +1614,10 @@ But the gains will be relatively low.
 
 === XTeicStackLimit
 
-Throws `sw_integrity_exc` exception precisely, when `sp` (`x1`) register is written with value lower than
-the one specified in `teic_sp*limit` register.
-
 Provides additional CSR registers with stack address thresholds.
+
+Throws `sw_integrity_exc` exception, when `sp` (`x1`) register is written with value lower than
+the one specified in `teic_sp*limit` register.
 
 NOTE: local arrays can be created on stack and then accessed by pointer passed in working register.
 Therefore stacklimit comparison must happen on write to `sp` register
