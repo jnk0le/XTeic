@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.30.3
+:appversion: 0.30.4
 :toc:
 :toclevels: 5
 :sectnums:
@@ -439,7 +439,7 @@ in 2MiB internal flash, it has to land in external parallel NOR flash, which is 
 not cached by cpu and shares bus with SDRAM. +
 Any attempt to touch internal SRAM regions will defeat the remaining 
 "universality/portability of linux apps" arguments. +
-Not to mention much hgher unit price than typical 200+Mhz cotex A5/7 SOCs. 
+Not to mention much hIgher unit price than typical 200+Mhz cotex A5/7 SOCs. 
 
 Of course there are still actual reasons to use linux in non-realtime embedded,
 consisting of different developmnet practices, higher portability 
