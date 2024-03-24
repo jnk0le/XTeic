@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.30.4
+:appversion: 0.31.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1406,12 +1406,11 @@ The `*_async` nmi requests have to be cleared within the source peripheral.
 							0b11: range 0, 1, 2
 | 5 | reserved | WARL | 0 |
 | 4 | `access_thread_regs_n1` | WARL | 0 | (optional) 
-Switches current (part of) register file (except stack pointer) 
-to thread one if applicable. +
+Switches current (part of) register file to thread one if applicable. +
 It has effect only in interrupts at lowest implemented nesting priority. +
 Designated to allow context switching of threads in case of automatic irq
 shadow registers. +
-1: thread context remapped + 
+1: thread context remapped +
 0: no context remap
 | 3 | `thread_enter` | WARL | 0 | added with <<XTeicRTOS>>
 | 2 | `escalate_async_nmi` | WARL | 0 | (optional) if `*_async` nmi request is raised during
@@ -1423,7 +1422,7 @@ shadow registers. +
 								1: enabled +
 								0: disabled
 | 0 | `zero_jitter` | WARL | 0 | (optional)
-Ensure that the highest nesting priority interrupt is always
+Ensure that the highest nesting priority interrupts are always
 entered within the same number of cycles regardless of the
 interrupted execution state.
 
@@ -1581,10 +1580,14 @@ configuring everything in machine mode.
 
 ===== `teic_swpspm`
 
-holds the stack pointer to be swapped with `sp` when entering interrupt context
+Holds the stack pointer to be swapped with `sp` when entering interrupt context.
 
 NOTE: Separate interrupt stack allows thread stacks to allocate only the area for context switch
 storage in addition to its own usage (which can be statically analysed)
+
+If `access_thread_regs_n1` control bit is implemented, then it switches `sp` to thread stack as well. +
+When in effect, the `teic_swpspm` content is undefined.
+When another interrupt nests, it pushes registers onto the interrupt stack.
 
 ==== XTeicTinyIrqTable
 
