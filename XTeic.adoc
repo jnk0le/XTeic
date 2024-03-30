@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.31.1
+:appversion: 0.31.2
 :toc:
 :toclevels: 5
 :sectnums:
@@ -2059,7 +2059,7 @@ or shadow registers.
 Normally such condition is very rare and is usually a sign of bad coding or
 much more serious hardware issue, that's causing everything to fail at the same moment.
 
-=== no "software interrupts"
+=== no software triggered interrupts
 
 aka software trigger in ARM terminology <<DUI0553A>>
 
