@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.31.0
+:appversion: 0.31.1
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1494,8 +1494,8 @@ spec, it should at least provide its own config to exclude itself from reset
 [cols="1,2,1,2,6",options=header]
 |====
 | bit | name | type | reset value | description
-| [31:1] | `deffered{i}_req` | w1s | undefined | (optional) write 1 to set deffered1-deffered31 irq requests
-| [0] | `deffered0_req` | w1s | undefined | write 1 to set deffered0 irq request
+| [31:1] | `deffered{i}_req` | w1s (wo) | undefined | (optional) write 1 to set deffered1-deffered31 irq requests
+| [0] | `deffered0_req` | w1s (wo) | undefined | write 1 to set deffered0 irq request
 |====
 
 ==== `teic_irq_pending[32]`
@@ -1525,7 +1525,7 @@ priority encoding::
 | bit | name | type | reset value | description
 | [8:(9 - `TEIC_IRQ_NESTING_BITS`)] | `nest_prio` | rw | 0 | nesting priority bits
 | [(8 - `TEIC_IRQ_NESTING_BITS`):(9 - (`TEIC_IRQ_NESTING_BITS` + `TEIC_IRQ_PRIORITY_BITS`))] | `sub_prio` | rw | 0 | sub-priority bits
-| [(8 - (`TEIC_IRQ_NESTING_BITS` + `TEIC_IRQ_PRIORITY_BITS`)):0] | reserved | rw | 0 | reserved
+| [(8 - (`TEIC_IRQ_NESTING_BITS` + `TEIC_IRQ_PRIORITY_BITS`)):0] | reserved | WLRL | 0 | reserved
 |====
 
 Unimplemented bottom nesting bits are treated as if they were hardwired to 1.
@@ -1549,7 +1549,7 @@ First 8 bit entries (corresponding to NMIs) are reserved.
 [cols="1,2,1,2,6",options=header]
 |====
 | bit | name | type | reset value | description
-| [31:0] | `enable{i}_irq` | rw | 0 | enable control of `IRQn % 32` interrupt +
+| [31:0] | `enable{i}_irq` | WARL | 0 | enable control of `IRQn % 32` interrupt +
 									0: disabled +
 									1: enabled
 |====
@@ -1587,7 +1587,7 @@ storage in addition to its own usage (which can be statically analysed)
 
 If `access_thread_regs_n1` control bit is implemented, then it switches `sp` to thread stack as well. +
 When in effect, the `teic_swpspm` content is undefined.
-When another interrupt nests, it pushes registers onto the interrupt stack.
+When another interrupt nests, it pushes registers onto the machine (interrupt) stack.
 
 ==== XTeicTinyIrqTable
 
