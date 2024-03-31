@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.31.2
+:appversion: 0.31.3
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1926,6 +1926,43 @@ Unlike in Zcmp the load to a0 is non atomic.
 those are quite annoying on rve
 
 [appendix]
+== irq atomic block
+
+mask out all interrupts::
+----
+void foo()
+{
+	size_t tmp;
+	asm volatile(
+		"csrrci %[out], teic_irq_msk, 0b01111 \n\t" 
+		"teic.fence.icsrsync \n\t" // ???, see #25
+		: [out] "=r" (tmp) :: "memory");
+	//
+	// execute code with irq disabled
+	//
+	asm volatile("csrw teic_irq_msk, %[in] \n\n" :: [in] "r" (tmp) : "memory");
+}
+----
+
+
+
+mask out only `nest1` level::
+----
+void foo()
+{
+	size_t tmp;
+	asm volatile(
+		"csrrci %[out], teic_irq_msk, 0b00001 \n\t" 
+		"teic.fence.icsrsync \n\t" // ???, see #25
+		: [output] "=r" (tmp) :: "memory");
+	//
+	// execute code with irq disabled
+	//
+	asm volatile ("csrw teic_irq_msk, %[in] \n\t" :: [in] "r" (tmp) : "memory");
+}
+---- 
+
+[appendix]
 == RTOS context switch
 
 // by deffered0 after deffered from systick
@@ -1936,12 +1973,6 @@ those are quite annoying on rve
 // through regs - sync with deffered handler problematic
 // through illegal nmi then defer to deffered1
 // through mem
-
-[appendix]
-== atomic block
-
-no single bit interrupt enable
-use csrrs/c on a mask then restore
 
 [appendix]
 == vendor software support packages
@@ -2030,7 +2061,7 @@ Unlike the big unix machines, the RTOS context can be statically
 addressed by `lui` + `addi` sequence.
 
 With hardware stacking there is no need to free up additional registers
-to perform context sitching tasks.
+to perform context switching tasks.
 
 === 1023 vector entries
 
