@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.31.3
+:appversion: 0.31.4
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1145,7 +1145,7 @@ Description::
 Execution of the `wfi` instruction stalls the execution and allows
 the core to enter various low power states until the interrupt is taken or
 any nesting level becomes pending +
-It is allowed to terminte spontaneously or even be implemented as a nop.
+It is allowed to terminte spontaneously or even be implemented as a `nop`.
 +
 In addition, the `wfi` instruction is allowed to optionally stack out certain
 registers ahead of the interrupts, to reduce their latency. In this case, `sp`
