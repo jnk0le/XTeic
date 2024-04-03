@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.31.5
+:appversion: 0.32.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1286,6 +1286,8 @@ to not push previous state onto stack, that would increase interrupt latency.
 						1: enabled
 |====
 
+Disabling any nesting level shall take effect immediately before executing next instruction.
+
 bits related to unimplemented nesting levels are hardwired to zero.
 
 NOTE: only `nest4` level is mandatory to implement
@@ -1934,8 +1936,7 @@ void foo()
 {
 	size_t tmp;
 	asm volatile(
-		"csrrci %[out], teic_irq_msk, 0b01111 \n\t" 
-		"teic.fence.icsrsync \n\t" // ???, see #25
+		"csrrci %[out], teic_irq_msk, 0b01111 \n\t"
 		: [out] "=r" (tmp) :: "memory");
 	//
 	// execute code with irq disabled
@@ -1952,8 +1953,7 @@ void foo()
 {
 	size_t tmp;
 	asm volatile(
-		"csrrci %[out], teic_irq_msk, 0b00001 \n\t" 
-		"teic.fence.icsrsync \n\t" // ???, see #25
+		"csrrci %[out], teic_irq_msk, 0b00001 \n\t"
 		: [output] "=r" (tmp) :: "memory");
 	//
 	// execute code with irq disabled
