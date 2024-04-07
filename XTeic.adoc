@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.32.0
+:appversion: 0.33.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -755,7 +755,7 @@ NOTE: This mechanism is portable to other architectures, the more caller saved r
 available, the higher relative gain is.
 
 NOTE: vector extension can benefit from IPRA as current psABI makes all vector registers
-temporary, though the syscall destroy entire state
+temporary, though the syscall destroys entire state
 
 ===== adjusting ipra wrt prestacked registers
 
@@ -1085,10 +1085,8 @@ to allow immediate shutdown of certain peripherals (pwm timers etc.)
 | 7 | NMI | Unrecoverable_NMI | Nested nmi, unknown or a state that cannot be easily
 								recovered from.
 | 8 | IRQ | Deffered0_IRQ | software deffered interrupt, can be used for context switch.
-| 9 | IRQ | Deffered1_IRQ | (optional, mandatory with <<XTeicRTOS>>) software deffered interrupt,
-							can be used for servicing syscalls.
-| 10 | IRQ | | reserved/systick???
-| 11..1022 | IRQ | *_IRQ | (optional) device specific interrupts
+| 9 | IRQ | reserved | reserved/systick???
+| 10..1022 | IRQ | *_IRQ | (optional) device specific interrupts
 |============================================================================================
 
 Unimplemented optional NMIs can be recycled for custom NMIs other than the ones provided in table above.
@@ -1968,13 +1966,6 @@ void foo()
 // by deffered0 after deffered from systick
 
 [appendix]
-== RTOS syscalls
-
-// through regs - sync with deffered handler problematic
-// through illegal nmi then defer to deffered1
-// through mem
-
-[appendix]
 == vendor software support packages
 
 what headers, definitions, names etc. must be provided.
@@ -2183,6 +2174,12 @@ would be fine with just 1 nesting level.
 
 Adding more nesting levels will diminish the gains from tail chaining.
 
+=== no syscall (in XTeicRTOS)
+
+Problematic to properly implement.
+
+Offers less separation of kernel structures from the thread (by MPU).
+Though cortex-m port of FreeRTOS uses it only to start a first thread.
 
 [bibliography]
 == Bibliography
