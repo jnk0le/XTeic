@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.34.0
+:appversion: 0.34.1
 :toc:
 :toclevels: 5
 :sectnums:
@@ -913,7 +913,7 @@ Shall not deviate from the predefined ranges.
 
 NOTE: only highest nesting level has configurable stacking ranges.
 
-[cols="1,3,2,2,2",options=header]
+[cols="1,3,2,2",options=header]
 |====
 | range | registers | added stack area | mandatory implemented (all nesting)
 | 0 | "x1,x10,x11,reserved" | XLEN * 4 | yes
