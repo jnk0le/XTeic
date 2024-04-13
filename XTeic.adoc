@@ -904,18 +904,25 @@ NOTE: Zcmp similarly doesn't specify the required alignment.
 
 ==== register ranges
 
+Register ranges define which registers are pushed onto the stack on irq entry.
+
+Adding certain range require inclusion of all previous ranges.
+
+The selection is implementation specific, fixed at silicon level.
+Shall not deviate from the predefined ranges.
+
+NOTE: only highest nesting level has configurable stacking ranges.
+
 [cols="1,3,2,2,2",options=header]
 |====
-| range | registers | added stack area | mandatory supported | mandatory configurable
-| 0 | "x1,x10,x11,reserved" | XLEN * 4 | yes | no
-| 1 | "x12-x15" | XLEN * 4 | yes | no
-| 2 | "x4-x7" | XLEN * 4 | no | no
-| 3 | "x16,x17,x28-x31" | XLEN * 6 | no | yes
+| range | registers | added stack area | mandatory implemented (all nesting)
+| 0 | "x1,x10,x11,reserved" | XLEN * 4 | yes
+| 1 | "x12-x15" | XLEN * 4 | yes
+| 2 | "x4-x7" | XLEN * 4 | no
+| 3 | "x16,x17,x28-x31" | XLEN * 6 | no
 |====
 
-NOTE: Implementations are free to not provide the configurability of stacking ranges
-and hardcode them. Range 0+1 gives similar amount of usable registers as 
-NVIC
+NOTE: Range 0+1 gives similar amount of usable registers as NVIC
 
 stack frame pseudocode::
 [source, asm]
@@ -950,10 +957,8 @@ sw x31, -72(sp)
 addi sp, sp, -72
 ```
 
-ranges lower than configured can be excluded from stacking only when their registers are preserved in a different
-manner (e.g. shadow registers)
 
-NOTE: reserved position in range0 window can be optionally used for preserving `estate` during nesting
+NOTE: reserved position in range0 window can be optionally used for preserving additional state during nesting
 
 ==== interrupt entry
 
@@ -963,8 +968,8 @@ the interrupt entry procedure is triggered.
 
 During the interrupt entry the hardware will:
 
-- stacks configured register ranges at given nesting level (`n123_stacking` or `n4_stacking`)
-- decrement `sp` according to configured register ranges in `n123_stacking`
+- stacks configured/implemented register ranges at given nesting level (can be affected by `n4_stacking`)
+- decrement `sp` according to largest configured/implemented register ranges
 - put content of interrupted `pc` into `ra` register with lowest bit set
 - set `in_nestx` bit in `teic_irq_status` register
 - fetches target address from vector table pointed by `teic_irq_vect`.
@@ -978,8 +983,7 @@ If irq request is spuriously deasserted during the interrupt entry (or e.g. tail
 must either; enter the offending handler or immediately return (or e.g. tail chain to yet another handler).
 
 NOTE: Sometimes it takes a few cycles to deassert irq request signal, after e.g. clearing
-status flag. Instead of populating errata, the vendors may opt to implement immediate return
-on delayed (spurious) irq deassert. Behaviour shall be at least deterministic.
+status flag. Behaviour must be deterministic. Otherwise erratas will be populated. 
 
 ===== handler dispatch
 
@@ -999,8 +1003,8 @@ If no interrupt is currently active then `irqretnest0_unrec` nmi request is set.
 
 During the interrupt exit the hardware will:
 
-- unstack configured register ranges at given nesting level (`n123_stacking` or `n4_stacking`)
-- increment `sp` according to configured register ranges in `n123_stacking`
+- unstack configured/implemented register ranges at given nesting level (can be affected by `n4_stacking`)
+- increment `sp` according to largest configured/implemented register ranges
 - clear `in_nestx` bit in `teic_irq_status` register
 - jumps to the target address of `jalr` or `cm.popret` instruction
 
@@ -1191,7 +1195,7 @@ loop interrupts that don't need attention from rest of the application.
 NOTE: Typicall implementation would require additional hidden state
 to track if interrupt of lower nesting priority was entered.
 
-NOTE: similarly to standard `wfi` it can terminate spontanousely
+NOTE: similarly to standard `wfi` it can terminate spontaneously
 so the additional functionality is optional
 
 === TEIC CSR map
@@ -1253,8 +1257,8 @@ Otherwise read and write operations on this register are undefined.
 NOTE: Altough optional, the ability to interrupt multicycle instructions is especially
 important for cores implementing zero jitter features.
 As an example the ratified Zcmp `cm.popretz` intruction has 3 uninterrupible instructions (one is branch).
-Even though it could be just 2 according to common sense and normative Tariq response <<popretzloadzero>>.
-It should be already obvious what will be formally pushed down your throat.
+(Even though it could be just 2 according to common sense and normative Tariq response <<popretzloadzero>>.
+It should be already obvious what will be formally pushed down your throat.)
 
 NOTE: designated to allow an efficient context switch from the lowest priority interrupt
 
@@ -1386,24 +1390,16 @@ The `*_async` nmi requests have to be cleared within the source peripheral.
 [cols="1,2,1,2,6",options=header]
 |====
 | bit | name | type | reset value | description
-| [31:10] | reserved | WLRL | 0 | reserved
-| [9:8] | `n123_stacking` | WARL | implementation specific | (optional)
-							stacking ranges and stack adjustment at 1st ,2nd and 
-							3rd nesting levels. +
-							Must not be changed within interrupt handler, otherwise 
-							behaviour is undefined. +
-							0b00: range 0, 1 +
-							0b01: range 0, 1, 2 +
-							0b10: reserved +
-							0b11: range 0, 1, 2, 3 +
-| [7:6] | `n4_stacking` | WARL | implementation specific | (optional) stacking ranges at 4th nesting level. +
-							Must be equal or lesser than in `n123_stacking`. +
+| [31:8] | reserved | WLRL | 0 | reserved
+| [7:6] | `n4_stacking` | WARL | implementation specific (highest implemented) |
+							stacking ranges at 4th nesting level. +
+							Connot be set to higher ranges than implemented by lower nestings. +
 							Must not be changed within interrupt handler, otherwise 
 							behaviour is undefined. +
 							0b00: range 0 +
 							0b01: range 0, 1 +
-							0b10: reserved +
-							0b11: range 0, 1, 2
+							0b10: range 0, 1, 2 +
+							0b11: range 0, 1, 2, 3
 | 5 | reserved | WARL | 0 |
 | 4 | `access_thread_regs_n1` | WARL | 0 | (optional) 
 Switches current (part of) register file to thread one if applicable. +
