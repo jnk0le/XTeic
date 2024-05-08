@@ -2177,6 +2177,13 @@ Problematic to properly implement.
 Offers less separation of kernel structures from the thread (by MPU).
 Though cortex-m port of FreeRTOS uses it only to start a first thread.
 
+=== no SEV/WFE
+
+Most use cases are redundant to `wfi`. (e.g. SEVONPEND) 
+
+The SEV from irq method is rarely used and is supposed to reduce wakeups from
+high frequency interrupts which can be handled by `teic.wfi.n4ign` instead.
+
 [bibliography]
 == Bibliography
 
