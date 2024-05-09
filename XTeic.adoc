@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.34.1
+:appversion: 0.34.2
 :toc:
 :toclevels: 5
 :sectnums:
