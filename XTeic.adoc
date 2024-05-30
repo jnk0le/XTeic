@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.34.3
+:appversion: 0.34.4
 :toc:
 :toclevels: 5
 :sectnums:
@@ -619,6 +619,8 @@ or the WCH "SDI" (aka "SWD") <<qingkev2debug>>
 
 ==== prestacked annotation
 
+NOTE: official RFC has been submitted here: https://github.com/riscv-non-isa/riscv-c-api-doc/pull/53
+
 Currently there is no universal solution to indicate which registers in interrupt handlers
 can be freely used without stacking them.
 
@@ -639,6 +641,7 @@ as a defacto calller saved one (aka create custom calling convention)
 - `prestacked("")` attribute
 - no whitespaces in string parameter
 - register range cover all registers between and including specified (`x4-x6` is equivalent to `x4,x5,x6`)
+- register range must span at least 3 consecutive registers
 - registers/ranges are separated by comma
 - calee saved registers have to be properly turned into temporary when included in the list
 - CSRs taking part in calling conventions are also subject to this mechanism
@@ -648,6 +651,10 @@ as a defacto calller saved one (aka create custom calling convention)
 - must not collide with `\\__attribute__\((interrupt))` as to support "legacy" handler return mechanisms
 - must not imply `\\__attribute__\((interrupt))` as well
 - custom CSRs would also have to be somehow covered. (hw loops etc.)
+- annotated functions should be callable by regular code
+- argument registers that are passed but not included in the list, can be assumed
+to be unmodified after return from an annotated function
+
 
 ilp32 caller saved:
 
@@ -657,9 +664,9 @@ ilp32f, caller saved:
 
 `\\__attribute__\((prestacked("x5-x7,x10-x17,x28-x31,f0-f7,f10-f17,f28-f31,fcsr")))`
 
-Simplified ranges (e.g. shadow register file):
+preemptible CLIC irq with simplified ranges(e.g. shadow register file):
 
-`\\__attribute__\((prestacked("x8-x15")))`
+`\\__attribute__\((interrupt("CLIC-preemptible"), prestacked("x8-x15")))`
 
 TEIC irq, range0 + shadow regs of half integer regfile (where bit 2 of operand is set, covers range1+2)
 and F + P extensions:
@@ -818,6 +825,13 @@ The other option is to use inline asm clobbers to make call to such funcions
 - requires the `call` pseudoinstruction that expands to a proper sequence.
 Otherwise we get errors when calling too far or missing optimization when short call can be made.
 - works in existing compilers (at least in gcc and llvm)
+
+Another solution could be applying <<prestacked annotation>> e.g.
+
+pure assembly function (FP compute kernel) using only subset of caller saved
+registers (`a0` argument not modified): +
+`__attribute__((prestacked("x5,x11-x15,f10-f13,v0,v1,v8-v31,fcsr,vl,vtype,vstart")))`
+
 
 // == programmers model
 
