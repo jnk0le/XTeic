@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.34.4
+:appversion: 0.34.5
 :toc:
 :toclevels: 5
 :sectnums:
@@ -832,6 +832,8 @@ pure assembly function (FP compute kernel) using only subset of caller saved
 registers (`a0` argument not modified): +
 `__attribute__((prestacked("x5,x11-x15,f10-f13,v0,v1,v8-v31,fcsr,vl,vtype,vstart")))`
 
+NOTE: Both mothods are insufficient for "annotating" unmodified stack arguments 
+which are caller saved (documented on arm and defacto on risc-v)
 
 // == programmers model
 
