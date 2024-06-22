@@ -1,12 +1,13 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.34.5
+:appversion: 0.34.6
 :toc:
 :toclevels: 5
 :sectnums:
 :sectnumlevels: 4
-
+:autofit-option:
+:pdf-theme: theme.yml
 
 {author} {email} +
 document version {appversion} +
