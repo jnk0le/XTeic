@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.34.6
+:appversion: 0.34.7
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1288,8 +1288,8 @@ Otherwise read and write operations on this register are undefined.
 NOTE: Altough optional, the ability to interrupt multicycle instructions is especially
 important for cores implementing zero jitter features.
 As an example the ratified Zcmp `cm.popretz` intruction has 3 uninterrupible instructions (one is branch).
-(Even though it could be just 2 according to common sense and normative Tariq response <<popretzloadzero>>.
-It should be already obvious what will be formally pushed down your throat.)
+(Even though it could be just 2 as zeroing `a0` is restartable. 3 instruction sequence will be formally pushed
+down your throats anyway)
 
 NOTE: designated to allow an efficient context switch from the lowest priority interrupt
 
@@ -2260,7 +2260,6 @@ high frequency interrupts which can be handled by `teic.wfi.n4ign` instead.
 * [[[XTightlyCoupledIO, 39]]] https://github.com/jnk0le/XTightlyCoupledIO
 * [[[c2000workshop, 40]]] https://software-dl.ti.com/trainingTTO/trainingTTO_public_sw/c28x28035/C28x_Piccolo_MDW_2-1.pdf
 * [[[cv32e40s, 41]]] https://docs.openhwgroup.org/_/downloads/cv32e40s-user-manual/en/latest/pdf/
-* [[[popretzloadzero, 42]]] https://github.com/riscv/riscv-code-size-reduction/issues/196
 * [[[nvidiamtveccve, 43]]] https://youtu.be/iz_Y1lOtX08?t=1740
 * [[[privilegedrnmi, 44]]] https://github.com/riscv/riscv-isa-manual/pull/912/commits/869dcc608e11f9680e950bcb20a9b8294d2b82bd
 * [[[riscvdebug, 45]]] https://github.com/riscv/riscv-debug-spec
