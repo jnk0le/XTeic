@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.34.7
+:appversion: 0.34.8
 :toc:
 :toclevels: 5
 :sectnums:
@@ -54,6 +54,9 @@ A quick recap of what we already have available.
 
 <<armnvic>> defacto established "industry standard" of efficient interrupt handling.
 Anyone complaining about risc-v likes and wants the NVIC.
+
+The addition of trustzone in armv8m, increases the interrupt latency/jitter due to
+the need of preserving and zeroing extra "unnecessary" registers. (to prevent potential leaks) 
 
 ==== CLIC
 
@@ -391,6 +394,9 @@ Those have to take the second round of waitstates or cache miss without amortiza
 
 And if the code is far away from vector table (e.g. in SRAM for more deterministic execution),
 compiler will have to emit a jump island, aka "veener", that will perform yet another unamortized jump.
+Additionally far jumps require a free register which in typical scenario
+reqires pushing to stack and returning to veener from handler to handle epilogue.
+
 allocating 8 bytes per entry, allowing `lui` + `jalr` sequence, will severly trump the
 code density and performance in typical use scenarios.
 
