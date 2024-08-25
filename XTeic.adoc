@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.34.8
+:appversion: 0.34.9
 :toc:
 :toclevels: 5
 :sectnums:
@@ -262,6 +262,18 @@ CLA tasks are uninterruptible. TI claims <<spracs0a>>,<<ticladocs>>,<<ticladevgu
 that their task driven machine "reduces interrupt latency and jitter" compared to classic CPU
 even though it does exactly the opposite when there is more than one
 (async) interrupt to handle (which happens in <<spracs0a>> example)
+
+==== Xh3irq
+
+Xh3irq extension (as implemented by hazard3) <<hazard3>> provides nested and vectored
+interrupt handling that is conceptually similar to CLIC (`mnxti`) trampoline.
+
+Unlike CLIC, dispatcher has to index pointer array in software (by using index from `meinext`)
+
+Example handler implements only jumptable but it can be easily convertod into pointer table.
+
+Access to configuration bits of all 512 inputs is performed by inline windowing of configuration 
+CSRs, which is incompatible with zicsrind.
 
 === overwiew/discussion of some concepts/features
 
@@ -2277,3 +2289,4 @@ high frequency interrupts which can be handled by `teic.wfi.n4ign` instead.
 * [[[spruge6b, 51]]] https://e2echina.ti.com/cfs-file/__key/communityserver-discussions-components-files/56/5504.2803x-CLA-_2800_1_2900_.pdf
 * [[[spracw5a, 52]]] https://www.ti.com/lit/an/spracw5a/spracw5a.pdf
 * [[[CV32RT, 53]]] https://arxiv.org/pdf/2311.08320
+* [[[hazard3, 54]]] https://github.com/Wren6991/Hazard3/blob/stable/doc/hazard3.pdf
