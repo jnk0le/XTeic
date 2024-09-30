@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.35.0
+:appversion: 0.36.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1137,8 +1137,7 @@ to allow immediate shutdown of certain peripherals (pwm timers etc.)
 									be performed.
 | 5 | NMI | MemoryViolation_NMI | Bus or memory access fault
 | 6 | NMI | InstructionViolation_NMI | Illegal instruction exception
-| 7 | NMI | Unrecoverable_NMI | Nested nmi, unknown or a state that cannot be easily
-								recovered from.
+| 7 | NMI | Unrecoverable_NMI | Nested nmi, unknown or a state that cannot be easily recovered from.
 | 8 | IRQ | Deffered0_IRQ | software deffered interrupt, can be used for context switch.
 | 9 | IRQ | reserved | reserved/systick???
 | 10..1022 | IRQ | *_IRQ | (optional) device specific interrupts
@@ -1146,8 +1145,31 @@ to allow immediate shutdown of certain peripherals (pwm timers etc.)
 
 Unimplemented optional NMIs can be recycled for custom NMIs other than the ones provided in table above.
 
-NOTE: XTeic doesn't provide any  peripheral API for optional watchdog, clock and integrity protection
+NOTE: XTeic doesn't provide any peripheral API for optional watchdog, clock and integrity protection
 systems. It's up to the implementer to provide them.
+
+===== alternate vector table allocation
+
+Alternate vector table allocation designated for minimal implementationns that are not
+making use of optional NMIs, but benefit from additional space savings.
+
+Alternate vector table allocation is implentation defined. It's not discoverable nor configurable.
+
+[cols="3,2,7,12",options=header]
+|============================================================================================
+| irq num | type | name | notes
+| 0 | - | reserved | reserved for startup code (typically jump instruction)
+| 1 | NMI | HW_NMI | (optional) hardware related exceptions (watchdogs, ECC etc.)
+| 2 | NMI | SW_NMI | exceptions related to application execution on a given hart 
+					(illegal instr, integrity violations by sw etc.)
+| 3 | NMI | Unrecoverable_NMI | Nested nmi, unknown or a state that cannot be easily recovered from.
+| 4 | IRQ | Deffered0_IRQ | software deffered interrupt, can be used for context switch.
+| 5 | IRQ | reserved | reserved/systick???
+| 6..1022 | IRQ | *_IRQ | (optional) device specific interrupts
+|============================================================================================
+
+NOTE: Fragmentation is not a big of a deal, as all devices will be fragmented by implementing it's
+own layout of device specific IRQ handlers. Which will be provided within startup files.
 
 === recycled volume II CSRs
 
