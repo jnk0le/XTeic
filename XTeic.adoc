@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.34.10
+:appversion: 0.35.0
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1074,8 +1074,10 @@ by `teic_irq_msk` register. Typically used for signalling critical conditions.
 Entry/exit procedure is similar to regular IRQs with the following excepions:
 
 - activity is signalled by `in_nmi` in `teic_irq_status` register
-- stacks only range 0 registers
-- adjusts `sp` by range 0 area
+- preserves at least range 0 registers, stacking ranges are impelmentation defined.
+- adjusts `sp` by stacked ranges
+
+NOTE: typically NMIs will stack the same register ranges as regular interrupts
 
 Before returning from NMI handler all requests in `teic_nmi_cause` CSR must be acknowledged (cleared).
 
