@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.34.9
+:appversion: 0.34.10
 :toc:
 :toclevels: 5
 :sectnums:
@@ -2096,8 +2096,7 @@ addressable through `c.lui` + offset
 Unlike the big unix machines, the RTOS context can be statically
 addressed by `lui` + `addi` sequence.
 
-With hardware stacking there is no need to free up additional registers
-to perform context switching tasks.
+With hardware stacking there is no need to free up additional registers.
 
 === 1023 vector entries
 
