@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.36.1
+:appversion: 0.36.2
 :toc:
 :toclevels: 5
 :sectnums:
@@ -142,12 +142,11 @@ NOTE: ofiicial CLINT is called ACLINT but doesn't differ much from CLINT in sifi
 
 ==== generic riscv interrupts as described in "privileged" volume II
 
-Very often refered to as CLINT. e.g. <<sififeintcookbook>> claims that volume II
-stuff is CLINT exclusive.
+Very often refered to as CLINT. e.g. <<sififeintcookbook>>.
 
-has vectored mode which simply jumps to the position in vector table.
+has optional vectored mode which simply jumps to the position in vector table.
 
-Doesn't provide any nesting other than privilege levels
+Doesn't provide any nesting other than privilege levels or a complex boilerplate code to disable reatking active interrupts.
 Registers and CSR state (`fcsr` etc.) have to be pushed by software before use
 
 ==== PLIC/AIA
@@ -319,7 +318,7 @@ development of such (E)ABI.
 
 Zcmp[e] was also prepared for such fragmentation by reserving first 4 points in rlist for EABI,
 so the cores can implement UABI and EABI push/pop instructions at the same time.
-Those 4 points are of course supposed to handle 20 caller saved regs of EABI (probably with some
+Those 4 points are, of course, supposed to handle 20 caller saved regs of EABI (probably with some
 reuse of few higher points).
 
 It will also make the processors capable of stacking 2 registers per cycle, underutilized
@@ -358,8 +357,8 @@ Recurrig thing in RVE ABI proposals.
 The idea is to allow compilers and software vendors to provide a single
 set of precompiled libraries for RVI and RVE ABIs.
 
-The issue with this approach is that the code arbitrarily compiled for RVE
-might turn out to be less efficient than RVI one. It also limits the capabilities
+The issue with this approach is that the code arbitrarily compiled for RVE is likely
+to turn out to be less efficient than RVI one. It also limits the capabilities
 of RVI ABI like trading off argument registers for temporary/saved ones.
 
 ==== one universal standard for everyone use cases
