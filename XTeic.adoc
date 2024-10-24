@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.36.2
+:appversion: 0.36.3
 :toc:
 :toclevels: 5
 :sectnums:
@@ -474,7 +474,7 @@ Any attempt to touch internal SRAM regions will defeat the remaining
 Not to mention much higher unit price than typical 200+Mhz cotex A5/7 SOCs. 
 
 Of course there are still actual reasons to use linux in non-realtime embedded,
-consisting of different developmnet practices, higher portability 
+consisting of large collection of drivers for external devices, higher portability 
 or access to the raw performance (at much better perf/price ratio)
 not available in typical microcontrollers <<emblinux>>.
 
