@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.36.3
+:appversion: 0.36.4
 :toc:
 :toclevels: 5
 :sectnums:
@@ -1643,7 +1643,7 @@ Once set it cannot be cleared.
 
 Must not be set within interrupt handler, otherwise behaviour is undefined.
 
-NOTE: It is expected that startup code will turn itself into an idle thread after
+NOTE: It is expected that startup code will turn itself into an idle (or `main()) thread after
 configuring everything in machine mode.
 
 ===== `teic_swpspm`
@@ -2120,6 +2120,8 @@ Unlike the big unix machines, the RTOS context can be statically
 addressed by `lui` + `addi` sequence.
 
 With hardware stacking there is no need to free up additional registers.
+
+Stack swapping is handled by HW mechanism provided in XTeicRTOS.
 
 === 1023 vector entries
 
