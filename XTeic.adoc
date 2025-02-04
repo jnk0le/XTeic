@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.36.4
+:appversion: 0.36.5
 :toc:
 :toclevels: 5
 :sectnums:
@@ -102,15 +102,15 @@ NOTE: BTW, my prediction is that the "competitor A" will be able to do a
 Typical interrupt latency of CLIC trampoline was measured at 33 (inline handler) and 42 
 (trampoline) cycles for CV32E40P <<CV32RT>>.
 
-==== CV32RT fastirq
+==== CV32RT, CLIC fastirq
 
 CV32RT "fastirq" <<CV32RT>> extends CLIC by moving prologue handling entirely into
 the hardware as well as introducing background lazy stacking from a shadow register set.
 
 The epilogue is still handled in software.
 
-Tail chaining is supported by `emret` instruction, but a late arrival (higher priority) will have to 
-wait for the background stacking to finish.
+Tail chaining is supported by custom `emret` instruction, but a nesting or late arrival will
+have to wait for the background stacking to finish.
 As a consequence there is a jitter equal to the stacking window.
 
 ==== emb-riscv
