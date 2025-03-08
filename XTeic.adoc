@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.36.5
+:appversion: 0.36.6
 :toc:
 :toclevels: 5
 :sectnums:
@@ -131,14 +131,6 @@ mandates 4 64bit timers (even on RV32):
 - instret counter
 - system timer
 - rtc timer
-
-==== CLINT
-
-Attaches to generic interrupt scheme.
-
-According to <<clint>>, it provides memory mapped interface for timers and IPI.
-
-NOTE: ofiicial CLINT is called ACLINT but doesn't differ much from CLINT in sifive documentations.
 
 ==== generic riscv interrupts as described in "privileged" volume II
 
