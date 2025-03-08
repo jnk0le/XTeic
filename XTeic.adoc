@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.36.6
+:appversion: 0.36.7
 :toc:
 :toclevels: 5
 :sectnums:
@@ -261,7 +261,7 @@ interrupt handling that is conceptually similar to CLIC (`mnxti`) trampoline.
 
 Unlike CLIC, dispatcher has to index pointer array in software (by using index from `meinext`)
 
-Example handler implements only jumptable but it can be easily convertod into pointer table.
+Example handler implements only jumptable but it can be easily converted into pointer table.
 
 Access to configuration bits of all 512 inputs is performed by inline windowing of configuration 
 CSRs, which is incompatible with zicsrind.
