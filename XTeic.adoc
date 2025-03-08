@@ -1,7 +1,7 @@
 
 = XTeic
 Jan Oleksiewicz <jnk0le@hotmail.com>
-:appversion: 0.36.7
+:appversion: 0.36.8
 :toc:
 :toclevels: 5
 :sectnums:
@@ -242,7 +242,7 @@ handling communication stacks" +
 Exactly those workloads that are general purpose tasks
 for which "c2000 architecture was not optimized for"
 
-Offers less registers/instrucrtiions and lacks TMU so it's
+Offers less registers/instructions and lacks TMU so it's
 not always faster than the main core.
 
 Can be used as a true coprocesor for delegation of certain tasks to it.
